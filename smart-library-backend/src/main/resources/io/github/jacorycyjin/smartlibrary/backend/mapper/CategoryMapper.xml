@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.github.jacorycyjin.smartlibrary.backend.mapper.CategoryMapper">
+
+    <!-- 分类结果映射 -->
+    <resultMap id="CategoryResultMap" type="io.github.jacorycyjin.smartlibrary.backend.entity.Category">
+        <id column="id" property="id"/>
+        <result column="category_id" property="categoryId"/>
+        <result column="parent_id" property="parentId"/>
+        <result column="name" property="name"/>
+        <result column="level" property="level"/>
+        <result column="sort_order" property="sortOrder"/>
+        <result column="ctime" property="ctime"/>
+        <result column="mtime" property="mtime"/>
+        <result column="deleted" property="deleted"/>
+    </resultMap>
+
+    <!-- 通用查询分类方法 -->
+    <select id="searchCategories" parameterType="map" resultMap="CategoryResultMap">
+        SELECT *
+        FROM category
+        <where>
+            <if test="deleted != null">
+                AND deleted = #{deleted}
+            </if>
+            <if test="deleted == null">
+                AND deleted = 0
+            </if>
+            <if test="categoryId != null and categoryId != ''">
+                AND category_id = #{categoryId}
+            </if>
+            <if test="categoryIds != null and categoryIds.size() > 0">
+                AND category_id IN
+                <foreach collection="categoryIds" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="parentId != null and parentId != ''">
+                AND parent_id = #{parentId}
+            </if>
+            <if test="level != null">
+                AND level = #{level}
+            </if>
+        </where>
+        ORDER BY sort_order, level, category_id
+        <if test="limit != null and limit > 0">
+            LIMIT #{limit}
+        </if>
+    </select>
+
+    <!-- 根据资源ID查询关联的分类（仅一级分类） -->
+    <select id="selectCategoriesByResourceId" resultMap="CategoryResultMap">
+        SELECT
+            c.*
+        FROM category c
+                 INNER JOIN resource_category_rel rcr ON c.category_id = rcr.category_id
+        WHERE rcr.resource_id = #{resourceId}
+          AND c.deleted = 0
+        ORDER BY c.sort_order
+    </select>
+
+    <!-- 根据资源ID查询完整分类层级路径（递归查询所有祖先节点） -->
+    <select id="selectCategoryPathsByResourceId" resultMap="CategoryResultMap">
+        WITH RECURSIVE category_tree AS (
+            -- 查询资源直接关联的分类（叶子节点）
+            SELECT
+                c.*
+            FROM category c
+                     INNER JOIN resource_category_rel rcr ON c.category_id = rcr.category_id
+            WHERE rcr.resource_id = #{resourceId}
+              AND c.deleted = 0
+
+            UNION ALL
+
+            -- 递归查询父分类（注意：数据库字段是 parent_id）
+            SELECT
+                c.*
+            FROM category c
+                     INNER JOIN category_tree ct ON c.category_id = ct.parent_id
+            WHERE c.deleted = 0
+        )
+        SELECT *
+        FROM category_tree
+        ORDER BY level, category_id
+    </select>
+
+    <!-- 查询指定分类及其所有子分类的ID列表（递归） -->
+    <select id="selectDescendantIds" resultType="string">
+        WITH RECURSIVE category_descendants AS (
+            -- 查询当前分类（自身）
+            SELECT category_id
+            FROM category
+            WHERE category_id = #{categoryId}
+              AND deleted = 0
+
+            UNION ALL
+
+            -- 递归查询所有子分类（注意：数据库字段是 parent_id）
+            SELECT c.category_id
+            FROM category c
+            INNER JOIN category_descendants cd ON c.parent_id = cd.category_id
+            WHERE c.deleted = 0
+        )
+        SELECT category_id
+        FROM category_descendants
+    </select>
+</mapper>

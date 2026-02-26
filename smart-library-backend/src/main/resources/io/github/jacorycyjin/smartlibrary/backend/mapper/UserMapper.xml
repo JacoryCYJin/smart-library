@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.github.jacorycyjin.smartlibrary.backend.mapper.UserMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="UserResultMap" type="io.github.jacorycyjin.smartlibrary.backend.entity.User">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="username" property="username"/>
+        <result column="password" property="password"/>
+        <result column="phone" property="phone"/>
+        <result column="email" property="email"/>
+        <result column="avatar_url" property="avatarUrl"/>
+        <result column="role" property="role"/>
+        <result column="bio" property="bio"/>
+        <result column="status" property="status"/>
+        <result column="ctime" property="ctime"/>
+        <result column="mtime" property="mtime"/>
+        <result column="deleted" property="deleted"/>
+    </resultMap>
+
+    <!-- 查询用户 -->
+    <select id="searchUser" parameterType="map" resultMap="UserResultMap">
+        SELECT id, user_id, username, password, phone, email, avatar_url, role, bio, status, ctime, mtime, deleted
+        FROM user
+        <where>
+            <if test="userId != null and userId != ''">
+                AND user_id = #{userId}
+            </if>
+            <if test="username != null and username != ''">
+                AND username = #{username}
+            </if>
+            <if test="phone != null and phone != ''">
+                AND phone = #{phone}
+            </if>
+            <if test="email != null and email != ''">
+                AND email = #{email}
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+            <if test="deleted != null">
+                AND deleted = #{deleted}
+            </if>
+            <if test="role != null">
+                AND role = #{role}
+            </if>
+        </where>
+        <if test="limit != null and limit > 0">
+            LIMIT #{limit}
+        </if>
+    </select>
+
+    <!-- 插入用户 -->
+    <insert id="insertUser" parameterType="io.github.jacorycyjin.smartlibrary.backend.entity.User">
+        INSERT INTO user (user_id, username, password, phone, email, avatar_url, role, bio, status, ctime, mtime, deleted)
+        VALUES (#{userId}, #{username}, #{password}, #{phone}, #{email}, #{avatarUrl}, #{role}, #{bio}, #{status}, #{ctime}, #{mtime}, #{deleted})
+    </insert>
+
+    <!-- 根据用户ID列表批量查询用户 -->
+    <select id="selectByUserIds" resultMap="UserResultMap">
+        SELECT id, user_id, username, avatar_url, role, status, ctime, mtime, deleted
+        FROM user
+        <where>
+            <if test="userIds != null and userIds.size() > 0">
+                user_id IN
+                <foreach collection="userIds" item="userId" open="(" separator="," close=")">
+                    #{userId}
+                </foreach>
+            </if>
+            AND deleted = 0
+        </where>
+    </select>
+
+</mapper>

@@ -1,0 +1,254 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.github.jacorycyjin.smartlibrary.backend.mapper.ResourceMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="io.github.jacorycyjin.smartlibrary.backend.entity.Resource">
+        <id column="id" property="id"/>
+        <result column="resource_id" property="resourceId"/>
+        <result column="type" property="type"/>
+        <result column="title" property="title"/>
+        <result column="sub_title" property="subTitle"/>
+        <result column="author_name" property="authorName"/>
+        <result column="cover_url" property="coverUrl"/>
+        <result column="summary" property="summary"/>
+        <result column="pub_date" property="pubDate"/>
+        <result column="isbn" property="isbn"/>
+        <result column="publisher" property="publisher"/>
+        <result column="price" property="price"/>
+        <result column="page_count" property="pageCount"/>
+        <result column="doi" property="doi"/>
+        <result column="journal" property="journal"/>
+        <result column="file_url" property="fileUrl"/>
+        <result column="file_type" property="fileType"/>
+        <result column="source_origin" property="sourceOrigin"/>
+        <result column="source_url" property="sourceUrl"/>
+        <result column="source_score" property="sourceScore"/>
+        <result column="sentiment_score" property="sentimentScore"/>
+        <result column="view_count" property="viewCount"/>
+        <result column="comment_count" property="commentCount"/>
+        <result column="star_count" property="starCount"/>
+        <result column="ctime" property="ctime"/>
+        <result column="mtime" property="mtime"/>
+        <result column="deleted" property="deleted"/>
+    </resultMap>
+
+    <!-- 基础列 -->
+    <sql id="Base_Column_List">
+        id, resource_id, type, title, sub_title, author_name, cover_url, summary, pub_date,
+        isbn, publisher, price, page_count, doi, journal, file_url, file_type,
+        source_origin, source_url, source_score, sentiment_score,
+        view_count, comment_count, star_count, ctime, mtime, deleted
+    </sql>
+
+    <!-- 多条件搜索（支持单个资源ID查询和批量搜索） -->
+    <select id="searchResources" parameterType="map" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM resource
+        <where>
+            deleted = 0
+            <!-- 单个资源ID查询 -->
+            <if test="resourceId != null and resourceId != ''">
+                AND resource_id = #{resourceId}
+            </if>
+            <!-- 资源类型筛选 -->
+            <if test="type != null">
+                AND type = #{type}
+            </if>
+            <!-- 关键词搜索 -->
+            <if test="keyword != null and keyword != ''">
+                AND (
+                title LIKE CONCAT('%', #{keyword}, '%')
+                OR author_name LIKE CONCAT('%', #{keyword}, '%')
+                OR summary LIKE CONCAT('%', #{keyword}, '%')
+                )
+            </if>
+            <!-- 作者名称 -->
+            <if test="authorName != null and authorName != ''">
+                AND author_name LIKE CONCAT('%', #{authorName}, '%')
+            </if>
+            <!-- 出版社（仅图书） -->
+            <if test="publisher != null and publisher != ''">
+                AND publisher LIKE CONCAT('%', #{publisher}, '%')
+            </if>
+            <!-- 期刊名称（仅文献） -->
+            <if test="journal != null and journal != ''">
+                AND journal LIKE CONCAT('%', #{journal}, '%')
+            </if>
+            <!-- 分类ID筛选 -->
+            <if test="categoryIds != null and categoryIds.size() > 0">
+                AND resource_id IN (
+                SELECT DISTINCT resource_id
+                FROM resource_category_rel
+                WHERE category_id IN
+                <foreach collection="categoryIds" item="categoryId" open="(" separator="," close=")">
+                    #{categoryId}
+                </foreach>
+                )
+            </if>
+            <!-- 标签ID筛选 -->
+            <if test="tagIds != null and tagIds.size() > 0">
+                AND resource_id IN (
+                SELECT DISTINCT resource_id
+                FROM resource_tag_rel
+                WHERE tag_id IN
+                <foreach collection="tagIds" item="tagId" open="(" separator="," close=")">
+                    #{tagId}
+                </foreach>
+                )
+            </if>
+        </where>
+        <!-- 排序（固定降序） -->
+        <if test="sortBy != null and sortBy != ''">
+            ORDER BY ${sortBy} DESC
+        </if>
+        <!-- 查询数量限制 -->
+        <if test="limit != null and limit > 0">
+            LIMIT #{limit}
+        </if>
+    </select>
+
+    <!-- 统计搜索结果 -->
+    <select id="countResources" resultType="int">
+        SELECT COUNT(*)
+        FROM resource
+        <where>
+            deleted = 0
+            <if test="params.type != null">
+                AND type = #{params.type}
+            </if>
+            <if test="params.keyword != null and params.keyword != ''">
+                AND (
+                title LIKE CONCAT('%', #{params.keyword}, '%')
+                OR author_name LIKE CONCAT('%', #{params.keyword}, '%')
+                OR summary LIKE CONCAT('%', #{params.keyword}, '%')
+                )
+            </if>
+            <if test="params.authorName != null and params.authorName != ''">
+                AND author_name LIKE CONCAT('%', #{params.authorName}, '%')
+            </if>
+            <if test="params.publisher != null and params.publisher != ''">
+                AND publisher LIKE CONCAT('%', #{params.publisher}, '%')
+            </if>
+            <if test="params.journal != null and params.journal != ''">
+                AND journal LIKE CONCAT('%', #{params.journal}, '%')
+            </if>
+            <if test="params.categoryIds != null and params.categoryIds.size() > 0">
+                AND resource_id IN (
+                SELECT DISTINCT resource_id
+                FROM resource_category_rel
+                WHERE category_id IN
+                <foreach collection="params.categoryIds" item="categoryId" open="(" separator="," close=")">
+                    #{categoryId}
+                </foreach>
+                )
+            </if>
+            <if test="params.tagIds != null and params.tagIds.size() > 0">
+                AND resource_id IN (
+                SELECT DISTINCT resource_id
+                FROM resource_tag_rel
+                WHERE tag_id IN
+                <foreach collection="params.tagIds" item="tagId" open="(" separator="," close=")">
+                    #{tagId}
+                </foreach>
+                )
+            </if>
+        </where>
+    </select>
+
+    <!-- 插入资源 -->
+    <insert id="insert">
+        INSERT INTO resource (
+        resource_id, type, title, sub_title, author_name, cover_url, summary, pub_date,
+        isbn, publisher, price, page_count, doi, journal, file_url, file_type,
+        source_origin, source_url, source_score, sentiment_score,
+        view_count, comment_count, star_count, ctime, mtime, deleted
+        ) VALUES (
+        #{resourceId}, #{type}, #{title}, #{subTitle}, #{authorName}, #{coverUrl}, #{summary}, #{pubDate},
+        #{isbn}, #{publisher}, #{price}, #{pageCount}, #{doi}, #{journal}, #{fileUrl}, #{fileType},
+        #{sourceOrigin}, #{sourceUrl}, #{sourceScore}, #{sentimentScore},
+        #{viewCount}, #{commentCount}, #{starCount}, #{ctime}, #{mtime}, #{deleted}
+        )
+    </insert>
+
+    <!-- 更新资源 -->
+    <update id="update">
+        UPDATE resource
+        <set>
+            <if test="title != null">title = #{title},</if>
+            <if test="subTitle != null">sub_title = #{subTitle},</if>
+            <if test="authorName != null">author_name = #{authorName},</if>
+            <if test="coverUrl != null">cover_url = #{coverUrl},</if>
+            <if test="summary != null">summary = #{summary},</if>
+            <if test="pubDate != null">pub_date = #{pubDate},</if>
+            <if test="isbn != null">isbn = #{isbn},</if>
+            <if test="publisher != null">publisher = #{publisher},</if>
+            <if test="price != null">price = #{price},</if>
+            <if test="pageCount != null">page_count = #{pageCount},</if>
+            <if test="doi != null">doi = #{doi},</if>
+            <if test="journal != null">journal = #{journal},</if>
+            <if test="fileUrl != null">file_url = #{fileUrl},</if>
+            <if test="fileType != null">file_type = #{fileType},</if>
+            <if test="sourceOrigin != null">source_origin = #{sourceOrigin},</if>
+            <if test="sourceUrl != null">source_url = #{sourceUrl},</if>
+            <if test="sourceScore != null">source_score = #{sourceScore},</if>
+            <if test="sentimentScore != null">sentiment_score = #{sentimentScore},</if>
+            mtime = NOW()
+        </set>
+        WHERE resource_id = #{resourceId}
+    </update>
+
+    <!-- 增加浏览量 -->
+    <update id="incrementViewCount">
+        UPDATE resource
+        SET view_count = view_count + 1
+        WHERE resource_id = #{resourceId}
+    </update>
+
+    <!-- 增加评论数 -->
+    <update id="incrementCommentCount">
+        UPDATE resource
+        SET comment_count = comment_count + 1
+        WHERE resource_id = #{resourceId}
+    </update>
+
+    <!-- 减少评论数 -->
+    <update id="decrementCommentCount">
+        UPDATE resource
+        SET comment_count = comment_count - 1
+        WHERE resource_id = #{resourceId}
+          AND comment_count > 0
+    </update>
+
+    <!-- 增加收藏数 -->
+    <update id="incrementStarCount">
+        UPDATE resource
+        SET star_count = star_count + 1
+        WHERE resource_id = #{resourceId}
+    </update>
+
+    <!-- 减少收藏数 -->
+    <update id="decrementStarCount">
+        UPDATE resource
+        SET star_count = star_count - 1
+        WHERE resource_id = #{resourceId}
+          AND star_count > 0
+    </update>
+
+    <!-- 根据作者ID查询该作者的所有作品 -->
+    <select id="selectResourcesByAuthorId" resultMap="BaseResultMap">
+        SELECT DISTINCT
+            r.id, r.resource_id, r.type, r.title, r.sub_title, r.author_name, r.cover_url, r.summary, r.pub_date,
+            r.isbn, r.publisher, r.price, r.page_count, r.doi, r.journal, r.file_url, r.file_type,
+            r.source_origin, r.source_url, r.source_score, r.sentiment_score,
+            r.view_count, r.comment_count, r.star_count, r.ctime, r.mtime, r.deleted
+        FROM resource r
+        INNER JOIN resource_author_rel rel ON r.resource_id = rel.resource_id
+        WHERE rel.author_id = #{authorId}
+          AND r.deleted = 0
+        ORDER BY r.pub_date DESC, r.ctime DESC
+    </select>
+
+</mapper>

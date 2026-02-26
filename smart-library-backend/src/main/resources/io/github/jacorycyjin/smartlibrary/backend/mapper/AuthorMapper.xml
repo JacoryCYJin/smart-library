@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.github.jacorycyjin.smartlibrary.backend.mapper.AuthorMapper">
+
+    <!-- 根据资源ID查询作者列表（按 sort 排序） -->
+    <select id="selectAuthorsByResourceId" resultType="map">
+        SELECT 
+            a.author_id AS authorId,
+            a.name AS name,
+            a.original_name AS originalName,
+            a.country AS country,
+            a.photo_url AS photoUrl,
+            a.description AS description,
+            rel.sort AS sort
+        FROM author a
+        INNER JOIN resource_author_rel rel ON a.author_id = rel.author_id
+        WHERE rel.resource_id = #{resourceId}
+          AND a.deleted = 0
+        ORDER BY rel.sort ASC
+    </select>
+
+    <!-- 批量查询资源的作者（按 sort 排序） -->
+    <select id="selectAuthorsByResourceIds" resultType="map">
+        SELECT 
+            rel.resource_id AS resourceId,
+            a.author_id AS authorId,
+            a.name AS name,
+            a.original_name AS originalName,
+            a.country AS country,
+            a.photo_url AS photoUrl,
+            a.description AS description,
+            rel.sort AS sort
+        FROM author a
+        INNER JOIN resource_author_rel rel ON a.author_id = rel.author_id
+        WHERE rel.resource_id IN
+        <foreach collection="resourceIds" item="resourceId" open="(" separator="," close=")">
+            #{resourceId}
+        </foreach>
+          AND a.deleted = 0
+        ORDER BY rel.resource_id, rel.sort ASC
+    </select>
+
+    <!-- 根据作者ID查询作者信息 -->
+    <select id="selectAuthorById" resultType="io.github.jacorycyjin.smartlibrary.backend.entity.Author">
+        SELECT 
+            id,
+            author_id AS authorId,
+            name,
+            original_name AS originalName,
+            country,
+            photo_url AS photoUrl,
+            description,
+            ctime,
+            mtime,
+            deleted
+        FROM author
+        WHERE author_id = #{authorId}
+          AND deleted = 0
+    </select>
+
+</mapper>

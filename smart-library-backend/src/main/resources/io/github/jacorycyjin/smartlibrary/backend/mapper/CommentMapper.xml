@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.github.jacorycyjin.smartlibrary.backend.mapper.CommentMapper">
+
+    <!-- 评论结果映射 -->
+    <resultMap id="CommentResultMap" type="io.github.jacorycyjin.smartlibrary.backend.entity.Comment">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="resource_id" property="resourceId"/>
+        <result column="content" property="content"/>
+        <result column="score" property="score"/>
+        <result column="like_count" property="likeCount"/>
+        <result column="audit_status" property="auditStatus"/>
+        <result column="rejection_reason" property="rejectionReason"/>
+        <result column="ctime" property="ctime"/>
+        <result column="mtime" property="mtime"/>
+        <result column="deleted" property="deleted"/>
+    </resultMap>
+
+    <!-- 根据资源ID查询已通过审核的评论列表（支持分页） -->
+    <select id="selectByResourceId" resultMap="CommentResultMap">
+        SELECT *
+        FROM comment
+        WHERE resource_id = #{resourceId}
+          AND audit_status = 1
+          AND deleted = 0
+        ORDER BY ctime DESC
+    </select>
+
+    <!-- 统计资源的评论总数 -->
+    <select id="countByResourceId" resultType="int">
+        SELECT COUNT(*)
+        FROM comment
+        WHERE resource_id = #{resourceId}
+          AND audit_status = 1
+          AND deleted = 0
+    </select>
+
+    <!-- 根据ID查询评论 -->
+    <select id="selectById" resultMap="CommentResultMap">
+        SELECT *
+        FROM comment
+        WHERE id = #{id}
+          AND deleted = 0
+    </select>
+
+    <!-- 插入评论 -->
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO comment (user_id, resource_id, content, score, like_count, audit_status, ctime, deleted)
+        VALUES (#{userId}, #{resourceId}, #{content}, #{score}, #{likeCount}, #{auditStatus}, #{ctime}, #{deleted})
+    </insert>
+
+    <!-- 逻辑删除评论 -->
+    <update id="deleteById">
+        UPDATE comment
+        SET deleted = 1
+        WHERE id = #{id}
+    </update>
+</mapper>

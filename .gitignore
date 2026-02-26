@@ -1,0 +1,79 @@
+# ===================================
+# Smart Library Project - Root .gitignore
+# ===================================
+
+# IDE and Editor
+.idea/
+.vscode/
+*.iws
+*.iml
+*.ipr
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Kiro AI Assistant
+.kiro/
+
+# Trae Rules
+.trae/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Documentation (local only)
+smart-library-docs/
+
+# ===================================
+# Backend (Spring Boot / Maven)
+# ===================================
+
+# Maven
+smart-library-backend/target/
+smart-library-backend/.mvn/wrapper/maven-wrapper.jar
+smart-library-backend/HELP.md
+
+# Spring Boot
+smart-library-backend/.apt_generated
+smart-library-backend/.classpath
+smart-library-backend/.factorypath
+smart-library-backend/.project
+smart-library-backend/.settings
+smart-library-backend/.springBeans
+smart-library-backend/.sts4-cache
+smart-library-backend/build/
+
+# ===================================
+# Frontend (Vue / Vite / Node)
+# ===================================
+
+# Dependencies
+smart-library-frontend/node_modules/
+
+# Build outputs
+smart-library-frontend/dist/
+smart-library-frontend/dist-ssr/
+
+# Logs
+smart-library-frontend/logs
+smart-library-frontend/*.log
+smart-library-frontend/npm-debug.log*
+smart-library-frontend/yarn-debug.log*
+smart-library-frontend/yarn-error.log*
+smart-library-frontend/pnpm-debug.log*
+smart-library-frontend/lerna-debug.log*
+
+# Testing
+smart-library-frontend/coverage/
+smart-library-frontend/__screenshots__/
+smart-library-frontend/cypress/videos/
+smart-library-frontend/cypress/screenshots/
+
+# Misc
+smart-library-frontend/*.local
+smart-library-frontend/*.tsbuildinfo
+smart-library-frontend/.eslintcache
