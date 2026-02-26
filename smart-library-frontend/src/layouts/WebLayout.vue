@@ -245,7 +245,7 @@ onUnmounted(() => {
             <div class="flex items-center gap-4 flex-shrink-0 whitespace-nowrap">
               <template v-if="!isLoggedIn">
                 <RouterLink
-                  to="/register"
+                  to="/login"
                   class="text-base font-bold text-ink hover:text-[#627D98] transition-colors"
                 >
                   {{ labels.register }}

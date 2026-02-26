@@ -38,7 +38,7 @@
         <!-- 登录表单 -->
         <form v-if="isLogin" @submit.prevent="handleLogin" class="space-y-5">
           <div>
-            <label class="block text-sm font-medium text-ink mb-2">手机号/邮箱</label>
+            <label class="block text-sm font-medium text-ink mb-2">手机号 / 邮箱</label>
             <input
               v-model="loginForm.phoneOrEmail"
               type="text"
@@ -69,7 +69,7 @@
         <!-- 注册表单 -->
         <form v-else @submit.prevent="handleRegister" class="space-y-5">
           <div>
-            <label class="block text-sm font-medium text-ink mb-2">手机号/邮箱</label>
+            <label class="block text-sm font-medium text-ink mb-2">手机号 / 邮箱</label>
             <input
               v-model="registerForm.phoneOrEmail"
               type="text"
@@ -83,10 +83,11 @@
             <input
               v-model="registerForm.password"
               type="password"
-              placeholder="请输入密码（6-20位）"
+              placeholder="请输入密码（需包含字母和数字）"
               class="w-full px-4 py-3 text-base bg-canvas border-0 rounded-lg focus:outline-none focus:ring-2 focus:ring-ink-light transition-all"
               required
             />
+            <p class="mt-1.5 text-xs text-ink-light">密码必须同时包含字母和数字</p>
           </div>
           <div>
             <label class="block text-sm font-medium text-ink mb-2">确认密码</label>
@@ -177,7 +178,14 @@ async function handleLogin() {
  * 处理注册
  */
 async function handleRegister() {
-  // 验证密码
+  // 验证密码格式
+  const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]+$/
+  if (!passwordRegex.test(registerForm.value.password)) {
+    Message.error('密码必须同时包含字母和数字')
+    return
+  }
+  
+  // 验证密码一致性
   if (registerForm.value.password !== registerForm.value.confirmPassword) {
     Message.error('两次输入的密码不一致')
     return

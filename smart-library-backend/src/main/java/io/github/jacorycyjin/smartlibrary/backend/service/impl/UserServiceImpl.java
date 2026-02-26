@@ -8,6 +8,7 @@ import io.github.jacorycyjin.smartlibrary.backend.service.UserService;
 import io.github.jacorycyjin.smartlibrary.backend.common.util.ValidationUtil;
 import io.github.jacorycyjin.smartlibrary.backend.common.util.UUIDUtil;
 import io.github.jacorycyjin.smartlibrary.backend.common.util.JwtUtil;
+import io.github.jacorycyjin.smartlibrary.backend.common.util.PasswordUtil;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import io.github.jacorycyjin.smartlibrary.backend.common.exception.BusinessException;
@@ -52,7 +53,7 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public UserDTO login(String phoneOrEmail, String password) {
-        ValidationUtil.validateNotEmpty(phoneOrEmail, "手机号/邮箱");
+        ValidationUtil.validateNotEmpty(phoneOrEmail, "手机号 / 邮箱");
         ValidationUtil.validateNotEmpty(password, "密码");
         
         // 使用 searchUser 方法查找用户
@@ -68,8 +69,8 @@ public class UserServiceImpl implements UserService {
 
         UserDTO userDTO = users.get(0);
         
-        // 验证密码
-        if (!userDTO.getPassword().equals(password)) {
+        // 验证密码（使用 BCrypt 验证）
+        if (!PasswordUtil.matches(password, userDTO.getPassword())) {
             throw new BusinessException(ApiCode.PARAM_INVALID.getCode(), "密码错误");
         }
         
@@ -93,7 +94,7 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public Boolean register(String phoneOrEmail, String password, String confirmPassword) {
-        ValidationUtil.validateNotEmpty(phoneOrEmail, "手机号/邮箱");
+        ValidationUtil.validateNotEmpty(phoneOrEmail, "手机号 / 邮箱");
         ValidationUtil.validateNotEmpty(password, "密码");
         ValidationUtil.validateNotEmpty(confirmPassword, "确认密码");
         ValidationUtil.validatePasswordFormat(password);
@@ -118,16 +119,24 @@ public class UserServiceImpl implements UserService {
         }
         
         String userId = UUIDUtil.generateUUID();
+        
+        // 判断是手机号还是邮箱
+        boolean isEmail = ValidationUtil.validatePhoneOrEmailFormat(phoneOrEmail);
+        
+        // 加密密码
+        String encodedPassword = PasswordUtil.encode(password);
+        
         User user = User.builder()
                 .userId(userId)
                 .username("用户" + userId.substring(0, 8))
-                .phone(phoneOrEmail)
-                .password(password)
-                .email(phoneOrEmail)
+                .phone(isEmail ? null : phoneOrEmail)  // 如果是邮箱，phone 为 null
+                .email(isEmail ? phoneOrEmail : null)  // 如果是手机号，email 为 null
+                .password(encodedPassword)  // 存储加密后的密码
                 .avatarUrl(null)
                 .role(0)
                 .bio(null)
                 .status(0)
+                .deleted(0)  // 设置 deleted 为 0（未删除）
                 .ctime(LocalDateTime.now())
                 .mtime(LocalDateTime.now())
                 .build();

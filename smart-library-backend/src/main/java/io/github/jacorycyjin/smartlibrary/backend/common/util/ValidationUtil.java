@@ -67,7 +67,7 @@ public class ValidationUtil {
     public static void validatePasswordFormat(String password) {
         validateNotEmpty(password, "密码");
         if (!password.matches(PASSWORD_REGEX)) {
-            throw new BusinessException(ApiCode.PARAM_INVALID.getCode(), "密码格式错误");
+            throw new BusinessException(ApiCode.PARAM_INVALID.getCode(), "密码必须同时包含字母和数字");
         }
     }
 
@@ -79,7 +79,7 @@ public class ValidationUtil {
      * @throws BusinessException 格式不正确时抛出异常
      */
     public static boolean validatePhoneOrEmailFormat(String phoneOrEmail) {
-        validateNotEmpty(phoneOrEmail, "手机号/邮箱");
+        validateNotEmpty(phoneOrEmail, "手机号 / 邮箱");
         boolean isEmail = phoneOrEmail.contains("@");
         boolean isPhone = phoneOrEmail.matches(PHONE_REGEX);
 
@@ -90,7 +90,7 @@ public class ValidationUtil {
             validatePhoneFormat(phoneOrEmail);
             return false;
         }
-        throw new BusinessException(ApiCode.PARAM_INVALID.getCode(), "手机号/邮箱格式不正确");
+        throw new BusinessException(ApiCode.PARAM_INVALID.getCode(), "手机号 / 邮箱格式不正确");
     }
 
 }

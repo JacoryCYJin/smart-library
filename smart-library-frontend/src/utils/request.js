@@ -58,6 +58,15 @@ service.interceptors.response.use(
   (error) => {
     console.error('网络请求失败:', error)
     
+    // 提取后端返回的错误信息
+    let errorMessage = '网络请求失败'
+    if (error.response && error.response.data) {
+      // 后端返回的错误信息
+      errorMessage = error.response.data.message || error.response.data.msg || errorMessage
+    } else if (error.message) {
+      errorMessage = error.message
+    }
+    
     // HTTP 401/403 错误，跳转登录页
     if (error.response && (error.response.status === 401 || error.response.status === 403)) {
       const authStore = useAuthStore()
@@ -65,7 +74,8 @@ service.interceptors.response.use(
       router.push('/login')
     }
     
-    return Promise.reject(error)
+    // 返回包含错误信息的 Error 对象
+    return Promise.reject(new Error(errorMessage))
   },
 )
 
