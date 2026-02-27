@@ -5,6 +5,7 @@
     <!-- 评论结果映射 -->
     <resultMap id="CommentResultMap" type="io.github.jacorycyjin.smartlibrary.backend.entity.Comment">
         <id column="id" property="id"/>
+        <result column="comment_id" property="commentId"/>
         <result column="user_id" property="userId"/>
         <result column="resource_id" property="resourceId"/>
         <result column="content" property="content"/>
@@ -46,14 +47,22 @@
 
     <!-- 插入评论 -->
     <insert id="insert" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO comment (user_id, resource_id, content, score, like_count, audit_status, ctime, deleted)
-        VALUES (#{userId}, #{resourceId}, #{content}, #{score}, #{likeCount}, #{auditStatus}, #{ctime}, #{deleted})
+        INSERT INTO comment (comment_id, user_id, resource_id, content, score, like_count, audit_status, ctime, deleted)
+        VALUES (#{commentId}, #{userId}, #{resourceId}, #{content}, #{score}, #{likeCount}, #{auditStatus}, #{ctime}, #{deleted})
     </insert>
 
-    <!-- 逻辑删除评论 -->
-    <update id="deleteById">
+    <!-- 根据CommentId逻辑删除评论 -->
+    <update id="deleteByCommentId">
         UPDATE comment
         SET deleted = 1
-        WHERE id = #{id}
+        WHERE comment_id = #{commentId}
     </update>
+
+    <!-- 根据CommentId查询评论 -->
+    <select id="selectByCommentId" resultMap="CommentResultMap">
+        SELECT *
+        FROM comment
+        WHERE comment_id = #{commentId}
+          AND deleted = 0
+    </select>
 </mapper>

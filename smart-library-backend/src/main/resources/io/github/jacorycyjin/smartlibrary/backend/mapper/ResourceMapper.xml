@@ -20,8 +20,6 @@
         <result column="page_count" property="pageCount"/>
         <result column="doi" property="doi"/>
         <result column="journal" property="journal"/>
-        <result column="file_url" property="fileUrl"/>
-        <result column="file_type" property="fileType"/>
         <result column="source_origin" property="sourceOrigin"/>
         <result column="source_url" property="sourceUrl"/>
         <result column="source_score" property="sourceScore"/>
@@ -37,7 +35,7 @@
     <!-- 基础列 -->
     <sql id="Base_Column_List">
         id, resource_id, type, title, sub_title, author_name, cover_url, summary, pub_date,
-        isbn, publisher, price, page_count, doi, journal, file_url, file_type,
+        isbn, publisher, price, page_count, doi, journal,
         source_origin, source_url, source_score, sentiment_score,
         view_count, comment_count, star_count, ctime, mtime, deleted
     </sql>
@@ -162,12 +160,12 @@
     <insert id="insert">
         INSERT INTO resource (
         resource_id, type, title, sub_title, author_name, cover_url, summary, pub_date,
-        isbn, publisher, price, page_count, doi, journal, file_url, file_type,
+        isbn, publisher, price, page_count, doi, journal,
         source_origin, source_url, source_score, sentiment_score,
         view_count, comment_count, star_count, ctime, mtime, deleted
         ) VALUES (
         #{resourceId}, #{type}, #{title}, #{subTitle}, #{authorName}, #{coverUrl}, #{summary}, #{pubDate},
-        #{isbn}, #{publisher}, #{price}, #{pageCount}, #{doi}, #{journal}, #{fileUrl}, #{fileType},
+        #{isbn}, #{publisher}, #{price}, #{pageCount}, #{doi}, #{journal},
         #{sourceOrigin}, #{sourceUrl}, #{sourceScore}, #{sentimentScore},
         #{viewCount}, #{commentCount}, #{starCount}, #{ctime}, #{mtime}, #{deleted}
         )
@@ -189,8 +187,6 @@
             <if test="pageCount != null">page_count = #{pageCount},</if>
             <if test="doi != null">doi = #{doi},</if>
             <if test="journal != null">journal = #{journal},</if>
-            <if test="fileUrl != null">file_url = #{fileUrl},</if>
-            <if test="fileType != null">file_type = #{fileType},</if>
             <if test="sourceOrigin != null">source_origin = #{sourceOrigin},</if>
             <if test="sourceUrl != null">source_url = #{sourceUrl},</if>
             <if test="sourceScore != null">source_score = #{sourceScore},</if>

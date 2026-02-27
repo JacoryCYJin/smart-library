@@ -91,7 +91,9 @@
               >
                 <!-- 开始阅读按钮 -->
                 <button
-                  class="flex items-center gap-3 px-8 py-4 bg-ink text-white rounded-full font-semibold text-base transition-all duration-300 hover:bg-pop hover:translate-x-1"
+                  @click="handleRead"
+                  :disabled="!hasFiles"
+                  class="flex items-center gap-3 px-8 py-4 bg-ink text-white rounded-full font-semibold text-base transition-all duration-300 hover:bg-pop hover:translate-x-1 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-ink disabled:hover:translate-x-0"
                 >
                   <span>{{ i18n.startReading }}</span>
                   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -146,8 +148,36 @@
                     </svg>
                   </button>
 
+                  <!-- 下载按钮 (支持多文件) -->
+                  <a-dropdown v-if="files.length > 1" trigger="click" position="bottom">
+                    <button
+                      class="flex items-center justify-center w-12 h-12 border border-structure rounded-full text-ink-light bg-white transition-all duration-300 hover:border-ink hover:text-ink hover:bg-[rgba(16,42,67,0.05)]"
+                      title="下载"
+                    >
+                      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                        />
+                      </svg>
+                    </button>
+                    <template #content>
+                      <a-doption v-for="file in files" :key="file.id" @click="handleDownload(file)">
+                        <template #icon>
+                          <span class="text-xs font-bold px-1 py-0.5 rounded bg-gray-100 text-gray-600 border border-gray-200">{{ file.fileTypeDesc || 'FILE' }}</span>
+                        </template>
+                        下载 {{ file.fileTypeDesc || '文件' }} ({{ formatFileSize(file.fileSize) }})
+                      </a-doption>
+                    </template>
+                  </a-dropdown>
+                  
                   <button
-                    class="flex items-center justify-center w-12 h-12 border border-structure rounded-full text-ink-light bg-white transition-all duration-300 hover:border-ink hover:text-ink hover:bg-[rgba(16,42,67,0.05)]"
+                    v-else
+                    @click="handleDownload(files[0])"
+                    :disabled="!hasFiles"
+                    class="flex items-center justify-center w-12 h-12 border border-structure rounded-full text-ink-light bg-white transition-all duration-300 hover:border-ink hover:text-ink hover:bg-[rgba(16,42,67,0.05)] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:border-structure disabled:hover:text-ink-light disabled:hover:bg-white"
                     title="下载"
                   >
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -426,6 +456,51 @@ const i18n = computed(() => ({
 // 书籍信息
 const book = ref(null)
 const loading = ref(true)
+
+// 文件处理
+const files = computed(() => book.value?.files || [])
+const hasFiles = computed(() => files.value.length > 0)
+
+// 格式化文件大小
+const formatFileSize = (bytes) => {
+  if (bytes === 0) return '0 B'
+  const k = 1024
+  const sizes = ['B', 'KB', 'MB', 'GB', 'TB']
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+}
+
+// 处理阅读
+const handleRead = () => {
+  if (!hasFiles.value) return
+  
+  // 优先寻找 PDF 或 EPUB
+  const readableFile = files.value.find(f => 
+    f.fileType === 1 || // PDF
+    f.fileType === 2 || // EPUB
+    f.fileTypeDesc === 'PDF' || 
+    f.fileTypeDesc === 'EPUB'
+  ) || files.value[0]
+  
+  if (readableFile && readableFile.fileUrl) {
+    window.open(readableFile.fileUrl, '_blank')
+  } else {
+    Message.warning(localeStore.currentLang === 'zh' ? '暂无在线阅读资源' : 'No online reading resource available')
+  }
+}
+
+// 处理下载
+const handleDownload = (file) => {
+  if (!file || !file.fileUrl) return
+  // 创建临时链接下载
+  const link = document.createElement('a')
+  link.href = file.fileUrl
+  link.setAttribute('download', '') // 尝试触发下载
+  link.target = '_blank'
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+}
 
 // 评论列表
 const comments = ref([])

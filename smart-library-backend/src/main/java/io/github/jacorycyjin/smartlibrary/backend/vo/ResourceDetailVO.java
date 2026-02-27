@@ -48,14 +48,9 @@ public class ResourceDetailVO extends ResourcePublicVO {
     private String doi;
 
     /**
-     * PDF文件URL（仅文献）
+     * 资源文件列表（支持多种格式）
      */
-    private String fileUrl;
-
-    /**
-     * 文件类型（仅文献）
-     */
-    private String fileType;
+    private List<ResourceFileVO> files;
 
     // ========== 通用详情字段 ==========
     

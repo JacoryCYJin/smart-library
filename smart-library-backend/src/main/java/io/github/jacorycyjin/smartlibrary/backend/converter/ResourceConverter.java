@@ -2,6 +2,7 @@ package io.github.jacorycyjin.smartlibrary.backend.converter;
 
 import io.github.jacorycyjin.smartlibrary.backend.dto.CategoryDTO;
 import io.github.jacorycyjin.smartlibrary.backend.dto.ResourceDTO;
+import io.github.jacorycyjin.smartlibrary.backend.dto.ResourceFileDTO;
 import io.github.jacorycyjin.smartlibrary.backend.dto.TagDTO;
 import io.github.jacorycyjin.smartlibrary.backend.entity.Category;
 import io.github.jacorycyjin.smartlibrary.backend.entity.Resource;
@@ -9,6 +10,7 @@ import io.github.jacorycyjin.smartlibrary.backend.mapper.CategoryMapper;
 import io.github.jacorycyjin.smartlibrary.backend.mapper.TagMapper;
 import io.github.jacorycyjin.smartlibrary.backend.vo.CategoryVO;
 import io.github.jacorycyjin.smartlibrary.backend.vo.ResourceDetailVO;
+import io.github.jacorycyjin.smartlibrary.backend.vo.ResourceFileVO;
 import io.github.jacorycyjin.smartlibrary.backend.vo.ResourcePublicVO;
 import io.github.jacorycyjin.smartlibrary.backend.vo.TagVO;
 
@@ -143,8 +145,14 @@ public class ResourceConverter {
                 .price(dto.getPrice())
                 .pageCount(dto.getPageCount())
                 .doi(dto.getDoi())
-                .fileUrl(dto.getFileUrl())
-                .fileType(dto.getFileType())
+                .files(dto.getFiles() != null ? dto.getFiles().stream().map(f -> ResourceFileVO.builder()
+                        .resourceId(f.getResourceId())
+                        .fileType(f.getFileType())
+                        .fileTypeDesc(f.getFileTypeDesc())
+                        .fileUrl(f.getFileUrl())
+                        .fileSize(f.getFileSize())
+                        .ctime(f.getCtime())
+                        .build()).toList() : null)
                 .summary(dto.getSummary())
                 .sourceOrigin(dto.getSourceOrigin())
                 .sourceUrl(dto.getSourceUrl())

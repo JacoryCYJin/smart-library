@@ -5,11 +5,15 @@ import com.github.pagehelper.PageInfo;
 import io.github.jacorycyjin.smartlibrary.backend.common.dto.PageDTO;
 import io.github.jacorycyjin.smartlibrary.backend.common.dto.PageQueryDTO;
 import io.github.jacorycyjin.smartlibrary.backend.common.enums.ApiCode;
+import io.github.jacorycyjin.smartlibrary.backend.common.enums.FileFormat;
 import io.github.jacorycyjin.smartlibrary.backend.common.exception.BusinessException;
 import io.github.jacorycyjin.smartlibrary.backend.converter.ResourceConverter;
 import io.github.jacorycyjin.smartlibrary.backend.dto.ResourceDTO;
+import io.github.jacorycyjin.smartlibrary.backend.dto.ResourceFileDTO;
+import io.github.jacorycyjin.smartlibrary.backend.entity.ResourceFile;
 import io.github.jacorycyjin.smartlibrary.backend.form.ResourceSearchForm;
 import io.github.jacorycyjin.smartlibrary.backend.mapper.CategoryMapper;
+import io.github.jacorycyjin.smartlibrary.backend.mapper.ResourceFileMapper;
 import io.github.jacorycyjin.smartlibrary.backend.mapper.ResourceMapper;
 import io.github.jacorycyjin.smartlibrary.backend.mapper.TagMapper;
 import io.github.jacorycyjin.smartlibrary.backend.service.CategoryService;
@@ -31,6 +35,9 @@ public class ResourceServiceImpl implements ResourceService {
 
     @jakarta.annotation.Resource
     private ResourceMapper resourceMapper;
+
+    @jakarta.annotation.Resource
+    private ResourceFileMapper resourceFileMapper;
 
     @jakarta.annotation.Resource
     private CategoryMapper categoryMapper;
@@ -104,7 +111,21 @@ public class ResourceServiceImpl implements ResourceService {
         }
 
         // 使用 Converter 转换为 DTO（包含完整分类层级和标签）
-        return ResourceConverter.toDetailDTO(resources.get(0), categoryMapper, tagMapper);
+        ResourceDTO dto = ResourceConverter.toDetailDTO(resources.get(0), categoryMapper, tagMapper);
+        
+        // 查询文件列表
+        List<ResourceFile> files = resourceFileMapper.selectByResourceId(resourceId);
+        List<ResourceFileDTO> fileDTOs = files.stream().map(f -> ResourceFileDTO.builder()
+                .resourceId(f.getResourceId())
+                .fileType(f.getFileType())
+                .fileTypeDesc(FileFormat.fromCode(f.getFileType()) != null ? FileFormat.fromCode(f.getFileType()).getDescription() : "未知")
+                .fileUrl(f.getFileUrl())
+                .fileSize(f.getFileSize())
+                .ctime(f.getCtime())
+                .build()).toList();
+        
+        dto.setFiles(fileDTOs);
+        return dto;
     }
 
     /**

@@ -98,16 +98,11 @@ public class ResourceDTO {
     private String journal;
 
     /**
-     * PDF文件URL（仅文献）
+     * 资源文件列表（支持多种格式）
      */
-    private String fileUrl;
+    private List<ResourceFileDTO> files;
 
-    /**
-     * 文件类型（仅文献）
-     */
-    private String fileType;
-
-    // ========== 通用字段 ==========
+    // ========== 通用详情字段 ==========
     
     /**
      * 数据来源
@@ -186,8 +181,6 @@ public class ResourceDTO {
                 .pageCount(entity.getPageCount())
                 .doi(entity.getDoi())
                 .journal(entity.getJournal())
-                .fileUrl(entity.getFileUrl())
-                .fileType(entity.getFileType())
                 .sourceOrigin(entity.getSourceOrigin())
                 .sourceUrl(entity.getSourceUrl())
                 .sourceScore(entity.getSourceScore())

@@ -22,6 +22,11 @@ import java.time.LocalDateTime;
 public class CommentVO {
 
     /**
+     * 评论业务ID
+     */
+    private String commentId;
+
+    /**
      * 用户ID
      */
     private String userId;
@@ -84,6 +89,7 @@ public class CommentVO {
             return null;
         }
         return CommentVO.builder()
+                .commentId(dto.getCommentId())
                 .userId(dto.getUserId())
                 .username(dto.getUsername())
                 .avatarUrl(dto.getAvatarUrl())

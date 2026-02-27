@@ -79,7 +79,7 @@ public class CommentController {
      * @return 成功消息
      */
     @DeleteMapping("/{commentId}")
-    public Result<Void> deleteComment(@PathVariable Long commentId) {
+    public Result<Void> deleteComment(@PathVariable String commentId) {
         // 从 ThreadLocal 获取当前登录用户
         String userId = UserContext.getCurrentUserId();
         if (userId == null) {

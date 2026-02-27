@@ -37,5 +37,5 @@ public interface CommentService {
      * @param userId 用户ID
      * @param commentId 评论ID
      */
-    void deleteComment(String userId, Long commentId);
+    void deleteComment(String userId, String commentId);
 }

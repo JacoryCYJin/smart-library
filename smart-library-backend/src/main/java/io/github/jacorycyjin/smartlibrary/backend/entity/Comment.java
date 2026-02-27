@@ -25,6 +25,11 @@ public class Comment {
     private Long id;
 
     /**
+     * 评论业务ID
+     */
+    private String commentId;
+
+    /**
      * 用户ID
      */
     private String userId;

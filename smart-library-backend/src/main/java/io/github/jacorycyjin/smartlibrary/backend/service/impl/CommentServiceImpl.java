@@ -5,6 +5,7 @@ import com.github.pagehelper.PageInfo;
 import io.github.jacorycyjin.smartlibrary.backend.common.dto.PageDTO;
 import io.github.jacorycyjin.smartlibrary.backend.common.enums.ApiCode;
 import io.github.jacorycyjin.smartlibrary.backend.common.exception.BusinessException;
+import io.github.jacorycyjin.smartlibrary.backend.common.util.UUIDUtil;
 import io.github.jacorycyjin.smartlibrary.backend.dto.CommentDTO;
 import io.github.jacorycyjin.smartlibrary.backend.entity.Comment;
 import io.github.jacorycyjin.smartlibrary.backend.entity.User;
@@ -111,6 +112,7 @@ public class CommentServiceImpl implements CommentService {
 
         // 创建评论
         Comment comment = Comment.builder()
+                .commentId(UUIDUtil.generateUUID())
                 .userId(userId)
                 .resourceId(form.getResourceId())
                 .content(form.getContent())
@@ -126,7 +128,7 @@ public class CommentServiceImpl implements CommentService {
         // 增加资源的评论数
         resourceMapper.incrementCommentCount(form.getResourceId());
 
-        return comment.getId().toString();
+        return comment.getCommentId();
     }
 
     /**
@@ -137,8 +139,8 @@ public class CommentServiceImpl implements CommentService {
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void deleteComment(String userId, Long commentId) {
-        Comment comment = commentMapper.selectById(commentId);
+    public void deleteComment(String userId, String commentId) {
+        Comment comment = commentMapper.selectByCommentId(commentId);
         if (comment == null) {
             throw new BusinessException(ApiCode.RESOURCE_NOT_FOUND.getCode(), "评论不存在");
         }
@@ -149,7 +151,7 @@ public class CommentServiceImpl implements CommentService {
         }
 
         // 逻辑删除
-        commentMapper.deleteById(commentId);
+        commentMapper.deleteByCommentId(commentId);
 
         // 减少资源的评论数
         resourceMapper.decrementCommentCount(comment.getResourceId());

@@ -31,12 +31,12 @@ public interface CommentMapper {
     int countByResourceId(@Param("resourceId") String resourceId);
 
     /**
-     * 根据ID查询评论
+     * 根据CommentId查询评论
      * 
-     * @param id 评论ID
+     * @param commentId 评论业务ID
      * @return 评论实体
      */
-    Comment selectById(@Param("id") Long id);
+    Comment selectByCommentId(@Param("commentId") String commentId);
 
     /**
      * 插入评论
@@ -49,8 +49,8 @@ public interface CommentMapper {
     /**
      * 逻辑删除评论
      * 
-     * @param id 评论ID
+     * @param commentId 评论业务ID
      * @return 影响行数
      */
-    int deleteById(@Param("id") Long id);
+    int deleteByCommentId(@Param("commentId") String commentId);
 }

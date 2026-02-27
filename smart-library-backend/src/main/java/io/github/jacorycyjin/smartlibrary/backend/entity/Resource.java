@@ -101,16 +101,6 @@ public class Resource {
      */
     private String journal;
 
-    /**
-     * PDF下载/在线阅读链接
-     */
-    private String fileUrl;
-
-    /**
-     * 文件格式
-     */
-    private String fileType;
-
     // ========== 数据来源与算法支持 ==========
 
     /**
