@@ -2,7 +2,6 @@ package io.github.jacorycyjin.smartlibrary.backend.converter;
 
 import io.github.jacorycyjin.smartlibrary.backend.dto.CategoryDTO;
 import io.github.jacorycyjin.smartlibrary.backend.dto.ResourceDTO;
-import io.github.jacorycyjin.smartlibrary.backend.dto.ResourceFileDTO;
 import io.github.jacorycyjin.smartlibrary.backend.dto.TagDTO;
 import io.github.jacorycyjin.smartlibrary.backend.entity.Category;
 import io.github.jacorycyjin.smartlibrary.backend.entity.Resource;
