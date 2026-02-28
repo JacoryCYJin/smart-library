@@ -168,3 +168,45 @@ class ZLibraryCrawler:
         except Exception as e:
             logger.error(f"下载文件失败 {download_url}: {e}")
             return None
+    
+    def download_and_get_content(self, isbn):
+        """
+        根据 ISBN 搜索并下载电子书文件
+        
+        Args:
+            isbn: 图书 ISBN
+        
+        Returns:
+            dict: {file_type: file_content(bytes), ...} 或 None
+        """
+        try:
+            # 搜索图书
+            book_info = self.search_by_isbn(isbn)
+            if not book_info or not book_info.get('download_links'):
+                return None
+            
+            files = {}
+            
+            # 下载所有可用格式
+            for link_info in book_info['download_links']:
+                file_type = link_info['format']
+                download_url = link_info['url']
+                
+                # 下载文件
+                file_content = self.download_file(download_url)
+                if file_content:
+                    files[file_type] = file_content
+                    logger.info(f"  ✓ 下载成功: {self._get_format_name(file_type)}")
+                
+                time.sleep(1)  # 避免请求过快
+            
+            return files if files else None
+            
+        except Exception as e:
+            logger.error(f"下载电子书失败 {isbn}: {e}")
+            return None
+    
+    def _get_format_name(self, file_type):
+        """获取文件格式名称"""
+        format_map = {1: 'PDF', 2: 'EPUB', 3: 'MOBI'}
+        return format_map.get(file_type, 'UNKNOWN')

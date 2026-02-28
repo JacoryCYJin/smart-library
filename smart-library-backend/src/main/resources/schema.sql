@@ -72,8 +72,8 @@ CREATE TABLE resource
     type            TINYINT       DEFAULT 1 COMMENT '资源类型: 1-图书 / 2-文献期刊',
 
     title           VARCHAR(255) NOT NULL COMMENT '标题',
-    sub_title       VARCHAR(255) COMMENT '副标题',
     author_name     VARCHAR(255) COMMENT '作者姓名快照',
+    translator_name VARCHAR(255) COMMENT '译者姓名快照',
     cover_url       VARCHAR(500) COMMENT '封面图片路径',
     summary         TEXT COMMENT '摘要与简介',
     pub_date        DATE COMMENT '出版日期',
@@ -86,7 +86,7 @@ CREATE TABLE resource
     doi             VARCHAR(100) COMMENT '数字对象唯一标识符',
     journal         VARCHAR(100) COMMENT '期刊名称',
 
-    source_origin   VARCHAR(50) COMMENT '数据采集来源',
+    source_origin   TINYINT DEFAULT 1 COMMENT '数据来源: 1-豆瓣读书 / 2-Z-Library / 99-手动录入',
     source_url      VARCHAR(500) COMMENT '原站链接',
     source_score    DECIMAL(3, 1) DEFAULT 0.0 COMMENT '原站评分',
     sentiment_score DECIMAL(5, 4) COMMENT '情感分析得分',
@@ -139,6 +139,9 @@ CREATE TABLE author
     photo_url     VARCHAR(500) COMMENT '作者头像',
     description   TEXT COMMENT '生平简介',
 
+    source_origin TINYINT DEFAULT 1 COMMENT '数据来源: 1-豆瓣读书 / 2-Z-Library / 99-手动录入',
+    source_url    VARCHAR(500) COMMENT '原站链接',
+
     ctime         DATETIME DEFAULT CURRENT_TIMESTAMP,
     mtime         DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     deleted       TINYINT  DEFAULT 0
@@ -190,8 +193,8 @@ CREATE TABLE resource_author_rel
 
     role        VARCHAR(20) DEFAULT '作者' COMMENT '角色(作者/译者/编者)',
 
-    -- [UPDATE] 新增唯一键约束，防止排序冲突
-    UNIQUE KEY uk_res_sort (resource_id, sort),
+    -- [UPDATE] 新增唯一键约束，防止排序冲突（作者和译者分别排序）
+    UNIQUE KEY uk_res_role_sort (resource_id, role, sort),
     UNIQUE KEY uk_res_auth (resource_id, author_id)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4

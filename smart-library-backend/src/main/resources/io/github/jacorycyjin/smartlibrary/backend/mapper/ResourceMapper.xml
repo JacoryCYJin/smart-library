@@ -9,7 +9,7 @@
         <result column="resource_id" property="resourceId"/>
         <result column="type" property="type"/>
         <result column="title" property="title"/>
-        <result column="sub_title" property="subTitle"/>
+        <result column="translator_name" property="translatorName"/>
         <result column="author_name" property="authorName"/>
         <result column="cover_url" property="coverUrl"/>
         <result column="summary" property="summary"/>
@@ -34,7 +34,7 @@
 
     <!-- 基础列 -->
     <sql id="Base_Column_List">
-        id, resource_id, type, title, sub_title, author_name, cover_url, summary, pub_date,
+        id, resource_id, type, title, translator_name, author_name, cover_url, summary, pub_date,
         isbn, publisher, price, page_count, doi, journal,
         source_origin, source_url, source_score, sentiment_score,
         view_count, comment_count, star_count, ctime, mtime, deleted
@@ -159,12 +159,12 @@
     <!-- 插入资源 -->
     <insert id="insert">
         INSERT INTO resource (
-        resource_id, type, title, sub_title, author_name, cover_url, summary, pub_date,
+        resource_id, type, title, translator_name, author_name, cover_url, summary, pub_date,
         isbn, publisher, price, page_count, doi, journal,
         source_origin, source_url, source_score, sentiment_score,
         view_count, comment_count, star_count, ctime, mtime, deleted
         ) VALUES (
-        #{resourceId}, #{type}, #{title}, #{subTitle}, #{authorName}, #{coverUrl}, #{summary}, #{pubDate},
+        #{resourceId}, #{type}, #{title}, #{translatorName}, #{authorName}, #{coverUrl}, #{summary}, #{pubDate},
         #{isbn}, #{publisher}, #{price}, #{pageCount}, #{doi}, #{journal},
         #{sourceOrigin}, #{sourceUrl}, #{sourceScore}, #{sentimentScore},
         #{viewCount}, #{commentCount}, #{starCount}, #{ctime}, #{mtime}, #{deleted}
@@ -176,7 +176,7 @@
         UPDATE resource
         <set>
             <if test="title != null">title = #{title},</if>
-            <if test="subTitle != null">sub_title = #{subTitle},</if>
+            <if test="translatorName != null">translator_name = #{translatorName},</if>
             <if test="authorName != null">author_name = #{authorName},</if>
             <if test="coverUrl != null">cover_url = #{coverUrl},</if>
             <if test="summary != null">summary = #{summary},</if>
@@ -236,7 +236,7 @@
     <!-- 根据作者ID查询该作者的所有作品 -->
     <select id="selectResourcesByAuthorId" resultMap="BaseResultMap">
         SELECT DISTINCT
-            r.id, r.resource_id, r.type, r.title, r.sub_title, r.author_name, r.cover_url, r.summary, r.pub_date,
+            r.id, r.resource_id, r.type, r.title, r.translator_name, r.author_name, r.cover_url, r.summary, r.pub_date,
             r.isbn, r.publisher, r.price, r.page_count, r.doi, r.journal, r.file_url, r.file_type,
             r.source_origin, r.source_url, r.source_score, r.sentiment_score,
             r.view_count, r.comment_count, r.star_count, r.ctime, r.mtime, r.deleted

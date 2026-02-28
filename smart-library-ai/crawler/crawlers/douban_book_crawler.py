@@ -32,13 +32,14 @@ class DoubanBookCrawler:
             isbn: 图书 ISBN
         
         Returns:
-            是否成功
+            resource_id: 成功返回 resource_id，失败返回 None
         """
         try:
             # 检查是否已存在
-            if self.db.resource_exists(isbn):
+            existing_id = self.db.resource_exists(isbn)
+            if existing_id:
                 logger.info(f"图书已存在: {isbn}")
-                return False
+                return existing_id
             
             # 获取图书详情页
             url = f"https://book.douban.com/isbn/{isbn}/"
@@ -69,7 +70,8 @@ class DoubanBookCrawler:
                 book_data['author_name'] = ', '.join(authors)  # 保存作者快照
             
             for idx, author_name in enumerate(authors):
-                author_id = f"auth-{uuid.uuid4().hex[:8]}"
+                # 生成 32 位纯字母数字 UUID（与 Java UUIDUtil 一致）
+                author_id = uuid.uuid4().hex
                 self.db.insert_author({
                     'author_id': author_id,
                     'name': author_name,
@@ -80,11 +82,11 @@ class DoubanBookCrawler:
             
             logger.info(f"图书爬取成功: {book_data['title']}")
             time.sleep(Config.REQUEST_DELAY)
-            return True
+            return book_data['resource_id']
             
         except Exception as e:
             logger.error(f"爬取图书失败 {isbn}: {e}")
-            return False
+            return None
     
     def _parse_book_detail(self, soup, isbn):
         """解析图书详情"""
@@ -95,21 +97,25 @@ class DoubanBookCrawler:
                 return None
             title = title_elem.text.strip()
             
-            # 副标题
-            subtitle = None
-            subtitle_elem = soup.select_one('#info span[property="v:subtitle"]')
-            if subtitle_elem:
-                subtitle = subtitle_elem.text.strip()
-            
             # 简介
             description = None
             intro_elem = soup.select_one('#link-report .intro')
             if intro_elem:
                 description = intro_elem.text.strip()
             
-            # 出版信息
-            info_text = soup.select_one('#info').text
-            publisher = self._extract_info(info_text, '出版社:')
+            # 获取 info 区域
+            info_elem = soup.select_one('#info')
+            if not info_elem:
+                return None
+            
+            # 出版社（在 <a> 标签中）
+            publisher = None
+            publisher_elem = info_elem.select_one('span.pl:-soup-contains("出版社") + a')
+            if publisher_elem:
+                publisher = publisher_elem.text.strip()
+            
+            # 其他信息从文本中提取
+            info_text = info_elem.text
             publish_date = self._extract_info(info_text, '出版年:')
             page_count = self._extract_info(info_text, '页数:')
             price = self._extract_info(info_text, '定价:')
@@ -128,14 +134,27 @@ class DoubanBookCrawler:
                 except:
                     price = None
             
-            resource_id = f"res-{uuid.uuid4().hex[:12]}"
+            # 处理日期格式：将 "2025-3" 转换为 "2025-03-01"
+            if publish_date:
+                publish_date = self._normalize_date(publish_date)
+            
+            # 获取豆瓣评分
+            source_score = None
+            rating_elem = soup.select_one('#interest_sectl .rating_num')
+            if rating_elem:
+                try:
+                    source_score = float(rating_elem.text.strip())
+                except:
+                    source_score = None
+            
+            # 生成 32 位纯字母数字 UUID（与 Java UUIDUtil 一致）
+            resource_id = uuid.uuid4().hex
             
             return {
                 'resource_id': resource_id,
                 'title': title,
-                'sub_title': subtitle,
                 'summary': description,
-                'cover_url': None,
+                'cover_url': None,  # 稍后上传封面后更新
                 'type': 1,  # 图书类型
                 'isbn': isbn,
                 'publisher': publisher,
@@ -143,12 +162,56 @@ class DoubanBookCrawler:
                 'page_count': page_count,
                 'price': price,
                 'author_name': None,  # 稍后从作者列表提取
-                'source_origin': 'douban',
+                'translator_name': None,  # 稍后从译者列表提取
+                'source_origin': 1,  # 1-豆瓣
                 'source_url': f"https://book.douban.com/isbn/{isbn}/",
-                'source_score': None
+                'source_score': source_score
             }
         except Exception as e:
             logger.error(f"解析图书详情失败: {e}")
+            return None
+    
+    def _normalize_date(self, date_str):
+        """
+        标准化日期格式为 YYYY-MM-DD
+        
+        Args:
+            date_str: 原始日期字符串，如 "2025-3", "2018-10", "2001"
+        
+        Returns:
+            标准化后的日期字符串 "YYYY-MM-DD"，失败返回 None
+        """
+        if not date_str:
+            return None
+        
+        try:
+            # 移除可能的空格
+            date_str = date_str.strip()
+            
+            # 情况1: "2025-3" -> "2025-03-01"
+            # 情况2: "2018-10" -> "2018-10-01"
+            # 情况3: "2001" -> "2001-01-01"
+            parts = date_str.split('-')
+            
+            if len(parts) == 1:
+                # 只有年份
+                year = parts[0]
+                return f"{year}-01-01"
+            elif len(parts) == 2:
+                # 年-月
+                year, month = parts
+                month = month.zfill(2)  # 补零
+                return f"{year}-{month}-01"
+            elif len(parts) == 3:
+                # 年-月-日
+                year, month, day = parts
+                month = month.zfill(2)
+                day = day.zfill(2)
+                return f"{year}-{month}-{day}"
+            else:
+                return None
+        except Exception as e:
+            logger.warning(f"日期格式化失败 {date_str}: {e}")
             return None
     
     def _get_cover_url(self, soup):
@@ -166,71 +229,36 @@ class DoubanBookCrawler:
             authors.append(elem.text.strip())
         return authors
     
+    def _get_translators(self, soup):
+        """获取译者列表"""
+        translators = []
+        translator_elems = soup.select('#info span:contains("译者") + a')
+        for elem in translator_elems:
+            translators.append(elem.text.strip())
+        return translators
+    
     def _extract_info(self, text, label):
         """从信息文本中提取特定字段"""
         try:
             lines = text.split('\n')
             for line in lines:
                 if label in line:
-                    return line.split(label)[1].strip()
+                    # 提取冒号后的内容
+                    value = line.split(label)[1].strip()
+                    # 移除可能的多余空格和换行
+                    value = ' '.join(value.split())
+                    return value if value else None
         except:
             pass
         return None
     
-    def crawl_top_books(self, tag='小说', start=0, count=20):
-        """
-        爬取豆瓣图书标签页
-        
-        Args:
-            tag: 标签名称
-            start: 起始位置
-            count: 数量
-        """
-        try:
-            url = f"https://book.douban.com/tag/{tag}"
-            params = {'start': start, 'type': 'T'}
-            
-            response = self.session.get(url, params=params, timeout=10)
-            response.raise_for_status()
-            
-            soup = BeautifulSoup(response.text, 'lxml')
-            book_items = soup.select('.subject-item')
-            
-            for item in book_items[:count]:
-                # 获取图书链接
-                link = item.select_one('.info h2 a')
-                if not link:
-                    continue
-                
-                book_url = link['href']
-                book_id = book_url.split('/')[-2]
-                
-                # 尝试获取 ISBN（从详情页）
-                try:
-                    detail_response = self.session.get(book_url, timeout=10)
-                    detail_soup = BeautifulSoup(detail_response.text, 'lxml')
-                    info_text = detail_soup.select_one('#info').text
-                    isbn = self._extract_info(info_text, 'ISBN:')
-                    
-                    if isbn:
-                        self.crawl_book_by_isbn(isbn)
-                    
-                    time.sleep(Config.REQUEST_DELAY)
-                except Exception as e:
-                    logger.error(f"获取图书详情失败 {book_url}: {e}")
-                    continue
-            
-            logger.info(f"标签 {tag} 爬取完成")
-            
-        except Exception as e:
-            logger.error(f"爬取标签页失败 {tag}: {e}")
-    
-    def crawl_top_books_with_ids(self, tag='小说', start=0, count=20):
+    def crawl_top_books_with_ids(self, tag='小说', category_id=None, start=0, count=20):
         """
         爬取豆瓣图书标签页（返回图书 ID 列表）
         
         Args:
             tag: 标签名称
+            category_id: 分类ID（用于建立关联）
             start: 起始位置
             count: 数量
         
@@ -265,7 +293,7 @@ class DoubanBookCrawler:
                     isbn = self._extract_info(info_text, 'ISBN:')
                     
                     if isbn:
-                        book_id = self.crawl_book_by_isbn_with_id(isbn)
+                        book_id = self.crawl_book_by_isbn_with_id(isbn, category_id)
                         if book_id:
                             results.append((book_id, True))
                         else:
@@ -284,22 +312,28 @@ class DoubanBookCrawler:
         
         return results
     
-    def crawl_book_by_isbn_with_id(self, isbn):
+    def crawl_book_by_isbn_with_id(self, isbn, category_id=None):
         """
         根据 ISBN 爬取图书信息（返回图书 ID）
         
         Args:
             isbn: 图书 ISBN
+            category_id: 分类ID（可选，如果提供则立即建立关联）
         
         Returns:
             图书 ID，失败返回 None
         """
         try:
             # 检查是否已存在
-            if self.db.resource_exists(isbn):
+            existing_id = self.db.resource_exists(isbn)
+            if existing_id:
                 logger.info(f"图书已存在: {isbn}")
-                # 获取已存在图书的 ID
-                existing_id = self.db.get_resource_id_by_isbn(isbn)
+                # 如果提供了分类ID，建立关联
+                if category_id:
+                    try:
+                        self.db.insert_resource_category_rel(existing_id, category_id)
+                    except:
+                        pass  # 关联可能已存在
                 return existing_id
             
             # 获取图书详情页
@@ -318,31 +352,112 @@ class DoubanBookCrawler:
             # 上传封面图片
             cover_url = self._get_cover_url(soup)
             if cover_url:
-                cover_file = self.minio.upload_from_url(cover_url)
-                if cover_file:
-                    book_data['cover_url'] = self.minio.get_file_url(cover_file)
-            
-            # 插入数据库
-            self.db.insert_resource(book_data)
+                try:
+                    cover_file = self.minio.upload_from_url(cover_url)
+                    if cover_file:
+                        book_data['cover_url'] = self.minio.get_file_url(cover_file)
+                        logger.debug(f"  封面上传成功")
+                except Exception as e:
+                    logger.warning(f"  封面上传失败: {e}")
             
             # 处理作者
             authors = self._get_authors(soup)
             if authors:
                 book_data['author_name'] = ', '.join(authors)  # 保存作者快照
             
+            # 处理译者
+            translators = self._get_translators(soup)
+            if translators:
+                book_data['translator_name'] = ', '.join(translators)  # 保存译者快照
+            
+            # 插入数据库
+            self.db.insert_resource(book_data)
+            resource_id = book_data['resource_id']
+            
+            # 立即插入作者关联（作者独立排序，从 1 开始）
             for idx, author_name in enumerate(authors):
-                author_id = f"auth-{uuid.uuid4().hex[:8]}"
-                self.db.insert_author({
-                    'author_id': author_id,
-                    'name': author_name,
-                    'description': None,
-                    'photo_url': None
-                })
-                self.db.insert_resource_author_rel(book_data['resource_id'], author_id, idx)
+                # 检查作者是否已存在（按名字去重）
+                existing_author_id = self.db.get_author_id_by_name(author_name)
+                
+                if existing_author_id:
+                    # 作者已存在，直接使用
+                    author_id = existing_author_id
+                    logger.debug(f"  作者已存在: {author_name}")
+                else:
+                    # 生成 32 位纯字母数字 UUID（与 Java UUIDUtil 一致）
+                    author_id = uuid.uuid4().hex
+                    
+                    # 插入新作者
+                    self.db.insert_author({
+                        'author_id': author_id,
+                        'name': author_name,
+                        'original_name': None,
+                        'country': None,
+                        'photo_url': None,
+                        'description': None,
+                        'source_origin': 1,  # 1-豆瓣
+                        'source_url': None  # 稍后爬取作者详情时更新
+                    })
+                    logger.debug(f"  创建新作者: {author_name}")
+                    
+                    # 创建作者爬取任务（只为新作者创建）
+                    try:
+                        self.db.create_author_crawl_task(author_id, author_name)
+                        logger.debug(f"  已创建作者爬取任务: {author_name}")
+                    except:
+                        pass  # 任务可能已存在
+                
+                # 插入资源-作者关联（角色为"作者"，sort_order 传入 idx，实际存储为 idx+1）
+                self.db.insert_resource_author_rel(resource_id, author_id, idx, role='作者')
+            
+            # 立即插入译者关联（译者独立排序，从 1 开始）
+            for idx, translator_name in enumerate(translators):
+                # 检查译者是否已存在（按名字去重）
+                existing_translator_id = self.db.get_author_id_by_name(translator_name)
+                
+                if existing_translator_id:
+                    # 译者已存在，直接使用
+                    translator_id = existing_translator_id
+                    logger.debug(f"  译者已存在: {translator_name}")
+                else:
+                    # 生成 32 位纯字母数字 UUID（与 Java UUIDUtil 一致）
+                    translator_id = uuid.uuid4().hex
+                    
+                    # 插入新译者（存入 author 表）
+                    self.db.insert_author({
+                        'author_id': translator_id,
+                        'name': translator_name,
+                        'original_name': None,
+                        'country': None,
+                        'photo_url': None,
+                        'description': None,
+                        'source_origin': 1,  # 1-豆瓣
+                        'source_url': None  # 稍后爬取作者详情时更新
+                    })
+                    logger.debug(f"  创建新译者: {translator_name}")
+                    
+                    # 创建译者爬取任务（只为新译者创建）
+                    try:
+                        self.db.create_author_crawl_task(translator_id, translator_name)
+                        logger.debug(f"  已创建译者爬取任务: {translator_name}")
+                    except:
+                        pass  # 任务可能已存在
+                
+                # 插入资源-译者关联（角色为"译者"，译者独立排序从 1 开始）
+                # sort_order 传入 idx，实际存储为 idx+1
+                self.db.insert_resource_author_rel(resource_id, translator_id, idx, role='译者')
+            
+            # 立即插入分类关联
+            if category_id:
+                try:
+                    self.db.insert_resource_category_rel(resource_id, category_id)
+                    logger.debug(f"  已建立分类关联: {category_id}")
+                except Exception as e:
+                    logger.warning(f"  分类关联失败: {e}")
             
             logger.info(f"图书爬取成功: {book_data['title']}")
             time.sleep(Config.REQUEST_DELAY)
-            return book_data['resource_id']
+            return resource_id
             
         except Exception as e:
             logger.error(f"爬取图书失败 {isbn}: {e}")

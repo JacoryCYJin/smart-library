@@ -60,9 +60,9 @@ public class ResourceDetailVO extends ResourcePublicVO {
     private String summary;
 
     /**
-     * 数据来源
+     * 数据来源：1=豆瓣读书，2=Z-Library，99=手动录入
      */
-    private String sourceOrigin;
+    private Integer sourceOrigin;
 
     /**
      * 原站链接

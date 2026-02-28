@@ -37,14 +37,14 @@ public class ResourcePublicVO {
     private String title;
 
     /**
-     * 副标题
-     */
-    private String subTitle;
-
-    /**
      * 作者名称快照（冗余字段，用于快速展示，多个作者用逗号分隔，已按 sort 排序）
      */
     private String authorName;
+
+    /**
+     * 译者名称快照（冗余字段，用于快速展示，多个译者用逗号分隔）
+     */
+    private String translatorName;
 
     /**
      * 封面URL
@@ -122,8 +122,8 @@ public class ResourcePublicVO {
                 .resourceId(dto.getResourceId())
                 .type(dto.getType())
                 .title(dto.getTitle())
-                .subTitle(dto.getSubTitle())
                 .authorName(dto.getAuthorName())
+                .translatorName(dto.getTranslatorName())
                 .coverUrl(dto.getCoverUrl())
                 .pubDate(dto.getPubDate())
                 .publisher(dto.getPublisher())

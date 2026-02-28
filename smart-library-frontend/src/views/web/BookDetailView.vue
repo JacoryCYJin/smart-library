@@ -113,16 +113,18 @@
                     @click="toggleFavorite"
                     :disabled="favoriteLoading"
                     class="flex items-center justify-center w-12 h-12 border rounded-full transition-all duration-300"
-                    :class="isFavorited 
-                      ? 'border-pop bg-pop text-white hover:bg-[#b83838]' 
-                      : 'border-structure text-ink-light bg-white hover:border-ink hover:text-ink hover:bg-[rgba(16,42,67,0.05)]'"
+                    :class="
+                      isFavorited
+                        ? 'border-pop bg-pop text-white hover:bg-[#b83838]'
+                        : 'border-structure text-ink-light bg-white hover:border-ink hover:text-ink hover:bg-[rgba(16,42,67,0.05)]'
+                    "
                     :title="isFavorited ? '取消收藏' : '收藏'"
                   >
-                    <svg 
-                      class="w-6 h-6 transition-transform duration-200" 
+                    <svg
+                      class="w-6 h-6 transition-transform duration-200"
                       :class="{ 'scale-110': isFavorited }"
-                      :fill="isFavorited ? 'currentColor' : 'none'" 
-                      stroke="currentColor" 
+                      :fill="isFavorited ? 'currentColor' : 'none'"
+                      stroke="currentColor"
                       viewBox="0 0 24 24"
                     >
                       <path
@@ -166,13 +168,16 @@
                     <template #content>
                       <a-doption v-for="file in files" :key="file.id" @click="handleDownload(file)">
                         <template #icon>
-                          <span class="text-xs font-bold px-1 py-0.5 rounded bg-gray-100 text-gray-600 border border-gray-200">{{ file.fileTypeDesc || 'FILE' }}</span>
+                          <span
+                            class="text-xs font-bold px-1 py-0.5 rounded bg-gray-100 text-gray-600 border border-gray-200"
+                            >{{ file.fileTypeDesc || 'FILE' }}</span
+                          >
                         </template>
                         下载 {{ file.fileTypeDesc || '文件' }} ({{ formatFileSize(file.fileSize) }})
                       </a-doption>
                     </template>
                   </a-dropdown>
-                  
+
                   <button
                     v-else
                     @click="handleDownload(files[0])"
@@ -237,6 +242,12 @@
                       {{ authorName }}<span v-if="index < getAuthorNames().length - 2">, </span>
                     </button>
                   </div>
+                </div>
+
+                <!-- 译者（如果有） -->
+                <div v-if="book.translatorName" class="flex flex-col gap-2">
+                  <h3 class="text-sm font-semibold text-ink">{{ i18n.translator }}</h3>
+                  <p class="text-base text-ink-light">{{ book.translatorName }}</p>
                 </div>
 
                 <!-- 出版社 -->
@@ -414,13 +425,19 @@ const localeStore = useLocaleStore()
 const authStore = useAuthStore()
 
 // 收藏功能
-const { isFavorited, loading: favoriteLoading, checkFavoriteStatus, toggleFavorite } = useFavorite(route.params.bookId)
+const {
+  isFavorited,
+  loading: favoriteLoading,
+  checkFavoriteStatus,
+  toggleFavorite,
+} = useFavorite(route.params.bookId)
 
 // 国际化文本
 const i18n = computed(() => ({
   description: localeStore.currentLang === 'zh' ? '简介' : 'Description',
   author: localeStore.currentLang === 'zh' ? '作者' : 'Author',
   authors: localeStore.currentLang === 'zh' ? '作者' : 'Authors',
+  translator: localeStore.currentLang === 'zh' ? '译者' : 'Translator',
   otherAuthors: localeStore.currentLang === 'zh' ? '其他作者' : 'Other Authors',
   publisher: localeStore.currentLang === 'zh' ? '出版社' : 'Publisher',
   pubDate: localeStore.currentLang === 'zh' ? '出版日期' : 'Publication Date',
@@ -473,19 +490,25 @@ const formatFileSize = (bytes) => {
 // 处理阅读
 const handleRead = () => {
   if (!hasFiles.value) return
-  
+
   // 优先寻找 PDF 或 EPUB
-  const readableFile = files.value.find(f => 
-    f.fileType === 1 || // PDF
-    f.fileType === 2 || // EPUB
-    f.fileTypeDesc === 'PDF' || 
-    f.fileTypeDesc === 'EPUB'
-  ) || files.value[0]
-  
+  const readableFile =
+    files.value.find(
+      (f) =>
+        f.fileType === 1 || // PDF
+        f.fileType === 2 || // EPUB
+        f.fileTypeDesc === 'PDF' ||
+        f.fileTypeDesc === 'EPUB',
+    ) || files.value[0]
+
   if (readableFile && readableFile.fileUrl) {
     window.open(readableFile.fileUrl, '_blank')
   } else {
-    Message.warning(localeStore.currentLang === 'zh' ? '暂无在线阅读资源' : 'No online reading resource available')
+    Message.warning(
+      localeStore.currentLang === 'zh'
+        ? '暂无在线阅读资源'
+        : 'No online reading resource available',
+    )
   }
 }
 
@@ -599,16 +622,14 @@ const submitComment = async () => {
   try {
     // 检查是否登录
     if (!authStore.isLoggedIn) {
-      Message.warning(
-        localeStore.currentLang === 'zh' ? '请先登录' : 'Please login first',
-      )
+      Message.warning(localeStore.currentLang === 'zh' ? '请先登录' : 'Please login first')
       router.push({
         name: 'login',
-        query: { redirect: route.fullPath }
+        query: { redirect: route.fullPath },
       })
       return
     }
-    
+
     const res = await createComment({
       resourceId: book.value.resourceId,
       content: commentForm.value.content,
@@ -634,15 +655,17 @@ const submitComment = async () => {
     }
   } catch (error) {
     console.error('发表评论失败:', error)
-    
+
     // 如果是 401 错误，提示登录
     if (error.response && error.response.status === 401) {
       Message.warning(
-        localeStore.currentLang === 'zh' ? '登录已过期，请重新登录' : 'Login expired, please login again',
+        localeStore.currentLang === 'zh'
+          ? '登录已过期，请重新登录'
+          : 'Login expired, please login again',
       )
       router.push({
         name: 'login',
-        query: { redirect: route.fullPath }
+        query: { redirect: route.fullPath },
       })
     } else {
       Message.error(

@@ -53,10 +53,23 @@ class MinioHelper:
             bucket_name = Config.MINIO_BUCKET_COVERS
         
         try:
+            # 构造更真实的请求头（模拟浏览器）
+            headers = {
+                'User-Agent': Config.USER_AGENT,
+                'Referer': 'https://book.douban.com/',
+                'Accept': 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
+                'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
+                'Accept-Encoding': 'gzip, deflate, br',
+                'Connection': 'keep-alive',
+                'Sec-Fetch-Dest': 'image',
+                'Sec-Fetch-Mode': 'no-cors',
+                'Sec-Fetch-Site': 'cross-site'
+            }
+            
             # 下载图片
             response = requests.get(
                 image_url,
-                headers={'User-Agent': Config.USER_AGENT},
+                headers=headers,
                 timeout=10
             )
             response.raise_for_status()

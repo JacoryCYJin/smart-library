@@ -39,14 +39,14 @@ public class ResourceDTO {
     private String title;
 
     /**
-     * 副标题
-     */
-    private String subTitle;
-
-    /**
      * 作者名称快照（冗余字段，用于快速展示，多个作者用逗号分隔，已按 sort 排序）
      */
     private String authorName;
+
+    /**
+     * 译者名称快照（冗余字段，用于快速展示，多个译者用逗号分隔）
+     */
+    private String translatorName;
 
     /**
      * 封面URL
@@ -105,9 +105,9 @@ public class ResourceDTO {
     // ========== 通用详情字段 ==========
     
     /**
-     * 数据来源
+     * 数据来源：1=豆瓣读书，2=Z-Library，99=手动录入
      */
-    private String sourceOrigin;
+    private Integer sourceOrigin;
 
     /**
      * 原站链接
@@ -170,8 +170,8 @@ public class ResourceDTO {
                 .resourceId(entity.getResourceId())
                 .type(entity.getType())
                 .title(entity.getTitle())
-                .subTitle(entity.getSubTitle())
                 .authorName(entity.getAuthorName())
+                .translatorName(entity.getTranslatorName())
                 .coverUrl(entity.getCoverUrl())
                 .summary(entity.getSummary())
                 .pubDate(entity.getPubDate())

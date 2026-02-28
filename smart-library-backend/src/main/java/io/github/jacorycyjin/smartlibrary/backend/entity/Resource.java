@@ -43,14 +43,14 @@ public class Resource {
     private String title;
 
     /**
-     * 副标题
-     */
-    private String subTitle;
-
-    /**
      * 作者姓名快照（用于列表展示）
      */
     private String authorName;
+
+    /**
+     * 译者姓名快照（用于列表展示）
+     */
+    private String translatorName;
 
     /**
      * 封面图片URL
@@ -104,9 +104,9 @@ public class Resource {
     // ========== 数据来源与算法支持 ==========
 
     /**
-     * 数据来源（如：豆瓣/知网）
+     * 数据来源：1=豆瓣读书，2=Z-Library，99=手动录入
      */
-    private String sourceOrigin;
+    private Integer sourceOrigin;
 
     /**
      * 原站链接
