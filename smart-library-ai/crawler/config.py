@@ -27,6 +27,7 @@ class Config:
     MINIO_ACCESS_KEY = os.getenv('MINIO_ACCESS_KEY', 'minioadmin')
     MINIO_SECRET_KEY = os.getenv('MINIO_SECRET_KEY', 'minioadmin')
     MINIO_BUCKET_COVERS = os.getenv('MINIO_BUCKET_COVERS', 'library-covers')
+    MINIO_BUCKET_AVATARS = os.getenv('MINIO_BUCKET_AVATARS', 'library-avatars')
     MINIO_BUCKET_ATTACHMENTS = os.getenv('MINIO_BUCKET_ATTACHMENTS', 'library-attachments')
     
     # 爬虫配置

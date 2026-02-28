@@ -146,6 +146,8 @@ class DatabaseHelper:
         ) VALUES (
             :resource_id, :category_id
         )
+        ON DUPLICATE KEY UPDATE
+            resource_id = VALUES(resource_id)
         """
         return self.execute_query(query, {
             'resource_id': resource_id,
@@ -431,6 +433,92 @@ class DatabaseHelper:
             'douban_author_url': douban_author_url
         })
         return True
+    
+    def get_pending_author_tasks(self, limit=None):
+        """
+        获取待处理的作者爬取任务
+        
+        Args:
+            limit: 限制返回数量
+        
+        Returns:
+            list: [(id, author_id, author_name, douban_author_url), ...]
+        """
+        query = """
+        SELECT id, author_id, author_name, douban_author_url
+        FROM author_crawl_task
+        WHERE status IN (0, 1)
+        ORDER BY id
+        """
+        if limit:
+            query += f" LIMIT {limit}"
+        
+        result = self.execute_query(query)
+        return [(row[0], row[1], row[2], row[3]) for row in result.fetchall()]
+    
+    def update_author_task_status(self, task_id, status, error_msg=None):
+        """
+        更新作者爬取任务状态
+        
+        Args:
+            task_id: 任务ID
+            status: 状态 (0-待处理 / 1-处理中 / 2-已完成 / 3-失败 / 4-无资源)
+            error_msg: 错误信息
+        """
+        updates = ['status = :status']
+        params = {'task_id': task_id, 'status': status}
+        
+        if error_msg is not None:
+            updates.append('error_msg = :error_msg')
+            params['error_msg'] = error_msg
+        
+        query = f"""
+        UPDATE author_crawl_task 
+        SET {', '.join(updates)}
+        WHERE id = :task_id
+        """
+        self.execute_query(query, params)
+    
+    def update_author_detail(self, author_id, author_data):
+        """
+        更新作者详细信息
+        
+        Args:
+            author_id: 作者ID
+            author_data: 作者数据字典
+        """
+        query = """
+        UPDATE author 
+        SET 
+            original_name = :original_name,
+            country = :country,
+            photo_url = :photo_url,
+            description = :description,
+            source_url = :source_url
+        WHERE author_id = :author_id
+        """
+        params = {
+            'author_id': author_id,
+            'original_name': author_data.get('original_name'),
+            'country': author_data.get('country'),
+            'photo_url': author_data.get('photo_url'),
+            'description': author_data.get('description'),
+            'source_url': author_data.get('source_url')
+        }
+        
+        # 打印调试信息
+        logger.info(f"执行 UPDATE author SQL:")
+        logger.info(f"  author_id: {params['author_id']}")
+        logger.info(f"  original_name: {params['original_name']}")
+        logger.info(f"  country: {params['country']}")
+        logger.info(f"  photo_url: {params['photo_url']}")
+        logger.info(f"  description: {params['description'][:50] if params['description'] else None}...")
+        logger.info(f"  source_url: {params['source_url']}")
+        
+        result = self.execute_query(query, params)
+        logger.info(f"  更新影响行数: {result.rowcount}")
+        
+        return result
     
     # ==========================================
     # ZLibrary 下载任务管理

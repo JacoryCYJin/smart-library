@@ -14,7 +14,7 @@ import logging
 import time
 import uuid
 from config import Config
-from crawlers import DoubanBookCrawler, ZLibraryCrawler
+from crawlers import DoubanBookCrawler, DoubanAuthorCrawler, ZLibraryCrawler
 from utils import DatabaseHelper, MinioHelper
 
 logging.basicConfig(
@@ -36,11 +36,14 @@ class SmartLibraryCrawler:
         self.db = DatabaseHelper()
         self.minio = MinioHelper()
         self.book_crawler = DoubanBookCrawler()
+        self.author_crawler = DoubanAuthorCrawler()
         self.zlib_crawler = ZLibraryCrawler()
         
         self.stats = {
             'books_crawled': 0,
             'books_skipped': 0,
+            'authors_crawled': 0,
+            'authors_skipped': 0,
             'files_downloaded': 0,
             'tasks_completed': 0,
             'tasks_failed': 0
@@ -134,10 +137,13 @@ class SmartLibraryCrawler:
                         
                         # 自动创建 ZLibrary 下载任务
                         try:
-                            self.db.create_zlibrary_task_for_resource(book_id)
-                            logger.debug(f"  已创建 ZLibrary 下载任务: {book_id}")
+                            created = self.db.create_zlibrary_task_for_resource(book_id)
+                            if created:
+                                logger.info(f"  ✓ 已创建 ZLibrary 下载任务: {book_id}")
+                            else:
+                                logger.debug(f"  ZLibrary 任务已存在或图书无 ISBN: {book_id}")
                         except Exception as e:
-                            logger.debug(f"  ZLibrary 任务已存在或创建失败: {e}")
+                            logger.warning(f"  创建 ZLibrary 任务失败: {e}")
                     else:
                         self.stats['books_skipped'] += 1
                 
@@ -165,6 +171,73 @@ class SmartLibraryCrawler:
         
         elapsed_time = time.time() - start_time
         self._print_douban_stats(elapsed_time)
+    
+    def crawl_author(self, limit=None):
+        """
+        爬取作者详细信息（基于任务队列）
+        
+        Args:
+            limit: 限制处理的任务数量
+        """
+        logger.info("\n" + "=" * 60)
+        logger.info("开始爬取作者详细信息")
+        logger.info("=" * 60)
+        
+        start_time = time.time()
+        
+        # 获取待处理任务
+        tasks = self.db.get_pending_author_tasks(limit)
+        
+        if not tasks:
+            logger.info("没有待处理的作者任务")
+            return
+        
+        logger.info(f"共 {len(tasks)} 个待处理任务")
+        
+        for idx, (task_id, author_id, author_name, author_url) in enumerate(tasks, 1):
+            logger.info(f"\n[{idx}/{len(tasks)}] 处理作者: {author_name}")
+            
+            try:
+                # 更新任务状态为处理中
+                self.db.update_author_task_status(task_id, status=1)
+                
+                # 爬取作者详情
+                result = self.author_crawler.crawl_author_detail(
+                    author_id, 
+                    author_name, 
+                    author_url
+                )
+                
+                if result == 'success':
+                    # 标记任务完成
+                    self.db.update_author_task_status(task_id, status=2)
+                    self.stats['tasks_completed'] += 1
+                    self.stats['authors_crawled'] += 1
+                elif result == 'no_url':
+                    # 标记为无资源（没有 URL）
+                    self.db.update_author_task_status(task_id, status=4, error_msg="没有作者 URL")
+                    self.stats['authors_skipped'] += 1
+                elif result == 'blocked':
+                    # 标记为待处理（触发反爬虫，稍后重试）
+                    self.db.update_author_task_status(task_id, status=0, error_msg="触发反爬虫验证")
+                    self.stats['authors_skipped'] += 1
+                    logger.warning(f"  ⚠ 触发反爬虫，任务重置为待处理，建议稍后重试")
+                else:
+                    # 标记为失败
+                    self.db.update_author_task_status(task_id, status=3, error_msg="爬取失败")
+                    self.stats['tasks_failed'] += 1
+                
+                # 延迟，避免被封（作者爬取延迟更长）
+                time.sleep(5)
+                
+            except Exception as e:
+                logger.error(f"处理任务失败: {e}")
+                self.db.update_author_task_status(task_id, status=3, error_msg=str(e))
+                self.stats['tasks_failed'] += 1
+                continue
+        
+        elapsed_time = time.time() - start_time
+        self._print_author_stats(elapsed_time)
     
     def crawl_zlibrary(self, limit=None):
         """
@@ -305,6 +378,18 @@ class SmartLibraryCrawler:
         logger.info(f"耗时: {elapsed_time / 60:.2f} 分钟")
         logger.info("=" * 60)
     
+    def _print_author_stats(self, elapsed_time):
+        """打印作者爬取统计"""
+        logger.info("\n" + "=" * 60)
+        logger.info("作者爬取完成！统计信息：")
+        logger.info("=" * 60)
+        logger.info(f"作者爬取: {self.stats['authors_crawled']}")
+        logger.info(f"作者跳过: {self.stats['authors_skipped']}")
+        logger.info(f"任务完成: {self.stats['tasks_completed']}")
+        logger.info(f"任务失败: {self.stats['tasks_failed']}")
+        logger.info(f"耗时: {elapsed_time / 60:.2f} 分钟")
+        logger.info("=" * 60)
+    
     def _print_zlibrary_stats(self, elapsed_time):
         """打印 ZLibrary 下载统计"""
         logger.info("\n" + "=" * 60)
@@ -338,6 +423,11 @@ def main():
     douban_parser.add_argument('--limit', type=int, default=None,
                               help='限制处理的任务数量')
     
+    # author 命令：爬取作者详情
+    author_parser = subparsers.add_parser('author', help='爬取作者详细信息')
+    author_parser.add_argument('--limit', type=int, default=None,
+                              help='限制处理的任务数量')
+    
     # zlibrary 命令：下载电子书文件
     zlib_parser = subparsers.add_parser('zlibrary', help='下载 ZLibrary 电子书')
     zlib_parser.add_argument('--limit', type=int, default=None,
@@ -358,6 +448,8 @@ def main():
             crawler.init_zlibrary_tasks()
         elif args.command == 'douban':
             crawler.crawl_douban(args.limit)
+        elif args.command == 'author':
+            crawler.crawl_author(args.limit)
         elif args.command == 'zlibrary':
             crawler.crawl_zlibrary(args.limit)
         

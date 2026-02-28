@@ -222,20 +222,81 @@ class DoubanBookCrawler:
         return None
     
     def _get_authors(self, soup):
-        """获取作者列表"""
+        """
+        获取作者列表（提取名字和链接）
+        
+        Returns:
+            list: [(name, url), ...]
+        """
         authors = []
-        author_elems = soup.select('#info span:contains("作者") + a')
-        for elem in author_elems:
-            authors.append(elem.text.strip())
+        # 查找"作者"标签后的所有链接
+        info_elem = soup.select_one('#info')
+        if info_elem:
+            # 找到"作者"这一行
+            author_span = info_elem.find('span', string=lambda x: x and '作者' in x)
+            if author_span:
+                # 获取同一行的所有链接
+                parent = author_span.parent
+                author_links = parent.find_all('a')
+                for link in author_links:
+                    name = link.text.strip()
+                    url = link.get('href', '')
+                    if name and url:
+                        authors.append((name, url))
         return authors
     
     def _get_translators(self, soup):
-        """获取译者列表"""
+        """
+        获取译者列表（提取名字和链接）
+        
+        Returns:
+            list: [(name, url), ...]
+        """
         translators = []
-        translator_elems = soup.select('#info span:contains("译者") + a')
-        for elem in translator_elems:
-            translators.append(elem.text.strip())
+        # 查找"译者"标签后的所有链接
+        info_elem = soup.select_one('#info')
+        if info_elem:
+            # 找到"译者"这一行
+            translator_span = info_elem.find('span', string=lambda x: x and '译者' in x)
+            if translator_span:
+                # 获取同一行的所有链接
+                parent = translator_span.parent
+                translator_links = parent.find_all('a')
+                for link in translator_links:
+                    name = link.text.strip()
+                    url = link.get('href', '')
+                    if name and url:
+                        translators.append((name, url))
         return translators
+    
+    def _clean_author_name(self, name):
+        """
+        清理作者名字，去掉国籍前缀和英文原名
+        
+        Args:
+            name: 原始作者名字
+              - "[韩] 韩江" → "韩江"
+              - "[法] 杰西·安佐斯佩（Jessie Inchauspé）" → "杰西·安佐斯佩"
+              - "(英) 作者名" → "作者名"
+              - "【美】作者名" → "作者名"
+        
+        Returns:
+            清理后的名字
+        """
+        import re
+        
+        # 步骤1: 去掉国籍前缀
+        # 匹配：[韩]、[美]、(英)、(英国)、【日】等
+        # 支持中文方括号、英文方括号、圆括号
+        pattern_prefix = r'^[\[【\(][^\]】\)]+[\]】\)]\s*'
+        cleaned_name = re.sub(pattern_prefix, '', name).strip()
+        
+        # 步骤2: 去掉英文原名（括号中的内容）
+        # 匹配：（Jessie Inchauspé）、(John Smith) 等
+        pattern_english = r'[（\(][^）\)]+[）\)]'
+        cleaned_name = re.sub(pattern_english, '', cleaned_name).strip()
+        
+        return cleaned_name if cleaned_name else name
     
     def _extract_info(self, text, label):
         """从信息文本中提取特定字段"""
@@ -254,7 +315,7 @@ class DoubanBookCrawler:
     
     def crawl_top_books_with_ids(self, tag='小说', category_id=None, start=0, count=20):
         """
-        爬取豆瓣图书标签页（返回图书 ID 列表）
+        爬取豆瓣图书标签页（使用生成器边爬边返回）
         
         Args:
             tag: 标签名称
@@ -262,11 +323,9 @@ class DoubanBookCrawler:
             start: 起始位置
             count: 数量
         
-        Returns:
-            [(book_id, success), ...] 图书 ID 和是否成功的列表
+        Yields:
+            (book_id, success): 图书 ID 和是否成功
         """
-        results = []
-        
         try:
             url = f"https://book.douban.com/tag/{tag}"
             params = {'start': start, 'type': 'T'}
@@ -295,22 +354,20 @@ class DoubanBookCrawler:
                     if isbn:
                         book_id = self.crawl_book_by_isbn_with_id(isbn, category_id)
                         if book_id:
-                            results.append((book_id, True))
+                            yield (book_id, True)  # 边爬边返回
                         else:
-                            results.append((None, False))
+                            yield (None, False)
                     
                     time.sleep(Config.REQUEST_DELAY)
                 except Exception as e:
                     logger.error(f"获取图书详情失败 {book_url}: {e}")
-                    results.append((None, False))
+                    yield (None, False)
                     continue
             
             logger.info(f"标签 {tag} 爬取完成")
             
         except Exception as e:
             logger.error(f"爬取标签页失败 {tag}: {e}")
-        
-        return results
     
     def crawl_book_by_isbn_with_id(self, isbn, category_id=None):
         """
@@ -349,34 +406,47 @@ class DoubanBookCrawler:
                 logger.warning(f"解析图书信息失败: {isbn}")
                 return None
             
-            # 上传封面图片
+            # 上传封面图片（必须成功）
             cover_url = self._get_cover_url(soup)
-            if cover_url:
-                try:
-                    cover_file = self.minio.upload_from_url(cover_url)
-                    if cover_file:
-                        book_data['cover_url'] = self.minio.get_file_url(cover_file)
-                        logger.debug(f"  封面上传成功")
-                except Exception as e:
-                    logger.warning(f"  封面上传失败: {e}")
+            if not cover_url:
+                logger.warning(f"  未找到封面图片，跳过此书: {isbn}")
+                return None
+            
+            try:
+                cover_file = self.minio.upload_from_url(cover_url)
+                if not cover_file:
+                    logger.warning(f"  封面上传失败，跳过此书: {isbn}")
+                    return None
+                book_data['cover_url'] = self.minio.get_file_url(cover_file)
+                logger.debug(f"  封面上传成功")
+            except Exception as e:
+                logger.warning(f"  封面上传失败，跳过此书: {isbn} - {e}")
+                return None
             
             # 处理作者
             authors = self._get_authors(soup)
             if authors:
-                book_data['author_name'] = ', '.join(authors)  # 保存作者快照
+                # 清理作者名字后保存快照
+                author_names = [self._clean_author_name(name) for name, url in authors]
+                book_data['author_name'] = ', '.join(author_names)  # 保存作者快照
             
             # 处理译者
             translators = self._get_translators(soup)
             if translators:
-                book_data['translator_name'] = ', '.join(translators)  # 保存译者快照
+                # 清理译者名字后保存快照
+                translator_names = [self._clean_author_name(name) for name, url in translators]
+                book_data['translator_name'] = ', '.join(translator_names)  # 保存译者快照
             
             # 插入数据库
             self.db.insert_resource(book_data)
             resource_id = book_data['resource_id']
             
             # 立即插入作者关联（作者独立排序，从 1 开始）
-            for idx, author_name in enumerate(authors):
-                # 检查作者是否已存在（按名字去重）
+            for idx, (raw_author_name, author_url) in enumerate(authors):
+                # 清理作者名字（去掉国籍前缀和英文原名）
+                author_name = self._clean_author_name(raw_author_name)
+                
+                # 检查作者是否已存在（按清理后的名字去重）
                 existing_author_id = self.db.get_author_id_by_name(author_name)
                 
                 if existing_author_id:
@@ -387,10 +457,10 @@ class DoubanBookCrawler:
                     # 生成 32 位纯字母数字 UUID（与 Java UUIDUtil 一致）
                     author_id = uuid.uuid4().hex
                     
-                    # 插入新作者
+                    # 插入新作者（使用清理后的名字）
                     self.db.insert_author({
                         'author_id': author_id,
-                        'name': author_name,
+                        'name': author_name,  # 清理后的名字
                         'original_name': None,
                         'country': None,
                         'photo_url': None,
@@ -400,10 +470,10 @@ class DoubanBookCrawler:
                     })
                     logger.debug(f"  创建新作者: {author_name}")
                     
-                    # 创建作者爬取任务（只为新作者创建）
+                    # 创建作者爬取任务（传入链接，可能是 /author/xxx 或 /search/xxx）
                     try:
-                        self.db.create_author_crawl_task(author_id, author_name)
-                        logger.debug(f"  已创建作者爬取任务: {author_name}")
+                        self.db.create_author_crawl_task(author_id, author_name, author_url)
+                        logger.debug(f"  已创建作者爬取任务: {author_name} -> {author_url}")
                     except:
                         pass  # 任务可能已存在
                 
@@ -411,8 +481,11 @@ class DoubanBookCrawler:
                 self.db.insert_resource_author_rel(resource_id, author_id, idx, role='作者')
             
             # 立即插入译者关联（译者独立排序，从 1 开始）
-            for idx, translator_name in enumerate(translators):
-                # 检查译者是否已存在（按名字去重）
+            for idx, (raw_translator_name, translator_url) in enumerate(translators):
+                # 清理译者名字（去掉国籍前缀和英文原名）
+                translator_name = self._clean_author_name(raw_translator_name)
+                
+                # 检查译者是否已存在（按清理后的名字去重）
                 existing_translator_id = self.db.get_author_id_by_name(translator_name)
                 
                 if existing_translator_id:
@@ -423,10 +496,10 @@ class DoubanBookCrawler:
                     # 生成 32 位纯字母数字 UUID（与 Java UUIDUtil 一致）
                     translator_id = uuid.uuid4().hex
                     
-                    # 插入新译者（存入 author 表）
+                    # 插入新译者（存入 author 表，使用清理后的名字）
                     self.db.insert_author({
                         'author_id': translator_id,
-                        'name': translator_name,
+                        'name': translator_name,  # 清理后的名字
                         'original_name': None,
                         'country': None,
                         'photo_url': None,
@@ -436,12 +509,15 @@ class DoubanBookCrawler:
                     })
                     logger.debug(f"  创建新译者: {translator_name}")
                     
-                    # 创建译者爬取任务（只为新译者创建）
-                    try:
-                        self.db.create_author_crawl_task(translator_id, translator_name)
-                        logger.debug(f"  已创建译者爬取任务: {translator_name}")
-                    except:
-                        pass  # 任务可能已存在
+                    # 只为有 /author/xxx 链接的译者创建爬取任务
+                    if translator_url:
+                        try:
+                            self.db.create_author_crawl_task(translator_id, translator_name, translator_url)
+                            logger.debug(f"  已创建译者爬取任务: {translator_name} -> {translator_url}")
+                        except:
+                            pass  # 任务可能已存在
+                    else:
+                        logger.debug(f"  译者无详情页链接，跳过任务创建: {translator_name}")
                 
                 # 插入资源-译者关联（角色为"译者"，译者独立排序从 1 开始）
                 # sort_order 传入 idx，实际存储为 idx+1
