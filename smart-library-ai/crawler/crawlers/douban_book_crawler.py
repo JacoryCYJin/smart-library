@@ -24,70 +24,7 @@ class DoubanBookCrawler:
         self.session = requests.Session()
         self.session.headers.update({'User-Agent': Config.USER_AGENT})
     
-    def crawl_book_by_isbn(self, isbn):
-        """
-        根据 ISBN 爬取图书信息
-        
-        Args:
-            isbn: 图书 ISBN
-        
-        Returns:
-            resource_id: 成功返回 resource_id，失败返回 None
-        """
-        try:
-            # 检查是否已存在
-            existing_id = self.db.resource_exists(isbn)
-            if existing_id:
-                logger.info(f"图书已存在: {isbn}")
-                return existing_id
-            
-            # 获取图书详情页
-            url = f"https://book.douban.com/isbn/{isbn}/"
-            response = self.session.get(url, timeout=10)
-            response.raise_for_status()
-            
-            soup = BeautifulSoup(response.text, 'lxml')
-            
-            # 解析图书信息
-            book_data = self._parse_book_detail(soup, isbn)
-            if not book_data:
-                logger.warning(f"解析图书信息失败: {isbn}")
-                return False
-            
-            # 上传封面图片
-            cover_url = self._get_cover_url(soup)
-            if cover_url:
-                cover_file = self.minio.upload_from_url(cover_url)
-                if cover_file:
-                    book_data['cover_url'] = self.minio.get_file_url(cover_file)
-            
-            # 插入数据库
-            self.db.insert_resource(book_data)
-            
-            # 处理作者
-            authors = self._get_authors(soup)
-            if authors:
-                book_data['author_name'] = ', '.join(authors)  # 保存作者快照
-            
-            for idx, author_name in enumerate(authors):
-                # 生成 32 位纯字母数字 UUID（与 Java UUIDUtil 一致）
-                author_id = uuid.uuid4().hex
-                self.db.insert_author({
-                    'author_id': author_id,
-                    'name': author_name,
-                    'description': None,
-                    'photo_url': None
-                })
-                self.db.insert_resource_author_rel(book_data['resource_id'], author_id, idx)
-            
-            logger.info(f"图书爬取成功: {book_data['title']}")
-            time.sleep(Config.REQUEST_DELAY)
-            return book_data['resource_id']
-            
-        except Exception as e:
-            logger.error(f"爬取图书失败 {isbn}: {e}")
-            return None
-    
+
     def _parse_book_detail(self, soup, isbn):
         """解析图书详情"""
         try:
