@@ -5,6 +5,8 @@ Smart Library 爬虫系统 - 统一入口
 1. 基于任务队列的豆瓣图书爬取（支持断点续爬）
 2. 基于任务队列的 Z-Library 电子书文件下载
 3. 进度追踪和错误处理
+4. 错误日志单独记录
+5. 中断时自动清理未完成数据
 
 @author JacoryCyJin
 @date 2025/02/27
@@ -13,20 +15,91 @@ import sys
 import logging
 import time
 import uuid
+import signal
 from config import Config
 from crawlers import DoubanBookCrawler, DoubanAuthorCrawler, ZLibraryCrawler
 from utils import DatabaseHelper, MinioHelper
+
+# 配置日志
+# 1. 控制台显示所有日志（INFO 及以上）
+# 2. 错误日志（ERROR 及以上）单独写入 crawler_error.log
+import os
+log_dir = os.path.dirname(os.path.abspath(__file__))  # 获取当前脚本所在目录
+error_log_path = os.path.join(log_dir, 'crawler_error.log')
 
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler('crawler.log', encoding='utf-8'),
-        logging.StreamHandler()
+        logging.StreamHandler()  # 只输出到控制台
     ]
 )
 
+# 添加错误日志专用处理器（只记录 ERROR 及以上）
+error_handler = logging.FileHandler(error_log_path, encoding='utf-8')
+error_handler.setLevel(logging.ERROR)
+error_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+logging.getLogger().addHandler(error_handler)
+
 logger = logging.getLogger(__name__)
+
+# 全局变量：当前正在处理的资源ID（用于中断清理）
+current_resource_id = None
+current_task_id = None
+db_helper = None
+
+
+def cleanup_on_interrupt(signum, frame):
+    """
+    中断信号处理：清理未完成的数据
+    """
+    logger.warning("\n检测到中断信号，正在清理未完成的数据...")
+    
+    if current_resource_id and db_helper:
+        try:
+            # 删除未完成的资源
+            delete_query = """
+            UPDATE resource 
+            SET deleted = 1 
+            WHERE resource_id = :resource_id
+            """
+            db_helper.execute_query(delete_query, {'resource_id': current_resource_id})
+            logger.info(f"  已清理未完成的资源: {current_resource_id}")
+            
+            # 删除相关的作者关联
+            delete_rel_query = """
+            DELETE FROM resource_author_rel 
+            WHERE resource_id = :resource_id
+            """
+            db_helper.execute_query(delete_rel_query, {'resource_id': current_resource_id})
+            logger.info(f"  已清理相关的作者关联")
+            
+            # 删除相关的分类关联
+            delete_cat_query = """
+            DELETE FROM resource_category_rel 
+            WHERE resource_id = :resource_id
+            """
+            db_helper.execute_query(delete_cat_query, {'resource_id': current_resource_id})
+            logger.info(f"  已清理相关的分类关联")
+            
+        except Exception as e:
+            logger.error(f"清理失败: {e}")
+    
+    if current_task_id and db_helper:
+        try:
+            # 重置任务状态为待处理
+            db_helper.update_douban_task_status(current_task_id, status=0)
+            logger.info(f"  已重置任务状态: {current_task_id}")
+        except Exception as e:
+            logger.error(f"重置任务状态失败: {e}")
+    
+    logger.info("清理完成，退出程序")
+    sys.exit(1)
+
+
+# 注册中断信号处理器
+signal.signal(signal.SIGINT, cleanup_on_interrupt)  # Ctrl+C
+signal.signal(signal.SIGTERM, cleanup_on_interrupt)  # kill 命令
 
 
 class SmartLibraryCrawler:
@@ -88,6 +161,9 @@ class SmartLibraryCrawler:
         Args:
             limit: 限制处理的任务数量
         """
+        global db_helper, current_task_id, current_resource_id
+        db_helper = self.db  # 设置全局 db_helper 供中断处理使用
+        
         logger.info("\n" + "=" * 60)
         logger.info("开始爬取豆瓣图书")
         logger.info("=" * 60)
@@ -104,6 +180,9 @@ class SmartLibraryCrawler:
         logger.info(f"共 {len(tasks)} 个待处理任务")
         
         for idx, (task_id, category_id, category_name, progress, target) in enumerate(tasks, 1):
+            current_task_id = task_id  # 记录当前任务ID
+            current_resource_id = None  # 重置资源ID
+            
             logger.info(f"\n[{idx}/{len(tasks)}] 处理分类: {category_name}")
             logger.info(f"  进度: {progress}/{target}")
             
@@ -118,6 +197,7 @@ class SmartLibraryCrawler:
                     logger.info("  已完成目标，标记为完成")
                     self.db.update_douban_task_status(task_id, status=2, progress=target)
                     self.stats['tasks_completed'] += 1
+                    current_task_id = None  # 清除任务ID
                     continue
                 
                 # 爬取图书（传入 category_id 用于建立关联）
@@ -131,6 +211,8 @@ class SmartLibraryCrawler:
                 
                 # 处理每本图书
                 for book_id, success in books:
+                    current_resource_id = book_id  # 记录当前资源ID
+                    
                     if success and book_id:
                         success_count += 1
                         self.stats['books_crawled'] += 1
@@ -146,6 +228,8 @@ class SmartLibraryCrawler:
                             logger.warning(f"  创建 ZLibrary 任务失败: {e}")
                     else:
                         self.stats['books_skipped'] += 1
+                    
+                    current_resource_id = None  # 清除资源ID
                 
                 # 更新进度
                 new_progress = progress + success_count
@@ -160,6 +244,8 @@ class SmartLibraryCrawler:
                     self.db.update_douban_task_status(task_id, status=1, progress=new_progress)
                     logger.info(f"  进度更新: {new_progress}/{target}")
                 
+                current_task_id = None  # 清除任务ID
+                
                 # 延迟，避免被封
                 time.sleep(2)
                 
@@ -167,8 +253,11 @@ class SmartLibraryCrawler:
                 logger.error(f"处理任务失败: {e}")
                 self.db.update_douban_task_status(task_id, status=3, error_msg=str(e))
                 self.stats['tasks_failed'] += 1
+                current_task_id = None  # 清除任务ID
                 continue
         
+        current_task_id = None  # 清除任务ID
+        current_resource_id = None  # 清除资源ID
         elapsed_time = time.time() - start_time
         self._print_douban_stats(elapsed_time)
     

@@ -213,6 +213,7 @@ class DoubanBookCrawler:
         Args:
             name: 原始作者名字
               - "[韩] 韩江" → "韩江"
+              - "［英］默林・谢尔德雷克" → "默林・谢尔德雷克"
               - "[法] 杰西·安佐斯佩（Jessie Inchauspé）" → "杰西·安佐斯佩"
               - "(英) 作者名" → "作者名"
               - "【美】作者名" → "作者名"
@@ -222,10 +223,15 @@ class DoubanBookCrawler:
         """
         import re
         
+        # 步骤0: 先统一处理所有空格（包括全角空格、半角空格、不间断空格等）
+        # 将所有类型的空格统一为普通空格
+        name = re.sub(r'[\s\u3000\xa0]+', ' ', name).strip()
+        
         # 步骤1: 去掉国籍前缀
-        # 匹配：[韩]、[美]、(英)、(英国)、【日】等
-        # 支持中文方括号、英文方括号、圆括号
-        pattern_prefix = r'^[\[【\(][^\]】\)]+[\]】\)]\s*'
+        # 匹配：[韩]、［英］、[美]、(英)、(英国)、【日】等
+        # 支持中文方括号（［］）、英文方括号（[]）、圆括号（()）、中文圆括号（（））
+        # 注意：\u3000 是全角空格，已在步骤0处理
+        pattern_prefix = r'^[\[［【\(（][^\]］】\)）]+[\]］】\)）]\s*'
         cleaned_name = re.sub(pattern_prefix, '', name).strip()
         
         # 步骤2: 去掉英文原名（括号中的内容）
@@ -321,14 +327,8 @@ class DoubanBookCrawler:
             # 检查是否已存在
             existing_id = self.db.resource_exists(isbn)
             if existing_id:
-                logger.info(f"图书已存在: {isbn}")
-                # 如果提供了分类ID，建立关联
-                if category_id:
-                    try:
-                        self.db.insert_resource_category_rel(existing_id, category_id)
-                    except:
-                        pass  # 关联可能已存在
-                return existing_id
+                logger.info(f"图书已存在，跳过: {isbn}")
+                return None  # 直接返回 None，不插入任何关联
             
             # 获取图书详情页
             url = f"https://book.douban.com/isbn/{isbn}/"

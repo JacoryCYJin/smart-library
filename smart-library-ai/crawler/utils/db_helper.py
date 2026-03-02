@@ -117,6 +117,9 @@ class DatabaseHelper:
         ) VALUES (
             :resource_id, :author_id, :sort, :role
         )
+        ON DUPLICATE KEY UPDATE
+            sort = VALUES(sort),
+            role = VALUES(role)
         """
         return self.execute_query(query, {
             'resource_id': resource_id,

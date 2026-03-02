@@ -29,6 +29,32 @@
 smart-library-docs/
 
 # ===================================
+# AI Crawler (Python)
+# ===================================
+
+# Python
+smart-library-ai/**/__pycache__/
+smart-library-ai/**/*.pyc
+smart-library-ai/**/*.pyo
+smart-library-ai/**/*.pyd
+smart-library-ai/**/.Python
+
+# Virtual Environment
+smart-library-ai/venv/
+smart-library-ai/env/
+smart-library-ai/.venv/
+
+# Logs
+smart-library-ai/crawler/*.log
+smart-library-ai/crawler/**/*.log
+
+# Environment
+smart-library-ai/crawler/.env
+
+# Python Version
+.python-version
+
+# ===================================
 # Backend (Spring Boot / Maven)
 # ===================================
 

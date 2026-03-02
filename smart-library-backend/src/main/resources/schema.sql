@@ -27,7 +27,6 @@ DROP TABLE IF EXISTS resource_tag_rel; -- 资源-标签关联
 DROP TABLE IF EXISTS resource_file; -- 资源-文件关联
 DROP TABLE IF EXISTS resource; -- [核心] 资源总表
 DROP TABLE IF EXISTS author; -- 作者
-DROP TABLE IF EXISTS category; -- 分类
 DROP TABLE IF EXISTS tag; -- 标签
 DROP TABLE IF EXISTS user; -- 用户
 
@@ -149,7 +148,7 @@ CREATE TABLE author
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_unicode_ci COMMENT ='作者库';
 
-CREATE TABLE category
+CREATE TABLE IF NOT EXISTS category
 (
     id          BIGINT PRIMARY KEY AUTO_INCREMENT,
     category_id VARCHAR(50)  NOT NULL UNIQUE,
