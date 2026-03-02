@@ -16,8 +16,9 @@ import logging
 import time
 import uuid
 import signal
+import random
 from config import Config
-from crawlers import DoubanBookCrawler, DoubanAuthorCrawler, ZLibraryCrawler
+from crawlers import DoubanBookCrawler, DoubanAuthorCrawler, ZLibraryCrawler, WikiAuthorCrawler
 from utils import DatabaseHelper, MinioHelper
 
 # 配置日志
@@ -43,9 +44,10 @@ logging.getLogger().addHandler(error_handler)
 
 logger = logging.getLogger(__name__)
 
-# 全局变量：当前正在处理的资源ID（用于中断清理）
+# 全局变量：当前正在处理的资源ID和任务ID（用于中断清理）
 current_resource_id = None
 current_task_id = None
+current_author_task_id = None  # 新增：作者任务ID
 db_helper = None
 
 
@@ -55,6 +57,7 @@ def cleanup_on_interrupt(signum, frame):
     """
     logger.warning("\n检测到中断信号，正在清理未完成的数据...")
     
+    # 清理图书资源
     if current_resource_id and db_helper:
         try:
             # 删除未完成的资源
@@ -83,15 +86,23 @@ def cleanup_on_interrupt(signum, frame):
             logger.info(f"  已清理相关的分类关联")
             
         except Exception as e:
-            logger.error(f"清理失败: {e}")
+            logger.error(f"清理资源失败: {e}")
     
+    # 重置图书爬取任务状态
     if current_task_id and db_helper:
         try:
-            # 重置任务状态为待处理
             db_helper.update_douban_task_status(current_task_id, status=0)
-            logger.info(f"  已重置任务状态: {current_task_id}")
+            logger.info(f"  已重置图书任务状态: {current_task_id}")
         except Exception as e:
-            logger.error(f"重置任务状态失败: {e}")
+            logger.error(f"重置图书任务状态失败: {e}")
+    
+    # 重置作者爬取任务状态
+    if current_author_task_id and db_helper:
+        try:
+            db_helper.update_author_task_status(current_author_task_id, status=0)
+            logger.info(f"  已重置作者任务状态: {current_author_task_id}")
+        except Exception as e:
+            logger.error(f"重置作者任务状态失败: {e}")
     
     logger.info("清理完成，退出程序")
     sys.exit(1)
@@ -110,6 +121,7 @@ class SmartLibraryCrawler:
         self.minio = MinioHelper()
         self.book_crawler = DoubanBookCrawler()
         self.author_crawler = DoubanAuthorCrawler()
+        self.wiki_author_crawler = WikiAuthorCrawler()
         self.zlib_crawler = ZLibraryCrawler()
         
         self.stats = {
@@ -268,6 +280,9 @@ class SmartLibraryCrawler:
         Args:
             limit: 限制处理的任务数量
         """
+        global db_helper, current_author_task_id
+        db_helper = self.db  # 设置全局 db_helper 供中断处理使用
+        
         logger.info("\n" + "=" * 60)
         logger.info("开始爬取作者详细信息")
         logger.info("=" * 60)
@@ -284,6 +299,8 @@ class SmartLibraryCrawler:
         logger.info(f"共 {len(tasks)} 个待处理任务")
         
         for idx, (task_id, author_id, author_name, author_url) in enumerate(tasks, 1):
+            current_author_task_id = task_id  # 记录当前作者任务ID
+            
             logger.info(f"\n[{idx}/{len(tasks)}] 处理作者: {author_name}")
             
             try:
@@ -316,15 +333,93 @@ class SmartLibraryCrawler:
                     self.db.update_author_task_status(task_id, status=3, error_msg="爬取失败")
                     self.stats['tasks_failed'] += 1
                 
-                # 延迟，避免被封（作者爬取延迟更长）
-                time.sleep(5)
+                current_author_task_id = None  # 清除任务ID
+                
+                # 延迟，避免被封（作者爬取延迟更长，增加随机性）
+                delay = random.randint(8, 15)  # 8-15秒随机延迟
+                logger.debug(f"  等待 {delay} 秒...")
+                time.sleep(delay)
                 
             except Exception as e:
                 logger.error(f"处理任务失败: {e}")
                 self.db.update_author_task_status(task_id, status=3, error_msg=str(e))
                 self.stats['tasks_failed'] += 1
+                current_author_task_id = None  # 清除任务ID
                 continue
         
+        current_author_task_id = None  # 清除任务ID
+        elapsed_time = time.time() - start_time
+        self._print_author_stats(elapsed_time)
+    
+    def crawl_wiki_author(self, limit=None):
+        """
+        从百度百科/维基百科爬取作者详细信息（基于任务队列）
+        
+        Args:
+            limit: 限制处理的任务数量
+        """
+        global db_helper, current_author_task_id
+        db_helper = self.db  # 设置全局 db_helper 供中断处理使用
+        
+        logger.info("\n" + "=" * 60)
+        logger.info("开始从百度百科/维基百科爬取作者详细信息")
+        logger.info("=" * 60)
+        
+        start_time = time.time()
+        
+        # 获取待处理任务
+        tasks = self.db.get_pending_author_tasks(limit)
+        
+        if not tasks:
+            logger.info("没有待处理的作者任务")
+            return
+        
+        logger.info(f"共 {len(tasks)} 个待处理任务")
+        
+        for idx, (task_id, author_id, author_name, author_url) in enumerate(tasks, 1):
+            current_author_task_id = task_id  # 记录当前作者任务ID
+            
+            logger.info(f"\n[{idx}/{len(tasks)}] 处理作者: {author_name}")
+            
+            try:
+                # 更新任务状态为处理中
+                self.db.update_author_task_status(task_id, status=1)
+                
+                # 爬取作者详情（不需要 author_url，自动搜索）
+                result = self.wiki_author_crawler.crawl_author_detail(
+                    author_id, 
+                    author_name
+                )
+                
+                if result == 'success':
+                    # 标记任务完成
+                    self.db.update_author_task_status(task_id, status=2)
+                    self.stats['tasks_completed'] += 1
+                    self.stats['authors_crawled'] += 1
+                elif result == 'no_result':
+                    # 标记为无资源（未找到结果）
+                    self.db.update_author_task_status(task_id, status=4, error_msg="百度百科和维基百科均未找到")
+                    self.stats['authors_skipped'] += 1
+                else:
+                    # 标记为失败
+                    self.db.update_author_task_status(task_id, status=3, error_msg="爬取失败")
+                    self.stats['tasks_failed'] += 1
+                
+                current_author_task_id = None  # 清除任务ID
+                
+                # 延迟，避免被封（随机延迟）
+                delay = random.randint(3, 6)  # 3-6秒随机延迟
+                logger.debug(f"  等待 {delay} 秒...")
+                time.sleep(delay)
+                
+            except Exception as e:
+                logger.error(f"处理任务失败: {e}")
+                self.db.update_author_task_status(task_id, status=3, error_msg=str(e))
+                self.stats['tasks_failed'] += 1
+                current_author_task_id = None  # 清除任务ID
+                continue
+        
+        current_author_task_id = None  # 清除任务ID
         elapsed_time = time.time() - start_time
         self._print_author_stats(elapsed_time)
     
@@ -512,10 +607,15 @@ def main():
     douban_parser.add_argument('--limit', type=int, default=None,
                               help='限制处理的任务数量')
     
-    # author 命令：爬取作者详情
-    author_parser = subparsers.add_parser('author', help='爬取作者详细信息')
+    # author 命令：爬取作者详情（豆瓣）
+    author_parser = subparsers.add_parser('author', help='爬取作者详细信息（豆瓣）')
     author_parser.add_argument('--limit', type=int, default=None,
                               help='限制处理的任务数量')
+    
+    # wiki-author 命令：爬取作者详情（百度百科/维基百科）
+    wiki_author_parser = subparsers.add_parser('wiki-author', help='爬取作者详细信息（百度百科/维基百科）')
+    wiki_author_parser.add_argument('--limit', type=int, default=None,
+                                    help='限制处理的任务数量')
     
     # zlibrary 命令：下载电子书文件
     zlib_parser = subparsers.add_parser('zlibrary', help='下载 ZLibrary 电子书')
@@ -539,6 +639,8 @@ def main():
             crawler.crawl_douban(args.limit)
         elif args.command == 'author':
             crawler.crawl_author(args.limit)
+        elif args.command == 'wiki-author':
+            crawler.crawl_wiki_author(args.limit)
         elif args.command == 'zlibrary':
             crawler.crawl_zlibrary(args.limit)
         

@@ -38,13 +38,14 @@ class MinioHelper:
             except S3Error as e:
                 logger.error(f"检查/创建 bucket 失败: {e}")
     
-    def upload_from_url(self, image_url, bucket_name=None):
+    def upload_from_url(self, image_url, bucket_name=None, referer=None):
         """
         从 URL 下载图片并上传到 MinIO
         
         Args:
             image_url: 图片 URL
             bucket_name: bucket 名称，默认为封面 bucket
+            referer: 自定义 Referer，用于绕过防盗链
         
         Returns:
             上传后的文件名，失败返回 None
@@ -53,10 +54,21 @@ class MinioHelper:
             bucket_name = Config.MINIO_BUCKET_COVERS
         
         try:
+            # 根据 URL 自动判断 Referer
+            if not referer:
+                if 'douban.com' in image_url:
+                    referer = 'https://book.douban.com/'
+                elif 'baidu.com' in image_url or 'bcebos.com' in image_url:
+                    referer = 'https://baike.baidu.com/'
+                elif 'wikipedia.org' in image_url or 'wikimedia.org' in image_url:
+                    referer = 'https://zh.wikipedia.org/'
+                else:
+                    referer = image_url  # 使用图片 URL 本身作为 Referer
+            
             # 构造更真实的请求头（模拟浏览器）
             headers = {
                 'User-Agent': Config.USER_AGENT,
-                'Referer': 'https://book.douban.com/',
+                'Referer': referer,
                 'Accept': 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
                 'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
                 'Accept-Encoding': 'gzip, deflate, br',

@@ -15,6 +15,8 @@ public enum SourceOrigin {
 
     DOUBAN(1, "豆瓣读书"),
     ZLIBRARY(2, "Z-Library"),
+    WIKIPEDIA(3, "维基百科"),
+    BAIDU_BAIKE(4, "百度百科"),
     MANUAL(99, "手动录入");
 
     private final Integer code;
@@ -50,6 +52,20 @@ public enum SourceOrigin {
      */
     public boolean isZLibrary() {
         return this == ZLIBRARY;
+    }
+
+    /**
+     * 判断是否为维基百科来源
+     */
+    public boolean isWikipedia() {
+        return this == WIKIPEDIA;
+    }
+
+    /**
+     * 判断是否为百度百科来源
+     */
+    public boolean isBaiduBaike() {
+        return this == BAIDU_BAIKE;
     }
 
     /**

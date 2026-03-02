@@ -509,17 +509,11 @@ class DatabaseHelper:
             'source_url': author_data.get('source_url')
         }
         
-        # 打印调试信息
-        logger.info(f"执行 UPDATE author SQL:")
-        logger.info(f"  author_id: {params['author_id']}")
-        logger.info(f"  original_name: {params['original_name']}")
-        logger.info(f"  country: {params['country']}")
-        logger.info(f"  photo_url: {params['photo_url']}")
-        logger.info(f"  description: {params['description'][:50] if params['description'] else None}...")
-        logger.info(f"  source_url: {params['source_url']}")
+        # 简化日志输出
+        logger.debug(f"更新作者信息: {author_id}")
         
         result = self.execute_query(query, params)
-        logger.info(f"  更新影响行数: {result.rowcount}")
+        logger.debug(f"  更新影响行数: {result.rowcount}")
         
         return result
     

@@ -67,24 +67,21 @@ class DoubanAuthorCrawler:
             'failed': 失败
         """
         try:
-            # 如果没有提供 URL，先搜索
+            # 如果没有提供 URL，标记为无资源
             if not author_url:
-                logger.debug(f"  未提供作者 URL，开始搜索...")
-                author_url = self.search_author_url(author_name)
-                if not author_url:
-                    logger.info(f"  ⚠ 无法自动找到作者页面，标记为待手动补充: {author_name}")
-                    return 'no_url'
-            
-            # 检查 URL 类型：如果是搜索链接，跳过
-            if '/search/' in author_url:
-                logger.info(f"  ⚠ 作者链接是搜索页面，跳过: {author_name}")
+                logger.info(f"  ⚠ 未提供作者 URL，标记为无资源: {author_name}")
                 return 'no_url'
             
             # 补全 URL（如果是相对路径）
             if author_url.startswith('/'):
                 author_url = f"https://book.douban.com{author_url}"
             
-            logger.debug(f"  访问作者链接: {author_url}")
+            # 检查 URL 类型：如果是搜索链接，先尝试访问
+            is_search_url = '/search/' in author_url
+            if is_search_url:
+                logger.info(f"  ⚠ 作者链接是搜索页面，尝试访问: {author_url}")
+            else:
+                logger.debug(f"  访问作者链接: {author_url}")
             
             # 设置 Referer 模拟从搜索页跳转
             headers = {
@@ -130,8 +127,13 @@ class DoubanAuthorCrawler:
             
             # 检查是否是有效的作者页面
             if '/personage/' not in final_url and '/celebrity/' not in final_url:
-                logger.warning(f"  不是有效的作者页面: {final_url}")
-                return 'failed'
+                # 如果是搜索链接且没有重定向到作者页面，标记为无资源
+                if is_search_url:
+                    logger.info(f"  ⚠ 搜索链接未找到作者页面，标记为无资源: {author_name}")
+                    return 'no_url'
+                else:
+                    logger.warning(f"  不是有效的作者页面: {final_url}")
+                    return 'failed'
             
             soup = BeautifulSoup(response.text, 'lxml')
             
