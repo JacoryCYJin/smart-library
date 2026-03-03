@@ -115,9 +115,24 @@ public class ResourceDTO {
     private String sourceUrl;
 
     /**
-     * 原站评分
+     * 原站评分（豆瓣0-10分）
      */
     private BigDecimal sourceScore;
+
+    /**
+     * 本站用户平均评分（0-10分）
+     */
+    private BigDecimal userScore;
+
+    /**
+     * 本站评分人数
+     */
+    private Integer userScoreCount;
+
+    /**
+     * 综合评分（动态权重计算）
+     */
+    private BigDecimal finalScore;
 
     /**
      * NLP情感分析评分
@@ -184,6 +199,9 @@ public class ResourceDTO {
                 .sourceOrigin(entity.getSourceOrigin())
                 .sourceUrl(entity.getSourceUrl())
                 .sourceScore(entity.getSourceScore())
+                .userScore(entity.getUserScore())
+                .userScoreCount(entity.getUserScoreCount())
+                .finalScore(entity.getFinalScore())
                 .sentimentScore(entity.getSentimentScore())
                 .viewCount(entity.getViewCount())
                 .commentCount(entity.getCommentCount())

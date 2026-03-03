@@ -293,10 +293,10 @@
               <form @submit.prevent="submitComment" class="flex flex-col gap-4">
                 <!-- 评分 -->
                 <div class="flex flex-col gap-2">
-                  <label class="text-sm font-medium text-ink-light">{{ i18n.rating }}</label>
-                  <div class="flex gap-2">
+                  <label class="text-sm font-medium text-ink-light">{{ i18n.rating }} (0-10分)</label>
+                  <div class="flex gap-2 items-center">
                     <button
-                      v-for="star in 5"
+                      v-for="star in 10"
                       :key="star"
                       type="button"
                       @click="commentForm.score = star"
@@ -313,6 +313,7 @@
                         />
                       </svg>
                     </button>
+                    <span class="ml-2 text-lg font-semibold text-ink">{{ commentForm.score }}</span>
                   </div>
                 </div>
 
@@ -536,7 +537,7 @@ const allLoaded = ref(false) // 是否已加载全部评论
 
 // 评论表单
 const commentForm = ref({
-  score: 5,
+  score: 10,
   content: '',
 })
 const submitting = ref(false)
@@ -642,7 +643,7 @@ const submitComment = async () => {
       )
       // 重置表单
       commentForm.value = {
-        score: 5,
+        score: 10,
         content: '',
       }
       // 重新加载评论

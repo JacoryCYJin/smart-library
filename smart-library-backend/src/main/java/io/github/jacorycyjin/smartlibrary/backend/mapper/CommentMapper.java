@@ -53,4 +53,13 @@ public interface CommentMapper {
      * @return 影响行数
      */
     int deleteByCommentId(@Param("commentId") String commentId);
+
+    /**
+     * 检查用户是否已对该资源评论过
+     * 
+     * @param userId 用户ID
+     * @param resourceId 资源ID
+     * @return 评论实体（如果存在）
+     */
+    Comment selectByUserAndResource(@Param("userId") String userId, @Param("resourceId") String resourceId);
 }

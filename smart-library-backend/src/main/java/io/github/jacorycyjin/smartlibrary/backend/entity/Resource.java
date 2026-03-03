@@ -114,9 +114,24 @@ public class Resource {
     private String sourceUrl;
 
     /**
-     * 原站评分（如豆瓣评分）
+     * 原站评分（如豆瓣评分，0-10分）
      */
     private BigDecimal sourceScore;
+
+    /**
+     * 本站用户平均评分（0-10分）
+     */
+    private BigDecimal userScore;
+
+    /**
+     * 本站评分人数
+     */
+    private Integer userScoreCount;
+
+    /**
+     * 综合评分（豆瓣70% + 用户30%）
+     */
+    private BigDecimal finalScore;
 
     /**
      * NLP情感分析得分（0-1）

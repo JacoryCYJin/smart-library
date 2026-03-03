@@ -65,4 +65,14 @@
         WHERE comment_id = #{commentId}
           AND deleted = 0
     </select>
+
+    <!-- 检查用户是否已对该资源评论过 -->
+    <select id="selectByUserAndResource" resultMap="CommentResultMap">
+        SELECT *
+        FROM comment
+        WHERE user_id = #{userId}
+          AND resource_id = #{resourceId}
+          AND deleted = 0
+        LIMIT 1
+    </select>
 </mapper>

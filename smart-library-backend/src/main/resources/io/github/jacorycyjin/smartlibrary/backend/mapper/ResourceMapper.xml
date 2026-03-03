@@ -23,6 +23,9 @@
         <result column="source_origin" property="sourceOrigin"/>
         <result column="source_url" property="sourceUrl"/>
         <result column="source_score" property="sourceScore"/>
+        <result column="user_score" property="userScore"/>
+        <result column="user_score_count" property="userScoreCount"/>
+        <result column="final_score" property="finalScore"/>
         <result column="sentiment_score" property="sentimentScore"/>
         <result column="view_count" property="viewCount"/>
         <result column="comment_count" property="commentCount"/>
@@ -36,7 +39,7 @@
     <sql id="Base_Column_List">
         id, resource_id, type, title, translator_name, author_name, cover_url, summary, pub_date,
         isbn, publisher, price, page_count, doi, journal,
-        source_origin, source_url, source_score, sentiment_score,
+        source_origin, source_url, source_score, user_score, user_score_count, final_score, sentiment_score,
         view_count, comment_count, star_count, ctime, mtime, deleted
     </sql>
 
@@ -247,4 +250,30 @@
         ORDER BY r.pub_date DESC, r.ctime DESC
     </select>
 
+    <!-- 更新资源的用户评分和评分人数，并自动计算综合评分（动态权重） -->
+    <update id="updateUserScore">
+        UPDATE resource
+        SET user_score = #{userScore},
+            user_score_count = #{userScoreCount},
+            final_score = CASE
+                -- 两个评分都有：动态权重计算
+                -- 用户评分权重 = min(0.7, 评分人数 / 150)
+                -- 豆瓣评分权重 = 1 - 用户评分权重
+                WHEN source_score > 0 AND #{userScore} > 0 THEN
+                    ROUND(
+                        source_score * (1 - LEAST(0.7, #{userScoreCount} / 150.0)) +
+                        #{userScore} * LEAST(0.7, #{userScoreCount} / 150.0),
+                        1
+                    )
+                -- 只有豆瓣评分
+                WHEN source_score > 0 AND #{userScore} = 0 THEN
+                    source_score
+                -- 只有用户评分
+                WHEN (source_score = 0 OR source_score IS NULL) AND #{userScore} > 0 THEN
+                    #{userScore}
+                -- 都没有
+                ELSE 0
+            END
+        WHERE resource_id = #{resourceId}
+    </update>
 </mapper>

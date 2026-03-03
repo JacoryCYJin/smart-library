@@ -87,7 +87,10 @@ CREATE TABLE resource
 
     source_origin   TINYINT DEFAULT 1 COMMENT '数据来源: 1-豆瓣读书 / 2-Z-Library / 99-手动录入',
     source_url      VARCHAR(500) COMMENT '原站链接',
-    source_score    DECIMAL(3, 1) DEFAULT 0.0 COMMENT '原站评分',
+    source_score    DECIMAL(3, 1) DEFAULT 0.0 COMMENT '原站评分(豆瓣0-10分)',
+    user_score      DECIMAL(3, 1) DEFAULT 0.0 COMMENT '本站用户平均评分(0-10分)',
+    user_score_count INT DEFAULT 0 COMMENT '本站评分人数',
+    final_score     DECIMAL(3, 1) DEFAULT 0.0 COMMENT '综合评分(动态权重计算)',
     sentiment_score DECIMAL(5, 4) COMMENT '情感分析得分',
 
     view_count      INT           DEFAULT 0 COMMENT '总浏览量',
@@ -231,7 +234,7 @@ CREATE TABLE comment
     user_id          VARCHAR(50) NOT NULL,
     resource_id      VARCHAR(50) NOT NULL,
     content          TEXT        NOT NULL COMMENT '评论内容',
-    score            DECIMAL(2, 1) DEFAULT 0.0 COMMENT '评分1至5',
+    score            DECIMAL(3, 1) DEFAULT 0.0 COMMENT '评分0至10',
 
     like_count       INT           DEFAULT 0 COMMENT '点赞数',
     audit_status     TINYINT       DEFAULT 0 COMMENT '审核状态: 0待审 1通过 2驳回',
@@ -241,7 +244,8 @@ CREATE TABLE comment
     mtime            DATETIME      DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改与审核时间',
     deleted          TINYINT       DEFAULT 0 COMMENT '逻辑删除标识',
 
-    INDEX idx_res_audit (resource_id, audit_status)
+    INDEX idx_res_audit (resource_id, audit_status),
+    UNIQUE KEY uk_user_resource (user_id, resource_id, deleted) COMMENT '防止用户对同一资源重复评论'
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_unicode_ci COMMENT ='评论与评分表';

@@ -97,4 +97,16 @@ public interface ResourceMapper {
      * @return 资源列表
      */
     List<Resource> selectResourcesByAuthorId(@Param("authorId") String authorId);
+
+    /**
+     * 更新资源的用户评分和评分人数
+     * 
+     * @param resourceId 资源ID
+     * @param userScore 用户平均评分
+     * @param userScoreCount 评分人数
+     * @return 影响行数
+     */
+    int updateUserScore(@Param("resourceId") String resourceId, 
+                        @Param("userScore") java.math.BigDecimal userScore,
+                        @Param("userScoreCount") Integer userScoreCount);
 }

@@ -110,6 +110,12 @@ public class CommentServiceImpl implements CommentService {
             throw new BusinessException(ApiCode.RESOURCE_NOT_FOUND.getCode(), "资源不存在");
         }
 
+        // 检查用户是否已经评论过该资源
+        Comment existingComment = commentMapper.selectByUserAndResource(userId, form.getResourceId());
+        if (existingComment != null) {
+            throw new BusinessException(ApiCode.FORBIDDEN.getCode(), "您已经评论过该资源，不能重复评论");
+        }
+
         // 创建评论
         Comment comment = Comment.builder()
                 .commentId(UUIDUtil.generateUUID())
@@ -127,6 +133,9 @@ public class CommentServiceImpl implements CommentService {
 
         // 增加资源的评论数
         resourceMapper.incrementCommentCount(form.getResourceId());
+
+        // 重新计算资源评分
+        recalculateResourceScore(form.getResourceId());
 
         return comment.getCommentId();
     }
@@ -155,5 +164,52 @@ public class CommentServiceImpl implements CommentService {
 
         // 减少资源的评论数
         resourceMapper.decrementCommentCount(comment.getResourceId());
+
+        // 重新计算资源评分
+        recalculateResourceScore(comment.getResourceId());
+    }
+
+    /**
+     * 重新计算资源的用户评分和综合评分
+     * 
+     * @param resourceId 资源业务ID
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void recalculateResourceScore(String resourceId) {
+        // 查询该资源所有已通过审核的评论
+        List<Comment> comments = commentMapper.selectByResourceId(resourceId);
+        
+        if (comments == null || comments.isEmpty()) {
+            // 没有评论，清空用户评分
+            resourceMapper.updateUserScore(resourceId, java.math.BigDecimal.ZERO, 0);
+            return;
+        }
+
+        // 计算平均分
+        java.math.BigDecimal totalScore = comments.stream()
+                .map(Comment::getScore)
+                .filter(score -> score != null && score.compareTo(java.math.BigDecimal.ZERO) > 0)
+                .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
+        
+        int scoreCount = (int) comments.stream()
+                .map(Comment::getScore)
+                .filter(score -> score != null && score.compareTo(java.math.BigDecimal.ZERO) > 0)
+                .count();
+
+        if (scoreCount == 0) {
+            resourceMapper.updateUserScore(resourceId, java.math.BigDecimal.ZERO, 0);
+            return;
+        }
+
+        // 计算平均分（保留1位小数）
+        java.math.BigDecimal avgScore = totalScore.divide(
+                java.math.BigDecimal.valueOf(scoreCount), 
+                1, 
+                java.math.RoundingMode.HALF_UP
+        );
+
+        // 更新用户评分
+        resourceMapper.updateUserScore(resourceId, avgScore, scoreCount);
     }
 }

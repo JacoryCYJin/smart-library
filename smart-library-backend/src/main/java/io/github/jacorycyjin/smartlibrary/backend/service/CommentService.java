@@ -38,4 +38,11 @@ public interface CommentService {
      * @param commentId 评论ID
      */
     void deleteComment(String userId, String commentId);
+
+    /**
+     * 重新计算资源的用户评分和综合评分
+     * 
+     * @param resourceId 资源ID
+     */
+    void recalculateResourceScore(String resourceId);
 }

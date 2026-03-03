@@ -67,9 +67,24 @@ public class ResourcePublicVO {
     private String journal;
 
     /**
-     * 原站评分
+     * 原站评分（豆瓣0-10分）
      */
     private BigDecimal sourceScore;
+
+    /**
+     * 本站用户平均评分（0-10分）
+     */
+    private BigDecimal userScore;
+
+    /**
+     * 本站评分人数
+     */
+    private Integer userScoreCount;
+
+    /**
+     * 综合评分（动态权重计算）
+     */
+    private BigDecimal finalScore;
 
     /**
      * 总浏览量
@@ -129,6 +144,9 @@ public class ResourcePublicVO {
                 .publisher(dto.getPublisher())
                 .journal(dto.getJournal())
                 .sourceScore(dto.getSourceScore())
+                .userScore(dto.getUserScore())
+                .userScoreCount(dto.getUserScoreCount())
+                .finalScore(dto.getFinalScore())
                 .viewCount(dto.getViewCount())
                 .commentCount(dto.getCommentCount())
                 .starCount(dto.getStarCount())
