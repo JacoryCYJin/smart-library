@@ -27,6 +27,8 @@ public class MinioConfig {
     @Data
     public static class Buckets {
         private String covers;
+        private String authorAvatars;
+        private String userAvatars;
         private String attachments;
         private String nlpCorpus;
     }
@@ -39,8 +41,10 @@ public class MinioConfig {
     @Bean
     public MinioClient minioClient() {
         log.info("初始化 MinIO 客户端: endpoint={}, accessKey={}", endpoint, accessKey);
-        log.info("Buckets 配置: covers={}, attachments={}, nlpCorpus={}", 
+        log.info("Buckets 配置: covers={}, authorAvatars={}, userAvatars={}, attachments={}, nlpCorpus={}", 
                  buckets != null ? buckets.getCovers() : "null",
+                 buckets != null ? buckets.getAuthorAvatars() : "null",
+                 buckets != null ? buckets.getUserAvatars() : "null",
                  buckets != null ? buckets.getAttachments() : "null",
                  buckets != null ? buckets.getNlpCorpus() : "null");
         

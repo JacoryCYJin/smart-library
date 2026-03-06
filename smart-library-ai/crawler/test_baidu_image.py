@@ -35,7 +35,7 @@ def test_baidu_image():
         
         result = minio.upload_from_url(
             url,
-            bucket_name='library-avatars'
+            bucket_name='library-author-avatars'
         )
         
         if result:

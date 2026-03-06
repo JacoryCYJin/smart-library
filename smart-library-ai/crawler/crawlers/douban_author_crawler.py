@@ -150,7 +150,7 @@ class DoubanAuthorCrawler:
             if photo_url:
                 logger.debug(f"  找到照片 URL: {photo_url}")
                 try:
-                    # 上传到 library-avatars bucket
+                    # 上传到 library-author-avatars bucket
                     photo_file = self.minio.upload_from_url(
                         photo_url, 
                         bucket_name=Config.MINIO_BUCKET_AVATARS
