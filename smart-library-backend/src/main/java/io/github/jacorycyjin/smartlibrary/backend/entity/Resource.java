@@ -138,6 +138,11 @@ public class Resource {
      */
     private BigDecimal sentimentScore;
 
+    /**
+     * AI图谱标识：0=无图谱，1=已生成图谱
+     */
+    private Integer hasGraph;
+
     // ========== 统计字段（冗余优化） ==========
 
     /**

@@ -48,9 +48,10 @@ public class ResourceDetailVO extends ResourcePublicVO {
     private String doi;
 
     /**
-     * 资源文件列表（支持多种格式）
+     * 资源聚合链接（按分类组织）
+     * V3.2 新增：包含书籍信息、下载、解读等分类链接
      */
-    private List<ResourceFileVO> files;
+    private ResourceLinksGroupVO linksGroup;
 
     // ========== 通用详情字段 ==========
     
@@ -73,6 +74,12 @@ public class ResourceDetailVO extends ResourcePublicVO {
      * NLP情感分析评分
      */
     private BigDecimal sentimentScore;
+
+    /**
+     * AI图谱标识：0=无图谱，1=已生成图谱
+     * V3.2 新增
+     */
+    private Integer hasGraph;
 
     /**
      * 完整分类层级路径

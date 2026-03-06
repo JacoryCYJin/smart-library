@@ -92,8 +92,7 @@
                 <!-- 开始阅读按钮 -->
                 <button
                   @click="handleRead"
-                  :disabled="!hasFiles"
-                  class="flex items-center gap-3 px-8 py-4 bg-ink text-white rounded-full font-semibold text-base transition-all duration-300 hover:bg-pop hover:translate-x-1 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-ink disabled:hover:translate-x-0"
+                  class="flex items-center gap-3 px-8 py-4 bg-ink text-white rounded-full font-semibold text-base transition-all duration-300 hover:bg-pop hover:translate-x-1"
                 >
                   <span>{{ i18n.startReading }}</span>
                   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -146,51 +145,6 @@
                         stroke-linejoin="round"
                         stroke-width="2"
                         d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
-                      />
-                    </svg>
-                  </button>
-
-                  <!-- 下载按钮 (支持多文件) -->
-                  <a-dropdown v-if="files.length > 1" trigger="click" position="bottom">
-                    <button
-                      class="flex items-center justify-center w-12 h-12 border border-structure rounded-full text-ink-light bg-white transition-all duration-300 hover:border-ink hover:text-ink hover:bg-[rgba(16,42,67,0.05)]"
-                      title="下载"
-                    >
-                      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
-                          d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-                        />
-                      </svg>
-                    </button>
-                    <template #content>
-                      <a-doption v-for="file in files" :key="file.id" @click="handleDownload(file)">
-                        <template #icon>
-                          <span
-                            class="text-xs font-bold px-1 py-0.5 rounded bg-gray-100 text-gray-600 border border-gray-200"
-                            >{{ file.fileTypeDesc || 'FILE' }}</span
-                          >
-                        </template>
-                        下载 {{ file.fileTypeDesc || '文件' }} ({{ formatFileSize(file.fileSize) }})
-                      </a-doption>
-                    </template>
-                  </a-dropdown>
-
-                  <button
-                    v-else
-                    @click="handleDownload(files[0])"
-                    :disabled="!hasFiles"
-                    class="flex items-center justify-center w-12 h-12 border border-structure rounded-full text-ink-light bg-white transition-all duration-300 hover:border-ink hover:text-ink hover:bg-[rgba(16,42,67,0.05)] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:border-structure disabled:hover:text-ink-light disabled:hover:bg-white"
-                    title="下载"
-                  >
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
                       />
                     </svg>
                   </button>
@@ -474,19 +428,6 @@ const i18n = computed(() => ({
 // 书籍信息
 const book = ref(null)
 const loading = ref(true)
-
-// 文件处理
-const files = computed(() => book.value?.files || [])
-const hasFiles = computed(() => files.value.length > 0)
-
-// 格式化文件大小
-const formatFileSize = (bytes) => {
-  if (bytes === 0) return '0 B'
-  const k = 1024
-  const sizes = ['B', 'KB', 'MB', 'GB', 'TB']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
-}
 
 // 处理阅读
 const handleRead = () => {
