@@ -11,6 +11,7 @@ from bs4 import BeautifulSoup
 import time
 import logging
 import random
+import re
 from urllib.parse import quote
 from config import Config
 from utils import DatabaseHelper, MinioHelper
@@ -266,8 +267,9 @@ class WikiAuthorCrawler:
                 for p in paragraphs:
                     text = p.get_text(strip=True)
                     if text and len(text) > 20:
-                        author_data['description'] = text
-                        logger.debug(f"  提取到简介: {text[:50]}...")
+                        # 清理引用标注
+                        author_data['description'] = self._clean_description(text)
+                        logger.debug(f"  提取到简介: {author_data['description'][:50]}...")
                         break
             
             # 提取信息框数据
@@ -408,13 +410,15 @@ class WikiAuthorCrawler:
                     if summary:
                         text = summary.get_text(strip=True)
                         if text and len(text) > 20:
-                            author_data['description'] = text
-                            logger.debug(f"  ✓ 提取到完整简介 ({selector}): {text[:50]}...")
+                            # 清理引用标注
+                            author_data['description'] = self._clean_description(text)
+                            logger.debug(f"  ✓ 提取到完整简介 ({selector}): {author_data['description'][:50]}...")
                             break
                 
                 # 如果 HTML 没有提取到，才使用 JSON 的截断版本
                 if not author_data['description'] and 'description' in json_data:
-                    author_data['description'] = json_data['description']
+                    # 清理引用标注
+                    author_data['description'] = self._clean_description(json_data['description'])
                     logger.debug(f"  ✓ 提取到简介（JSON）: {author_data['description'][:50]}...")
                 
                 # 提取基本信息卡片
@@ -548,7 +552,8 @@ class WikiAuthorCrawler:
                 if summary:
                     text = summary.get_text(strip=True)
                     if text and len(text) > 20:
-                        author_data['description'] = text
+                        # 清理引用标注
+                        author_data['description'] = self._clean_description(text)
                         break
             
             # 提取基本信息
@@ -649,3 +654,25 @@ class WikiAuthorCrawler:
                 return value
         
         return country
+    
+    def _clean_description(self, text):
+        """
+        清理简介文本中的引用标注
+        
+        Args:
+            text: 原始文本
+        
+        Returns:
+            str: 清理后的文本
+        """
+        if not text:
+            return text
+        
+        # 移除 [数字] 或 [数字-数字] 格式的引用标注
+        # 例如: [3], [4-5], [95], [99]
+        cleaned = re.sub(r'\[\d+(?:-\d+)?\]', '', text)
+        
+        # 移除可能的多余空格
+        cleaned = re.sub(r'\s+', ' ', cleaned)
+        
+        return cleaned.strip()

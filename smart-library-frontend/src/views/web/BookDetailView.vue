@@ -7,22 +7,6 @@
 
     <!-- 书籍详情 -->
     <div v-else-if="book" class="max-w-7xl mx-auto px-8 pt-10">
-      <!-- 返回按钮 -->
-      <button
-        @click="$router.back()"
-        class="flex items-center gap-2 text-ink-light hover:text-ink transition-colors mb-12"
-      >
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M15 19l-7-7 7-7"
-          />
-        </svg>
-        <span>{{ i18n.back }}</span>
-      </button>
-
       <!-- 布局容器 -->
       <div class="relative">
         <!-- 上半部分：固定高度容器 -->

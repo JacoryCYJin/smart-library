@@ -240,8 +240,8 @@
     <select id="selectResourcesByAuthorId" resultMap="BaseResultMap">
         SELECT DISTINCT
             r.id, r.resource_id, r.type, r.title, r.translator_name, r.author_name, r.cover_url, r.summary, r.pub_date,
-            r.isbn, r.publisher, r.price, r.page_count, r.doi, r.journal, r.file_url, r.file_type,
-            r.source_origin, r.source_url, r.source_score, r.sentiment_score,
+            r.isbn, r.publisher, r.price, r.page_count, r.doi, r.journal,
+            r.source_origin, r.source_url, r.source_score, r.user_score, r.user_score_count, r.final_score, r.sentiment_score,
             r.view_count, r.comment_count, r.star_count, r.ctime, r.mtime, r.deleted
         FROM resource r
         INNER JOIN resource_author_rel rel ON r.resource_id = rel.resource_id
