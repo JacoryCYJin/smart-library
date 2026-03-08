@@ -9,10 +9,9 @@
     <div v-else-if="author" class="pb-20">
       <!-- 双栏布局容器 -->
       <div class="flex flex-col lg:flex-row gap-12 lg:gap-0">
-        <!-- 左侧栏：视觉与元数据区 (35%) - 桌面端完全贴边 -->
+        <!-- 左侧栏：作者大图 (35%) - 桌面端完全贴边 -->
         <aside class="w-full lg:w-[35%] flex-shrink-0 px-8 lg:pl-0 lg:pr-0">
-          <!-- 作者大图 -->
-          <div class="relative overflow-hidden rounded-3xl lg:rounded-none lg:rounded-br-[3rem] bg-structure mb-6">
+          <div class="relative overflow-hidden rounded-3xl lg:rounded-none lg:rounded-br-[3rem] bg-structure">
             <img
               v-if="author.photoUrl"
               :src="author.photoUrl"
@@ -30,8 +29,6 @@
               </svg>
             </div>
           </div>
-
-
         </aside>
 
         <!-- 右侧栏：核心内容区 (65%) - 自带最大宽度和间距 -->
@@ -151,9 +148,7 @@ const localeStore = useLocaleStore()
 
 // 国际化文本
 const i18n = computed(() => ({
-  back: localeStore.currentLang === 'zh' ? '返回' : 'Back',
   biography: localeStore.currentLang === 'zh' ? '作者简介' : 'Biography',
-  country: localeStore.currentLang === 'zh' ? '国籍' : 'Country',
   works: localeStore.currentLang === 'zh' ? '作品' : 'Works',
   worksList: localeStore.currentLang === 'zh' ? '作品列表' : 'Works List',
   noBiography: localeStore.currentLang === 'zh' ? '暂无作者简介' : 'No biography available',
