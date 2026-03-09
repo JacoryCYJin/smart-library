@@ -229,15 +229,32 @@ class SmartLibraryCrawler:
                         success_count += 1
                         self.stats['books_crawled'] += 1
                         
-                        # 自动创建 ZLibrary 下载任务
+                        # 自动创建链接爬取任务（书籍页、下载页、解读页）
                         try:
-                            created = self.db.create_zlibrary_task_for_resource(book_id)
-                            if created:
-                                logger.info(f"  ✓ 已创建 ZLibrary 下载任务: {book_id}")
-                            else:
-                                logger.debug(f"  ZLibrary 任务已存在或图书无 ISBN: {book_id}")
+                            from utils.link_task_helper import LinkTaskHelper
+                            
+                            # 获取图书的 ISBN 和标题
+                            query = """
+                            SELECT isbn, title
+                            FROM resource
+                            WHERE resource_id = :resource_id
+                            """
+                            result = self.db.execute_query(query, {'resource_id': book_id})
+                            row = result.fetchone()
+                            
+                            if row:
+                                isbn, title = row[0], row[1]
+                                created = LinkTaskHelper.create_task(
+                                    resource_id=book_id,
+                                    isbn=isbn,
+                                    title=title
+                                )
+                                if created:
+                                    logger.info(f"  ✓ 已创建链接爬取任务: {book_id}")
+                                else:
+                                    logger.debug(f"  链接任务已存在: {book_id}")
                         except Exception as e:
-                            logger.warning(f"  创建 ZLibrary 任务失败: {e}")
+                            logger.warning(f"  创建链接任务失败: {e}")
                     else:
                         self.stats['books_skipped'] += 1
                     

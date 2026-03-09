@@ -12,6 +12,11 @@ public enum LinkPlatform {
     ZLIBRARY(2, "ZLibrary", "https://zh.zlibrary.org"),
     BILIBILI(3, "哔哩哔哩", "https://www.bilibili.com"),
     YOUTUBE(4, "YouTube", "https://www.youtube.com"),
+    DANGDANG(5, "当当", "https://product.dangdang.com"),
+    GOODREADS(6, "Goodreads", "https://www.goodreads.com"),
+    ANNAS_ARCHIVE(7, "Anna's Archive", "https://annas-archive.org"),
+    LIBGEN(8, "Library Genesis", "http://libgen.rs"),
+    JIUMO(9, "鸠摩搜书", "https://www.jiumodiary.com"),
     OTHER(99, "其他", "");
 
     private final Integer code;
@@ -68,6 +73,16 @@ public enum LinkPlatform {
             return BILIBILI;
         } else if (lowerUrl.contains("youtube.com") || lowerUrl.contains("youtu.be")) {
             return YOUTUBE;
+        } else if (lowerUrl.contains("dangdang.com")) {
+            return DANGDANG;
+        } else if (lowerUrl.contains("goodreads.com")) {
+            return GOODREADS;
+        } else if (lowerUrl.contains("annas-archive.org")) {
+            return ANNAS_ARCHIVE;
+        } else if (lowerUrl.contains("libgen.rs") || lowerUrl.contains("libgen.is")) {
+            return LIBGEN;
+        } else if (lowerUrl.contains("jiumodiary.com")) {
+            return JIUMO;
         }
         
         return OTHER;
