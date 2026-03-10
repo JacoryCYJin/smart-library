@@ -1,11 +1,17 @@
 """
-统一资源链接爬取执行器（优化版）
+统一资源链接爬取执行器（优化版 - 逐本书爬取）
 
 用法:
-    python crawl_links.py --type info --limit 10       # 爬取书籍页
-    python crawl_links.py --type download --limit 10   # 爬取下载页
-    python crawl_links.py --type review --limit 10     # 爬取解读页
-    python crawl_links.py --type all --limit 10        # 爬取所有类型（一次性完成）
+    python crawl_links.py --type all                   # 逐本书爬取所有待处理任务（推荐）
+    python crawl_links.py --type info                  # 爬取所有书的信息页
+    python crawl_links.py --type review                # 爬取所有书的解读页
+    python crawl_links.py --type all --limit 10        # 逐本书爬取10本（限制数量）
+    python crawl_links.py --type info --limit 50       # 爬取50本书的信息页
+
+说明:
+    - --type all: 逐本书爬取，每本书完成信息页和解读页后再处理下一本
+    - 不指定 --limit: 默认爬取所有待处理任务
+    - --limit N: 限制爬取数量为 N 条
 
 @author JacoryCyJin
 @date 2026/03/08
@@ -215,26 +221,203 @@ class LinkCrawlExecutor:
     
     def execute_all_types(self, limit: int = 10):
         """
-        一次性爬取所有类型的链接（不包括下载页，因为暂时停用）
+        逐本书爬取所有类型的链接（信息页 + 解读页）
+        每本书完成信息页和解读页后再处理下一本
         
         Args:
-            limit: 每种类型的最大任务数
+            limit: 最大任务数（书籍数量）
         """
-        logger.info("开始爬取所有类型的链接（书籍页 + 解读页）...")
+        logger.info("开始逐本书爬取链接（信息页 + 解读页）...")
         
-        # 只爬取书籍页和解读页（下载页暂时停用）
-        for link_type in [
-            LinkTaskHelper.LINK_TYPE_INFO,      # 书籍页
-            # LinkTaskHelper.LINK_TYPE_DOWNLOAD,  # 下载页（已注释，暂时停用）
-            LinkTaskHelper.LINK_TYPE_REVIEW     # 解读页
-        ]:
-            logger.info(f"\n{'='*50}")
-            logger.info(f"开始爬取{self._get_type_name(link_type)}")
-            logger.info(f"{'='*50}")
+        # 获取待处理的书籍任务（以信息页任务为基准）
+        info_tasks = LinkTaskHelper.get_pending_tasks(
+            link_type=LinkTaskHelper.LINK_TYPE_INFO, 
+            limit=limit
+        )
+        
+        if not info_tasks:
+            logger.info("没有待处理的书籍任务")
+            return
+        
+        logger.info(f"找到 {len(info_tasks)} 本待处理的书籍\n")
+        
+        total_success = 0
+        total_failed = 0
+        total_no_resource = 0
+        
+        for idx, task in enumerate(info_tasks, 1):
+            task_id = task['id']
+            resource_id = task['resource_id']
+            isbn = task['isbn']
+            title = task['title']
             
-            self.execute_tasks(link_type, limit)
+            logger.info(f"{'='*60}")
+            logger.info(f"[{idx}/{len(info_tasks)}] 处理书籍: {title}")
+            logger.info(f"{'='*60}")
             
-            time.sleep(3)  # 不同类型之间延迟
+            # 1. 爬取信息页
+            logger.info(f"\n📖 步骤 1/2: 爬取信息页...")
+            info_result = self._crawl_single_task(
+                task_id=task_id,
+                resource_id=resource_id,
+                isbn=isbn,
+                title=title,
+                link_type=LinkTaskHelper.LINK_TYPE_INFO
+            )
+            
+            if info_result['success']:
+                total_success += 1
+            elif info_result['no_resource']:
+                total_no_resource += 1
+            else:
+                total_failed += 1
+            
+            time.sleep(2)  # 信息页和解读页之间延迟
+            
+            # 2. 爬取解读页
+            logger.info(f"\n🎬 步骤 2/2: 爬取解读页...")
+            
+            # 查找对应的解读页任务
+            review_tasks = LinkTaskHelper.get_pending_tasks(
+                link_type=LinkTaskHelper.LINK_TYPE_REVIEW,
+                limit=1000  # 获取所有待处理任务
+            )
+            
+            # 找到与当前书籍匹配的解读页任务
+            review_task = next(
+                (t for t in review_tasks if t['resource_id'] == resource_id),
+                None
+            )
+            
+            if review_task:
+                review_result = self._crawl_single_task(
+                    task_id=review_task['id'],
+                    resource_id=resource_id,
+                    isbn=isbn,
+                    title=title,
+                    link_type=LinkTaskHelper.LINK_TYPE_REVIEW
+                )
+                
+                if review_result['success']:
+                    total_success += 1
+                elif review_result['no_resource']:
+                    total_no_resource += 1
+                else:
+                    total_failed += 1
+            else:
+                logger.warning(f"  ⚠️  未找到对应的解读页任务")
+            
+            logger.info(f"\n✅ 书籍 [{title}] 处理完成\n")
+            
+            # 书籍之间延迟
+            if idx < len(info_tasks):
+                time.sleep(3)
+        
+        # 输出总体统计
+        logger.info("\n" + "="*60)
+        logger.info(f"全部爬取完成：")
+        logger.info(f"  成功: {total_success} 个任务")
+        logger.info(f"  失败: {total_failed} 个任务")
+        logger.info(f"  无资源: {total_no_resource} 个任务")
+        logger.info(f"  处理书籍: {len(info_tasks)} 本")
+        logger.info("="*60)
+    
+    def _crawl_single_task(self, task_id: int, resource_id: str, isbn: str, 
+                          title: str, link_type: int) -> dict:
+        """
+        爬取单个任务
+        
+        Args:
+            task_id: 任务ID
+            resource_id: 资源ID
+            isbn: ISBN
+            title: 书名
+            link_type: 链接类型
+        
+        Returns:
+            dict: {'success': bool, 'no_resource': bool, 'error': str}
+        """
+        # 设置全局变量（用于中断清理）
+        global current_task_id, current_resource_id, current_link_type
+        current_task_id = task_id
+        current_resource_id = resource_id
+        current_link_type = link_type
+        
+        result = {
+            'success': False,
+            'no_resource': False,
+            'error': None
+        }
+        
+        try:
+            # 更新状态为处理中
+            LinkTaskHelper.update_page_status(
+                task_id, 
+                link_type, 
+                LinkTaskHelper.STATUS_PROCESSING
+            )
+            
+            # 获取对应的爬虫
+            crawler = self.crawlers.get(link_type)
+            if not crawler:
+                raise Exception(f"未找到对应的爬虫 (type={link_type})")
+            
+            # 执行爬取
+            links = crawler.search_links(
+                resource_id=resource_id,
+                isbn=isbn,
+                title=title
+            )
+            
+            # 保存结果
+            if links:
+                # 去重：检查是否已存在相同链接
+                links = self._deduplicate_links(resource_id, links, link_type)
+                
+                if links:
+                    LinkTaskHelper.save_page_result(task_id, link_type, links)
+                    logger.info(f"  ✓ 成功爬取 {len(links)} 个链接")
+                    
+                    # 将链接插入到 resource_link 表
+                    self._save_links_to_db(resource_id, links, link_type)
+                    
+                    result['success'] = True
+                else:
+                    logger.warning(f"  ✗ 所有链接均已存在，跳过")
+                    LinkTaskHelper.update_page_status(
+                        task_id,
+                        link_type,
+                        LinkTaskHelper.STATUS_COMPLETED,
+                        error_msg="链接已存在"
+                    )
+                    result['success'] = True  # 视为成功
+            else:
+                LinkTaskHelper.update_page_status(
+                    task_id,
+                    link_type,
+                    LinkTaskHelper.STATUS_NO_RESOURCE,
+                    error_msg="未找到相关链接"
+                )
+                logger.warning(f"  ✗ 未找到链接")
+                result['no_resource'] = True
+            
+        except Exception as e:
+            logger.error(f"  ✗ 任务失败: {e}")
+            LinkTaskHelper.update_page_status(
+                task_id,
+                link_type,
+                LinkTaskHelper.STATUS_FAILED,
+                error_msg=str(e)
+            )
+            result['error'] = str(e)
+        
+        finally:
+            # 清除全局变量
+            current_task_id = None
+            current_resource_id = None
+            current_link_type = None
+        
+        return result
     
     def _deduplicate_links(self, resource_id: str, links: List[Dict], link_type: int) -> List[Dict]:
         """
@@ -302,15 +485,16 @@ class LinkCrawlExecutor:
                 query = """
                 INSERT INTO resource_link (
                     link_id, resource_id, link_type, platform,
-                    url, title, description, sort_order, status
+                    url, title, description, cover_url, sort_order, status
                 ) VALUES (
                     :link_id, :resource_id, :link_type, :platform,
-                    :url, :title, :description, :sort_order, 1
+                    :url, :title, :description, :cover_url, :sort_order, 1
                 )
                 ON DUPLICATE KEY UPDATE
                     url = VALUES(url),
                     title = VALUES(title),
                     description = VALUES(description),
+                    cover_url = VALUES(cover_url),
                     sort_order = VALUES(sort_order)
                 """
                 
@@ -322,6 +506,7 @@ class LinkCrawlExecutor:
                     'url': link.get('url'),
                     'title': link.get('title'),
                     'description': link.get('description'),
+                    'cover_url': link.get('cover_url'),
                     'sort_order': link.get('sort_order', 0)
                 })
             
@@ -346,22 +531,34 @@ def main():
         '--type',
         choices=['info', 'download', 'review', 'all'],
         required=True,
-        help='爬取类型: info-书籍页 / download-下载页 / review-解读页 / all-全部'
+        help='爬取类型: info-书籍页 / download-下载页 / review-解读页 / all-全部（逐本书爬取）'
     )
     parser.add_argument(
         '--limit',
         type=int,
-        default=10,
-        help='最大任务数（默认10）'
+        default=None,
+        help='最大任务数（不指定则爬取所有待处理任务）'
     )
     
     args = parser.parse_args()
+    
+    # 确定 limit 值
+    if args.limit is None:
+        # 不指定 limit，默认爬取所有
+        limit = 999999
+        logger.info("未指定 --limit 参数，将爬取所有待处理任务")
+    elif args.limit == 0:
+        limit = 999999  # 0 表示不限制
+        logger.info("--limit 0，将爬取所有待处理任务")
+    else:
+        limit = args.limit
+        logger.info(f"将爬取 {limit} 条任务")
     
     executor = LinkCrawlExecutor()
     
     # 根据参数确定 link_type
     if args.type == 'all':
-        executor.execute_all_types(limit=args.limit)
+        executor.execute_all_types(limit=limit)
     else:
         type_map = {
             'info': LinkTaskHelper.LINK_TYPE_INFO,
@@ -369,7 +566,7 @@ def main():
             'review': LinkTaskHelper.LINK_TYPE_REVIEW
         }
         link_type = type_map[args.type]
-        executor.execute_tasks(link_type=link_type, limit=args.limit)
+        executor.execute_tasks(link_type=link_type, limit=limit)
 
 
 if __name__ == '__main__':

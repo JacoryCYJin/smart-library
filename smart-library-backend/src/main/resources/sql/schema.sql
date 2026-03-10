@@ -131,6 +131,7 @@ CREATE TABLE resource_link
     url         VARCHAR(1000) NOT NULL COMMENT '外部链接地址',
     title       VARCHAR(255) COMMENT '链接展示标题',
     description VARCHAR(500) COMMENT '链接描述/备注',
+    cover_url   VARCHAR(500) COMMENT '视频封面URL（B站/YouTube）',
 
     sort_order  INT           DEFAULT 0 COMMENT '排序权重(同类型链接按此排序)',
     click_count INT           DEFAULT 0 COMMENT '点击统计',

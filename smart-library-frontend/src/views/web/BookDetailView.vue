@@ -73,23 +73,79 @@
               <div
                 class="flex items-center justify-between gap-4 mt-3 pt-8 pb-7 border-b border-structure"
               >
-                <!-- 开始阅读按钮 -->
-                <button
-                  @click="handleRead"
-                  class="flex items-center gap-3 px-8 py-4 bg-ink text-white rounded-full font-semibold text-base transition-all duration-300 hover:bg-pop hover:translate-x-1"
-                >
-                  <span>{{ i18n.startReading }}</span>
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M13 7l5 5m0 0l-5 5m5-5H6"
-                    />
-                  </svg>
-                </button>
+                <!-- 左侧按钮组 -->
+                <div class="flex items-center gap-3">
+                  <!-- 开始阅读按钮 -->
+                  <button
+                    @click="handleRead"
+                    class="flex items-center gap-3 px-8 py-4 bg-ink text-white rounded-full font-semibold text-base transition-all duration-300 hover:bg-pop hover:translate-x-1"
+                  >
+                    <span>{{ i18n.startReading }}</span>
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M13 7l5 5m0 0l-5 5m5-5H6"
+                      />
+                    </svg>
+                  </button>
 
-                <!-- 图标操作组 -->
+                  <!-- 查看详情按钮（下拉菜单） -->
+                  <div v-if="hasInfoLinks" class="relative">
+                    <button
+                      @click="toggleInfoDropdown"
+                      class="flex items-center gap-2 px-6 py-4 border-2 border-ink text-ink rounded-full font-semibold text-base transition-all duration-300 hover:bg-ink hover:text-white"
+                    >
+                      <span>{{ i18n.viewDetails }}</span>
+                      <svg 
+                        class="w-4 h-4 transition-transform duration-200"
+                        :class="{ 'rotate-180': showInfoDropdown }"
+                        fill="none" 
+                        stroke="currentColor" 
+                        viewBox="0 0 24 24"
+                      >
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+
+                    <!-- 下拉菜单 -->
+                    <transition
+                      enter-active-class="transition ease-out duration-200"
+                      enter-from-class="opacity-0 translate-y-1"
+                      enter-to-class="opacity-100 translate-y-0"
+                      leave-active-class="transition ease-in duration-150"
+                      leave-from-class="opacity-100 translate-y-0"
+                      leave-to-class="opacity-0 translate-y-1"
+                    >
+                      <div
+                        v-if="showInfoDropdown"
+                        class="absolute top-full left-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-structure overflow-hidden z-50"
+                      >
+                        <a
+                          v-for="link in infoLinks"
+                          :key="link.linkId"
+                          :href="link.url"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          class="flex items-center gap-3 px-4 py-3 hover:bg-canvas transition-colors"
+                        >
+                          <div
+                            :class="getPlatformInfo(link.platform).color"
+                            class="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold"
+                          >
+                            {{ getPlatformInfo(link.platform).icon }}
+                          </div>
+                          <span class="text-sm font-medium text-ink">
+                            {{ getPlatformInfo(link.platform).displayName }}
+                          </span>
+                        </a>
+                      </div>
+                    </transition>
+                  </div>
+                </div>
+
+                <!-- 右侧图标操作组 -->
                 <div class="flex items-center gap-4">
                   <!-- 收藏按钮 -->
                   <button
@@ -217,6 +273,140 @@
                   <h3 class="text-sm font-semibold text-ink">{{ i18n.price }}</h3>
                   <p class="text-base text-ink-light">¥{{ book.price }}</p>
                 </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 资源链接区域 -->
+          <div v-if="hasReviewLinks || hasDownloadLinks" class="border-t border-structure pt-12 mb-16">
+            <!-- 解读页 - 横向滚动视频卡片 -->
+            <div v-if="hasReviewLinks" class="mb-12">
+              <h2 class="text-2xl font-bold text-ink mb-6">{{ i18n.reviewPages }}</h2>
+              
+              <!-- 横向滚动容器 -->
+              <div class="relative group">
+                <!-- 滚动区域 -->
+                <div 
+                  ref="reviewScrollContainer"
+                  class="flex gap-4 overflow-x-auto scrollbar-hide scroll-smooth pb-4"
+                  style="scrollbar-width: none; -ms-overflow-style: none;"
+                >
+                  <a
+                    v-for="link in reviewLinks"
+                    :key="link.linkId"
+                    :href="link.url"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="flex-shrink-0 w-80 group/card"
+                  >
+                    <!-- 视频封面卡片 -->
+                    <div class="relative aspect-video bg-structure rounded-xl overflow-hidden mb-3 transition-transform duration-300 group-hover/card:scale-105">
+                      <!-- 视频封面图 -->
+                      <img 
+                        v-if="getVideoCover(link)"
+                        :src="getVideoCover(link)" 
+                        :alt="link.title || getPlatformInfo(link.platform).displayName"
+                        class="w-full h-full object-cover"
+                        referrerpolicy="no-referrer"
+                        @error="(e) => e.target.style.display = 'none'"
+                      />
+                      
+                      <!-- 平台标识 -->
+                      <div 
+                        :class="getPlatformInfo(link.platform).color"
+                        class="absolute top-3 left-3 px-3 py-1.5 rounded-lg text-sm font-bold z-10 flex items-center gap-1.5"
+                      >
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" />
+                        </svg>
+                        {{ getPlatformInfo(link.platform).displayName }}
+                      </div>
+                      
+                      <!-- 播放按钮 -->
+                      <div class="absolute inset-0 flex items-center justify-center bg-black/20 group-hover/card:bg-black/30 transition-colors">
+                        <div class="w-16 h-16 bg-white/90 rounded-full flex items-center justify-center group-hover/card:scale-110 transition-transform">
+                          <svg class="w-8 h-8 text-ink ml-1" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M8 5v14l11-7z"/>
+                          </svg>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <!-- 视频标题 -->
+                    <h3 class="text-sm font-medium text-ink line-clamp-2 group-hover/card:text-pop transition-colors">
+                      {{ link.title || getPlatformInfo(link.platform).displayName }}
+                    </h3>
+                  </a>
+                </div>
+
+                <!-- 左右滚动按钮 -->
+                <button
+                  v-if="canScrollLeft"
+                  @click="scrollReviews('left')"
+                  class="absolute left-0 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 hover:bg-white rounded-full shadow-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                >
+                  <svg class="w-6 h-6 text-ink" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+                
+                <button
+                  v-if="canScrollRight"
+                  @click="scrollReviews('right')"
+                  class="absolute right-0 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 hover:bg-white rounded-full shadow-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                >
+                  <svg class="w-6 h-6 text-ink" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- 下载页 -->
+            <div v-if="hasDownloadLinks">
+              <h2 class="text-2xl font-bold text-ink mb-6">{{ i18n.downloadPages }}</h2>
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <a
+                  v-for="link in downloadLinks"
+                  :key="link.linkId"
+                  :href="link.url"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="group flex items-center gap-4 p-4 bg-white border border-structure rounded-xl transition-all duration-300 hover:border-ink hover:shadow-lg hover:-translate-y-1"
+                >
+                  <!-- 平台图标 -->
+                  <div
+                    :class="getPlatformInfo(link.platform).color"
+                    class="flex-shrink-0 w-12 h-12 rounded-lg flex items-center justify-center text-xl font-bold"
+                  >
+                    {{ getPlatformInfo(link.platform).icon }}
+                  </div>
+
+                  <!-- 链接信息 -->
+                  <div class="flex-1 min-w-0">
+                    <div class="text-sm font-semibold text-ink group-hover:text-pop transition-colors truncate">
+                      {{ getPlatformInfo(link.platform).displayName }}
+                    </div>
+                    <div class="text-xs text-ink-light mt-1 truncate" v-if="link.title">
+                      {{ link.title }}
+                    </div>
+                  </div>
+
+                  <!-- 箭头图标 -->
+                  <svg
+                    class="w-5 h-5 text-ink-light group-hover:text-pop group-hover:translate-x-1 transition-all flex-shrink-0"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M13 7l5 5m0 0l-5 5m5-5H6"
+                    />
+                  </svg>
+                </a>
               </div>
             </div>
           </div>
@@ -402,20 +592,131 @@ const i18n = computed(() => ({
   noDescription: localeStore.currentLang === 'zh' ? '暂无详细描述' : 'No description available',
   unknown: localeStore.currentLang === 'zh' ? '未知' : 'Unknown',
   startReading: localeStore.currentLang === 'zh' ? '开始阅读' : 'Start Reading',
+  viewDetails: localeStore.currentLang === 'zh' ? '查看详情' : 'View Details',
   back: localeStore.currentLang === 'zh' ? '返回' : 'Back',
   notFound:
     localeStore.currentLang === 'zh'
       ? '书籍不存在或已被删除'
       : 'Book not found or has been deleted',
+  interpretations: localeStore.currentLang === 'zh' ? '精选解读' : 'Featured Interpretations',
+  noInterpretations:
+    localeStore.currentLang === 'zh' ? '暂无解读资源' : 'No interpretations available',
+  infoPages: localeStore.currentLang === 'zh' ? '信息页' : 'Information Pages',
+  downloadPages: localeStore.currentLang === 'zh' ? '下载页' : 'Download Pages',
+  reviewPages: localeStore.currentLang === 'zh' ? '解读页' : 'Review Pages',
+  noInfoLinks: localeStore.currentLang === 'zh' ? '暂无信息页链接' : 'No information links',
+  noDownloadLinks: localeStore.currentLang === 'zh' ? '暂无下载链接' : 'No download links',
+  noReviewLinks: localeStore.currentLang === 'zh' ? '暂无解读链接' : 'No review links',
+  watchOnBilibili: localeStore.currentLang === 'zh' ? '在 B站 观看' : 'Watch on Bilibili',
+  watchOnYouTube: localeStore.currentLang === 'zh' ? '在 YouTube 观看' : 'Watch on YouTube',
+  viewOnDouban: localeStore.currentLang === 'zh' ? '在豆瓣查看' : 'View on Douban',
+  downloadFromZLib:
+    localeStore.currentLang === 'zh' ? '从 Z-Library 下载' : 'Download from Z-Library',
 }))
 
 // 书籍信息
 const book = ref(null)
 const loading = ref(true)
 
+// 计算属性：文件列表
+const files = computed(() => book.value?.files || [])
+const hasFiles = computed(() => files.value.length > 0)
+
+// 信息页下拉菜单状态
+const showInfoDropdown = ref(false)
+
+// 解读页横向滚动容器
+const reviewScrollContainer = ref(null)
+
+// 计算属性：分组链接列表（后端已分组）
+const infoLinks = computed(() => book.value?.linksGroup?.infoLinks || [])
+const downloadLinks = computed(() => book.value?.linksGroup?.downloadLinks || [])
+const reviewLinks = computed(() => book.value?.linksGroup?.reviewLinks || [])
+
+const hasInfoLinks = computed(() => infoLinks.value.length > 0)
+const hasDownloadLinks = computed(() => downloadLinks.value.length > 0)
+const hasReviewLinks = computed(() => reviewLinks.value.length > 0)
+const hasAnyLinks = computed(() => hasInfoLinks.value || hasDownloadLinks.value || hasReviewLinks.value)
+
+// 获取平台信息
+const getPlatformInfo = (platform) => {
+  const platformMap = {
+    1: { name: 'Douban', nameZh: '豆瓣', icon: '豆', color: 'bg-[#00b51d] text-white' },
+    2: { name: 'Z-Library', nameZh: 'Z-Library', icon: 'Z', color: 'bg-[#3b82f6] text-white' },
+    3: { name: 'Bilibili', nameZh: 'B站', icon: 'B', color: 'bg-[#00a1d6] text-white' },
+    4: { name: 'YouTube', nameZh: 'YouTube', icon: 'Y', color: 'bg-[#ff0000] text-white' },
+  }
+  
+  const info = platformMap[platform] || { name: 'Unknown', nameZh: '未知', icon: '?', color: 'bg-gray-500 text-white' }
+  return {
+    ...info,
+    displayName: localeStore.currentLang === 'zh' ? info.nameZh : info.name
+  }
+}
+
+// 获取视频封面（优先使用爬虫提供的 cover_url）
+const getVideoCover = (link) => {
+  // 优先使用爬虫返回的封面 URL
+  if (link.coverUrl) {
+    return link.coverUrl
+  }
+  
+  // 如果没有封面，返回 null（显示占位背景色）
+  return null
+}
+
+// 切换信息页下拉菜单
+const toggleInfoDropdown = () => {
+  showInfoDropdown.value = !showInfoDropdown.value
+}
+
+// 判断解读页是否可以左右滚动
+const canScrollLeft = computed(() => {
+  if (!reviewScrollContainer.value) return false
+  return reviewScrollContainer.value.scrollLeft > 0
+})
+
+const canScrollRight = computed(() => {
+  if (!reviewScrollContainer.value) return false
+  const container = reviewScrollContainer.value
+  return container.scrollLeft < container.scrollWidth - container.clientWidth - 10
+})
+
+// 解读页左右滚动
+const scrollReviews = (direction) => {
+  if (!reviewScrollContainer.value) return
+  const scrollAmount = 320 // 卡片宽度 + gap
+  const currentScroll = reviewScrollContainer.value.scrollLeft
+  const targetScroll = direction === 'left' 
+    ? currentScroll - scrollAmount 
+    : currentScroll + scrollAmount
+  
+  reviewScrollContainer.value.scrollTo({
+    left: targetScroll,
+    behavior: 'smooth'
+  })
+}
+
+// 点击外部关闭下拉菜单
+const handleClickOutside = (event) => {
+  if (showInfoDropdown.value) {
+    const dropdown = event.target.closest('.relative')
+    if (!dropdown) {
+      showInfoDropdown.value = false
+    }
+  }
+}
+
 // 处理阅读
 const handleRead = () => {
-  if (!hasFiles.value) return
+  if (!hasFiles.value) {
+    Message.warning(
+      localeStore.currentLang === 'zh'
+        ? '暂无在线阅读资源'
+        : 'No online reading resource available',
+    )
+    return
+  }
 
   // 优先寻找 PDF 或 EPUB
   const readableFile =
@@ -639,10 +940,14 @@ onMounted(async () => {
 
   // 添加滚动监听
   window.addEventListener('scroll', handleScroll)
+  // 添加点击外部关闭下拉菜单
+  document.addEventListener('click', handleClickOutside)
 })
 
 onUnmounted(() => {
   // 移除滚动监听
   window.removeEventListener('scroll', handleScroll)
+  // 移除点击外部监听
+  document.removeEventListener('click', handleClickOutside)
 })
 </script>

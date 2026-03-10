@@ -1,14 +1,18 @@
 package io.github.jacorycyjin.smartlibrary.backend.converter;
 
+import io.github.jacorycyjin.smartlibrary.backend.common.util.ResourceLinkGroupUtil;
 import io.github.jacorycyjin.smartlibrary.backend.dto.CategoryDTO;
 import io.github.jacorycyjin.smartlibrary.backend.dto.ResourceDTO;
 import io.github.jacorycyjin.smartlibrary.backend.dto.TagDTO;
 import io.github.jacorycyjin.smartlibrary.backend.entity.Category;
 import io.github.jacorycyjin.smartlibrary.backend.entity.Resource;
+import io.github.jacorycyjin.smartlibrary.backend.entity.ResourceLink;
 import io.github.jacorycyjin.smartlibrary.backend.mapper.CategoryMapper;
+import io.github.jacorycyjin.smartlibrary.backend.mapper.ResourceLinkMapper;
 import io.github.jacorycyjin.smartlibrary.backend.mapper.TagMapper;
 import io.github.jacorycyjin.smartlibrary.backend.vo.CategoryVO;
 import io.github.jacorycyjin.smartlibrary.backend.vo.ResourceDetailVO;
+import io.github.jacorycyjin.smartlibrary.backend.vo.ResourceLinksGroupVO;
 import io.github.jacorycyjin.smartlibrary.backend.vo.ResourcePublicVO;
 import io.github.jacorycyjin.smartlibrary.backend.vo.TagVO;
 
@@ -100,9 +104,10 @@ public class ResourceConverter {
      * 将 ResourceDTO 转换为 ResourceDetailVO（包含完整分类层级）
      * 
      * @param dto 资源 DTO
+     * @param resourceLinkMapper 资源链接 Mapper（用于查询链接）
      * @return 资源详情 VO
      */
-    public static ResourceDetailVO toDetailVO(ResourceDTO dto) {
+    public static ResourceDetailVO toDetailVO(ResourceDTO dto, ResourceLinkMapper resourceLinkMapper) {
         if (dto == null) {
             return null;
         }
@@ -119,6 +124,13 @@ public class ResourceConverter {
                 .map(TagVO::fromDTO)
                 .toList()
                 : null;
+
+        // 查询并分组资源链接
+        ResourceLinksGroupVO linksGroup = null;
+        if (resourceLinkMapper != null && dto.getResourceId() != null) {
+            List<ResourceLink> links = resourceLinkMapper.selectLinksByResourceId(dto.getResourceId());
+            linksGroup = ResourceLinkGroupUtil.groupLinks(links);
+        }
 
         // 构建 DetailVO
         return ResourceDetailVO.builder()
@@ -143,6 +155,7 @@ public class ResourceConverter {
                 .price(dto.getPrice())
                 .pageCount(dto.getPageCount())
                 .doi(dto.getDoi())
+                .linksGroup(linksGroup)
                 .summary(dto.getSummary())
                 .sourceOrigin(dto.getSourceOrigin())
                 .sourceUrl(dto.getSourceUrl())

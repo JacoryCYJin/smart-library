@@ -21,6 +21,7 @@ public class ResourceLink {
     private String url;
     private String title;
     private String description;
+    private String coverUrl;  // 视频封面URL（B站/YouTube）
     
     private Integer sortOrder;
     private Integer clickCount;

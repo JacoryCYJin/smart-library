@@ -22,7 +22,7 @@ class ReviewCrawler(BaseLinkCrawler):
     
     # 播放量阈值（过滤低质量视频）
     MIN_PLAY_COUNT_BILIBILI = 10000   # B站最低1万播放
-    MIN_VIEW_COUNT_YOUTUBE = 1000     # YouTube最低1千观看
+    MIN_VIEW_COUNT_YOUTUBE = 100      # YouTube最低100观看（降低阈值）
     
     # 每个平台返回的视频数量
     MAX_BILIBILI_VIDEOS = 4  # B站返回4个
@@ -90,7 +90,17 @@ class ReviewCrawler(BaseLinkCrawler):
             final_links = bilibili_links_filtered + youtube_links_filtered
             final_links.sort(key=lambda x: x.get('_play_count', 0), reverse=True)
             
-            # 5. 移除内部字段并设置 sort_order
+            # 5. 为 B站视频获取封面（YouTube 已在解析时添加）
+            for link in final_links:
+                if link['platform'] == self.PLATFORM_BILIBILI:
+                    bvid = link.get('_bvid')
+                    if bvid:
+                        cover_url = self._fetch_bilibili_cover(bvid)
+                        if cover_url:
+                            link['cover_url'] = cover_url
+                        time.sleep(0.5)  # API 限流
+            
+            # 6. 移除内部字段并设置 sort_order
             for idx, link in enumerate(final_links):
                 link.pop('_play_count', None)
                 link.pop('_bvid', None)
@@ -212,6 +222,7 @@ class ReviewCrawler(BaseLinkCrawler):
                         'url': url,
                         'title': video_title,
                         'description': f'UP主：{author}',
+                        'cover_url': None,  # 稍后通过 API 获取
                         '_play_count': play_count,
                         '_bvid': bvid,
                         'sort_order': 0
@@ -238,8 +249,8 @@ class ReviewCrawler(BaseLinkCrawler):
             List[Dict]: YouTube视频链接列表
         """
         try:
-            # 构造搜索关键词
-            keywords = [f"{keyword} {suffix}" for suffix in self.YOUTUBE_KEYWORDS_SUFFIX]
+            # 构造搜索关键词（添加 "book" 提高准确性）
+            keywords = [f"{keyword} book {suffix}" for suffix in self.YOUTUBE_KEYWORDS_SUFFIX]
             all_videos = []
             
             for search_keyword in keywords:
@@ -256,7 +267,7 @@ class ReviewCrawler(BaseLinkCrawler):
                     response = requests.get(search_url, headers=headers, timeout=15)
                     response.raise_for_status()
                     
-                    videos = self._parse_youtube_search_page(response.text)
+                    videos = self._parse_youtube_search_page(response.text, keyword)
                     all_videos.extend(videos)
                     time.sleep(2)
                     
@@ -277,12 +288,13 @@ class ReviewCrawler(BaseLinkCrawler):
             logger.error(f"搜索 YouTube 视频失败: {e}")
             return []
     
-    def _parse_youtube_search_page(self, html: str) -> List[Dict]:
+    def _parse_youtube_search_page(self, html: str, keyword: str = '') -> List[Dict]:
         """
         解析 YouTube 搜索结果页面
         
         Args:
             html: 页面HTML
+            keyword: 搜索关键词（用于相关性过滤）
         
         Returns:
             List[Dict]: 视频列表
@@ -321,6 +333,10 @@ class ReviewCrawler(BaseLinkCrawler):
                     title_runs = video_renderer.get('title', {}).get('runs', [])
                     video_title = ''.join([run.get('text', '') for run in title_runs])
                     
+                    # 相关性过滤：标题必须包含关键词（忽略大小写）
+                    if keyword and keyword.lower() not in video_title.lower():
+                        continue
+                    
                     # 提取频道名
                     channel_name = (video_renderer.get('ownerText', {})
                                    .get('runs', [{}])[0]
@@ -331,11 +347,15 @@ class ReviewCrawler(BaseLinkCrawler):
                                       .get('simpleText', '0'))
                     view_count = self._parse_count(view_count_text)
                     
+                    # 生成封面 URL
+                    cover_url = f"https://img.youtube.com/vi/{video_id}/maxresdefault.jpg"
+                    
                     videos.append({
                         'platform': self.PLATFORM_YOUTUBE,
                         'url': f"https://www.youtube.com/watch?v={video_id}",
                         'title': video_title,
                         'description': f'频道：{channel_name}',
+                        'cover_url': cover_url,
                         '_play_count': view_count,
                         'sort_order': 0
                     })
@@ -409,3 +429,40 @@ class ReviewCrawler(BaseLinkCrawler):
                 unique_videos.append(video)
         
         return unique_videos
+    
+    def _fetch_bilibili_cover(self, bvid: str) -> Optional[str]:
+        """
+        通过 B站 API 获取视频封面
+        
+        Args:
+            bvid: B站视频 BV 号
+        
+        Returns:
+            Optional[str]: 封面 URL，失败返回 None
+        """
+        try:
+            api_url = f"https://api.bilibili.com/x/web-interface/view?bvid={bvid}"
+            
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Referer': 'https://www.bilibili.com'
+            }
+            
+            response = requests.get(api_url, headers=headers, timeout=10)
+            response.raise_for_status()
+            
+            data = response.json()
+            
+            if data.get('code') == 0:
+                cover_url = data.get('data', {}).get('pic', '')
+                # 将 http 转为 https
+                if cover_url.startswith('http://'):
+                    cover_url = cover_url.replace('http://', 'https://')
+                return cover_url
+            else:
+                logger.warning(f"B站 API 返回错误 (bvid={bvid}): {data.get('message', '未知错误')}")
+                return None
+                
+        except Exception as e:
+            logger.warning(f"获取 B站封面失败 (bvid={bvid}): {e}")
+            return None

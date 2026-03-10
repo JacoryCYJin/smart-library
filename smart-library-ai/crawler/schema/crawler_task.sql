@@ -77,7 +77,7 @@ CREATE TABLE IF NOT EXISTS resource_link_crawl_task (
     
     -- 解读页（B站/YouTube等）
     review_page_count INT DEFAULT 0 COMMENT '解读页链接数量',
-    review_page_json JSON COMMENT '解读页链接列表 [{"platform": 3, "url": "...", "title": "...", "description": "UP主：..."}]',
+    review_page_json JSON COMMENT '解读页链接列表 [{"platform": 3, "url": "...", "title": "...", "description": "UP主：...", "cover_url": "..."}]',
     review_page_status TINYINT DEFAULT 0 COMMENT '解读页爬取状态: 0-待处理 / 1-处理中 / 2-已完成 / 3-失败 / 4-无资源',
     
     -- 整体任务状态

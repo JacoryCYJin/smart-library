@@ -63,6 +63,11 @@ public class ResourceLinkVO {
     private String description;
     
     /**
+     * 视频封面URL（B站/YouTube）
+     */
+    private String coverUrl;
+    
+    /**
      * 排序权重
      */
     private Integer sortOrder;
@@ -107,6 +112,7 @@ public class ResourceLinkVO {
                 .url(entity.getUrl())
                 .title(entity.getTitle())
                 .description(entity.getDescription())
+                .coverUrl(entity.getCoverUrl())
                 .sortOrder(entity.getSortOrder())
                 .clickCount(entity.getClickCount())
                 .status(entity.getStatus())

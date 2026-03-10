@@ -6,6 +6,7 @@ import io.github.jacorycyjin.smartlibrary.backend.common.vo.PageVO;
 import io.github.jacorycyjin.smartlibrary.backend.converter.ResourceConverter;
 import io.github.jacorycyjin.smartlibrary.backend.dto.ResourceDTO;
 import io.github.jacorycyjin.smartlibrary.backend.form.ResourceSearchForm;
+import io.github.jacorycyjin.smartlibrary.backend.mapper.ResourceLinkMapper;
 import io.github.jacorycyjin.smartlibrary.backend.service.ResourceService;
 import io.github.jacorycyjin.smartlibrary.backend.vo.ResourceDetailVO;
 import io.github.jacorycyjin.smartlibrary.backend.vo.ResourcePublicVO;
@@ -26,6 +27,9 @@ public class BookController {
 
     @Resource
     private ResourceService resourceService;
+
+    @Resource
+    private ResourceLinkMapper resourceLinkMapper;
 
     /**
      * 搜索图书（支持多条件查询和分页）
@@ -70,8 +74,8 @@ public class BookController {
         // 增加浏览量
         resourceService.incrementViewCount(bookId);
         
-        // 转换为 DetailVO（包含完整分类层级）
-        ResourceDetailVO detailVO = ResourceConverter.toDetailVO(resourceDTO);
+        // 转换为 DetailVO（包含完整分类层级和链接分组）
+        ResourceDetailVO detailVO = ResourceConverter.toDetailVO(resourceDTO, resourceLinkMapper);
         
         return Result.success(detailVO);
     }
