@@ -75,32 +75,17 @@
               >
                 <!-- 左侧按钮组 -->
                 <div class="flex items-center gap-3">
-                  <!-- 开始阅读按钮 -->
-                  <button
-                    @click="handleRead"
-                    class="flex items-center gap-3 px-8 py-4 bg-ink text-white rounded-full font-semibold text-base transition-all duration-300 hover:bg-pop hover:translate-x-1"
+                  <!-- 查看详情按钮（hover 下拉菜单） -->
+                  <div 
+                    v-if="hasInfoLinks" 
+                    class="relative group"
                   >
-                    <span>{{ i18n.startReading }}</span>
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M13 7l5 5m0 0l-5 5m5-5H6"
-                      />
-                    </svg>
-                  </button>
-
-                  <!-- 查看详情按钮（下拉菜单） -->
-                  <div v-if="hasInfoLinks" class="relative">
                     <button
-                      @click="toggleInfoDropdown"
-                      class="flex items-center gap-2 px-6 py-4 border-2 border-ink text-ink rounded-full font-semibold text-base transition-all duration-300 hover:bg-ink hover:text-white"
+                      class="flex items-center gap-3 px-8 py-4 bg-ink text-white rounded-full font-semibold text-base transition-all duration-300 hover:bg-pop"
                     >
                       <span>{{ i18n.viewDetails }}</span>
                       <svg 
-                        class="w-4 h-4 transition-transform duration-200"
-                        :class="{ 'rotate-180': showInfoDropdown }"
+                        class="w-4 h-4 transition-transform duration-200 group-hover:rotate-180"
                         fill="none" 
                         stroke="currentColor" 
                         viewBox="0 0 24 24"
@@ -110,38 +95,28 @@
                     </button>
 
                     <!-- 下拉菜单 -->
-                    <transition
-                      enter-active-class="transition ease-out duration-200"
-                      enter-from-class="opacity-0 translate-y-1"
-                      enter-to-class="opacity-100 translate-y-0"
-                      leave-active-class="transition ease-in duration-150"
-                      leave-from-class="opacity-100 translate-y-0"
-                      leave-to-class="opacity-0 translate-y-1"
+                    <div
+                      class="absolute top-full left-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-structure overflow-hidden z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200"
                     >
-                      <div
-                        v-if="showInfoDropdown"
-                        class="absolute top-full left-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-structure overflow-hidden z-50"
+                      <a
+                        v-for="link in infoLinks"
+                        :key="link.linkId"
+                        :href="link.url"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="flex items-center gap-3 px-4 py-3 hover:bg-canvas transition-colors"
                       >
-                        <a
-                          v-for="link in infoLinks"
-                          :key="link.linkId"
-                          :href="link.url"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          class="flex items-center gap-3 px-4 py-3 hover:bg-canvas transition-colors"
+                        <div
+                          :class="getPlatformInfo(link.platform).color"
+                          class="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold"
                         >
-                          <div
-                            :class="getPlatformInfo(link.platform).color"
-                            class="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold"
-                          >
-                            {{ getPlatformInfo(link.platform).icon }}
-                          </div>
-                          <span class="text-sm font-medium text-ink">
-                            {{ getPlatformInfo(link.platform).displayName }}
-                          </span>
-                        </a>
-                      </div>
-                    </transition>
+                          {{ getPlatformInfo(link.platform).icon }}
+                        </div>
+                        <span class="text-sm font-medium text-ink">
+                          {{ getPlatformInfo(link.platform).displayName }}
+                        </span>
+                      </a>
+                    </div>
                   </div>
                 </div>
 
@@ -314,12 +289,17 @@
                       <!-- 平台标识 -->
                       <div 
                         :class="getPlatformInfo(link.platform).color"
-                        class="absolute top-3 left-3 px-3 py-1.5 rounded-lg text-sm font-bold z-10 flex items-center gap-1.5"
+                        class="absolute top-3 left-3 px-3 py-1.5 rounded-lg text-sm font-bold z-10 flex items-center gap-2"
                       >
-                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" />
+                        <!-- B站 Logo -->
+                        <svg v-if="link.platform === 3" class="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M17.813 4.653h.854c1.51.054 2.769.578 3.773 1.574 1.004.995 1.524 2.249 1.56 3.76v7.36c-.036 1.51-.556 2.769-1.56 3.773s-2.262 1.524-3.773 1.56H5.333c-1.51-.036-2.769-.556-3.773-1.56S.036 18.858 0 17.347v-7.36c.036-1.511.556-2.765 1.56-3.76 1.004-.996 2.262-1.52 3.773-1.574h.774l-1.174-1.12a1.234 1.234 0 0 1-.373-.906c0-.356.124-.658.373-.907l.027-.027c.267-.249.573-.373.92-.373.347 0 .653.124.92.373L9.653 4.44c.071.071.134.142.187.213h4.267a.836.836 0 0 1 .16-.213l2.853-2.747c.267-.249.573-.373.92-.373.347 0 .662.151.929.4.267.249.391.551.391.907 0 .355-.124.657-.373.906zM5.333 7.24c-.746.018-1.373.276-1.88.773-.506.498-.769 1.13-.786 1.894v7.52c.017.764.28 1.395.786 1.893.507.498 1.134.756 1.88.773h13.334c.746-.017 1.373-.275 1.88-.773.506-.498.769-1.129.786-1.893v-7.52c-.017-.765-.28-1.396-.786-1.894-.507-.497-1.134-.755-1.88-.773zM8 11.107c.373 0 .684.124.933.373.25.249.383.569.4.96v1.173c-.017.391-.15.711-.4.96-.249.25-.56.374-.933.374s-.684-.125-.933-.374c-.25-.249-.383-.569-.4-.96V12.44c0-.373.129-.689.386-.947.258-.257.574-.386.947-.386zm8 0c.373 0 .684.124.933.373.25.249.383.569.4.96v1.173c-.017.391-.15.711-.4.96-.249.25-.56.374-.933.374s-.684-.125-.933-.374c-.25-.249-.383-.569-.4-.96V12.44c.017-.391.15-.711.4-.96.249-.249.56-.373.933-.373Z"/>
                         </svg>
-                        {{ getPlatformInfo(link.platform).displayName }}
+                        <!-- YouTube Logo -->
+                        <svg v-else-if="link.platform === 4" class="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                        </svg>
+                        <span class="leading-none">{{ getPlatformInfo(link.platform).displayName }}</span>
                       </div>
                       
                       <!-- 播放按钮 -->
@@ -564,8 +544,6 @@ const {
 // 国际化文本
 const i18n = computed(() => ({
   description: localeStore.currentLang === 'zh' ? '简介' : 'Description',
-  author: localeStore.currentLang === 'zh' ? '作者' : 'Author',
-  authors: localeStore.currentLang === 'zh' ? '作者' : 'Authors',
   translator: localeStore.currentLang === 'zh' ? '译者' : 'Translator',
   otherAuthors: localeStore.currentLang === 'zh' ? '其他作者' : 'Other Authors',
   publisher: localeStore.currentLang === 'zh' ? '出版社' : 'Publisher',
@@ -573,7 +551,6 @@ const i18n = computed(() => ({
   isbn: localeStore.currentLang === 'zh' ? 'ISBN' : 'ISBN',
   pageCount: localeStore.currentLang === 'zh' ? '页数' : 'Pages',
   price: localeStore.currentLang === 'zh' ? '价格' : 'Price',
-  sourceScore: localeStore.currentLang === 'zh' ? '评分' : 'Rating',
   comments: localeStore.currentLang === 'zh' ? '读者评论' : 'Reader Comments',
   postComment: localeStore.currentLang === 'zh' ? '发表你的评论' : 'Post Your Comment',
   rating: localeStore.currentLang === 'zh' ? '评分' : 'Rating',
@@ -582,7 +559,6 @@ const i18n = computed(() => ({
     localeStore.currentLang === 'zh' ? '分享你的阅读感受...' : 'Share your reading experience...',
   submit: localeStore.currentLang === 'zh' ? '发表评论' : 'Submit',
   submitting: localeStore.currentLang === 'zh' ? '提交中...' : 'Submitting...',
-  loadMore: localeStore.currentLang === 'zh' ? '查看更多评论' : 'Load More Comments',
   loading: localeStore.currentLang === 'zh' ? '加载中...' : 'Loading...',
   allLoaded: localeStore.currentLang === 'zh' ? '已加载全部评论' : 'All comments loaded',
   noComments:
@@ -590,40 +566,18 @@ const i18n = computed(() => ({
       ? '暂无评论，快来发表第一条评论吧！'
       : 'No comments yet. Be the first to comment!',
   noDescription: localeStore.currentLang === 'zh' ? '暂无详细描述' : 'No description available',
-  unknown: localeStore.currentLang === 'zh' ? '未知' : 'Unknown',
-  startReading: localeStore.currentLang === 'zh' ? '开始阅读' : 'Start Reading',
   viewDetails: localeStore.currentLang === 'zh' ? '查看详情' : 'View Details',
-  back: localeStore.currentLang === 'zh' ? '返回' : 'Back',
   notFound:
     localeStore.currentLang === 'zh'
       ? '书籍不存在或已被删除'
       : 'Book not found or has been deleted',
-  interpretations: localeStore.currentLang === 'zh' ? '精选解读' : 'Featured Interpretations',
-  noInterpretations:
-    localeStore.currentLang === 'zh' ? '暂无解读资源' : 'No interpretations available',
-  infoPages: localeStore.currentLang === 'zh' ? '信息页' : 'Information Pages',
   downloadPages: localeStore.currentLang === 'zh' ? '下载页' : 'Download Pages',
   reviewPages: localeStore.currentLang === 'zh' ? '解读页' : 'Review Pages',
-  noInfoLinks: localeStore.currentLang === 'zh' ? '暂无信息页链接' : 'No information links',
-  noDownloadLinks: localeStore.currentLang === 'zh' ? '暂无下载链接' : 'No download links',
-  noReviewLinks: localeStore.currentLang === 'zh' ? '暂无解读链接' : 'No review links',
-  watchOnBilibili: localeStore.currentLang === 'zh' ? '在 B站 观看' : 'Watch on Bilibili',
-  watchOnYouTube: localeStore.currentLang === 'zh' ? '在 YouTube 观看' : 'Watch on YouTube',
-  viewOnDouban: localeStore.currentLang === 'zh' ? '在豆瓣查看' : 'View on Douban',
-  downloadFromZLib:
-    localeStore.currentLang === 'zh' ? '从 Z-Library 下载' : 'Download from Z-Library',
 }))
 
 // 书籍信息
 const book = ref(null)
 const loading = ref(true)
-
-// 计算属性：文件列表
-const files = computed(() => book.value?.files || [])
-const hasFiles = computed(() => files.value.length > 0)
-
-// 信息页下拉菜单状态
-const showInfoDropdown = ref(false)
 
 // 解读页横向滚动容器
 const reviewScrollContainer = ref(null)
@@ -636,21 +590,25 @@ const reviewLinks = computed(() => book.value?.linksGroup?.reviewLinks || [])
 const hasInfoLinks = computed(() => infoLinks.value.length > 0)
 const hasDownloadLinks = computed(() => downloadLinks.value.length > 0)
 const hasReviewLinks = computed(() => reviewLinks.value.length > 0)
-const hasAnyLinks = computed(() => hasInfoLinks.value || hasDownloadLinks.value || hasReviewLinks.value)
 
 // 获取平台信息
 const getPlatformInfo = (platform) => {
   const platformMap = {
     1: { name: 'Douban', nameZh: '豆瓣', icon: '豆', color: 'bg-[#00b51d] text-white' },
     2: { name: 'Z-Library', nameZh: 'Z-Library', icon: 'Z', color: 'bg-[#3b82f6] text-white' },
-    3: { name: 'Bilibili', nameZh: 'B站', icon: 'B', color: 'bg-[#00a1d6] text-white' },
+    3: { name: 'Bilibili', nameZh: 'Bilibili', icon: 'B', color: 'bg-[#00a1d6] text-white' },
     4: { name: 'YouTube', nameZh: 'YouTube', icon: 'Y', color: 'bg-[#ff0000] text-white' },
+    5: { name: 'Dangdang', nameZh: '当当', icon: '当', color: 'bg-[#ff6700] text-white' },
+    6: { name: 'Goodreads', nameZh: 'Goodreads', icon: 'G', color: 'bg-[#553b08] text-white' },
+    7: { name: "Anna's Archive", nameZh: "Anna's Archive", icon: 'A', color: 'bg-[#8b5cf6] text-white' },
+    8: { name: 'LibGen', nameZh: 'LibGen', icon: 'L', color: 'bg-[#10b981] text-white' },
+    9: { name: 'Jiumo', nameZh: '鸠摩搜书', icon: '鸠', color: 'bg-[#f59e0b] text-white' },
   }
   
   const info = platformMap[platform] || { name: 'Unknown', nameZh: '未知', icon: '?', color: 'bg-gray-500 text-white' }
   return {
     ...info,
-    displayName: localeStore.currentLang === 'zh' ? info.nameZh : info.name
+    displayName: info.name
   }
 }
 
@@ -663,11 +621,6 @@ const getVideoCover = (link) => {
   
   // 如果没有封面，返回 null（显示占位背景色）
   return null
-}
-
-// 切换信息页下拉菜单
-const toggleInfoDropdown = () => {
-  showInfoDropdown.value = !showInfoDropdown.value
 }
 
 // 判断解读页是否可以左右滚动
@@ -697,69 +650,12 @@ const scrollReviews = (direction) => {
   })
 }
 
-// 点击外部关闭下拉菜单
-const handleClickOutside = (event) => {
-  if (showInfoDropdown.value) {
-    const dropdown = event.target.closest('.relative')
-    if (!dropdown) {
-      showInfoDropdown.value = false
-    }
-  }
-}
-
-// 处理阅读
-const handleRead = () => {
-  if (!hasFiles.value) {
-    Message.warning(
-      localeStore.currentLang === 'zh'
-        ? '暂无在线阅读资源'
-        : 'No online reading resource available',
-    )
-    return
-  }
-
-  // 优先寻找 PDF 或 EPUB
-  const readableFile =
-    files.value.find(
-      (f) =>
-        f.fileType === 1 || // PDF
-        f.fileType === 2 || // EPUB
-        f.fileTypeDesc === 'PDF' ||
-        f.fileTypeDesc === 'EPUB',
-    ) || files.value[0]
-
-  if (readableFile && readableFile.fileUrl) {
-    window.open(readableFile.fileUrl, '_blank')
-  } else {
-    Message.warning(
-      localeStore.currentLang === 'zh'
-        ? '暂无在线阅读资源'
-        : 'No online reading resource available',
-    )
-  }
-}
-
-// 处理下载
-const handleDownload = (file) => {
-  if (!file || !file.fileUrl) return
-  // 创建临时链接下载
-  const link = document.createElement('a')
-  link.href = file.fileUrl
-  link.setAttribute('download', '') // 尝试触发下载
-  link.target = '_blank'
-  document.body.appendChild(link)
-  link.click()
-  document.body.removeChild(link)
-}
-
 // 评论列表
 const comments = ref([])
 const loadingComments = ref(false)
 const currentPage = ref(1)
 const pageSize = ref(10)
-const total = ref(0)
-const hasMore = ref(false)
-const allLoaded = ref(false) // 是否已加载全部评论
+const allLoaded = ref(false)
 
 // 评论表单
 const commentForm = ref({
@@ -806,9 +702,8 @@ const loadComments = async (append = false) => {
       } else {
         comments.value = res.data.list || []
       }
-      total.value = res.data.totalCount || 0
-      hasMore.value = comments.value.length < total.value
-      allLoaded.value = !hasMore.value
+      const total = res.data.totalCount || 0
+      allLoaded.value = comments.value.length >= total
     }
   } catch (error) {
     console.error('加载评论失败:', error)
@@ -940,14 +835,10 @@ onMounted(async () => {
 
   // 添加滚动监听
   window.addEventListener('scroll', handleScroll)
-  // 添加点击外部关闭下拉菜单
-  document.addEventListener('click', handleClickOutside)
 })
 
 onUnmounted(() => {
   // 移除滚动监听
   window.removeEventListener('scroll', handleScroll)
-  // 移除点击外部监听
-  document.removeEventListener('click', handleClickOutside)
 })
 </script>
