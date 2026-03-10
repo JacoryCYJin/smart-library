@@ -57,7 +57,7 @@ public class FavoriteController {
     }
     
     /**
-     * 检查是否已收藏（无需登录，但需要用户ID）
+     * 检查是否已收藏（无需登录）
      * 
      * @param userId 当前用户ID（自动注入，未登录时为 null）
      * @param resourceId 资源ID

@@ -595,20 +595,20 @@ const hasReviewLinks = computed(() => reviewLinks.value.length > 0)
 const getPlatformInfo = (platform) => {
   const platformMap = {
     1: { name: 'Douban', nameZh: '豆瓣', icon: '豆', color: 'bg-[#00b51d] text-white' },
-    2: { name: 'Z-Library', nameZh: 'Z-Library', icon: 'Z', color: 'bg-[#3b82f6] text-white' },
-    3: { name: 'Bilibili', nameZh: 'Bilibili', icon: 'B', color: 'bg-[#00a1d6] text-white' },
+    2: { name: 'ZLibrary', nameZh: 'ZLibrary', icon: 'Z', color: 'bg-[#3b82f6] text-white' },
+    3: { name: 'Bilibili', nameZh: '哔哩哔哩', icon: 'B', color: 'bg-[#00a1d6] text-white' },
     4: { name: 'YouTube', nameZh: 'YouTube', icon: 'Y', color: 'bg-[#ff0000] text-white' },
     5: { name: 'Dangdang', nameZh: '当当', icon: '当', color: 'bg-[#ff6700] text-white' },
     6: { name: 'Goodreads', nameZh: 'Goodreads', icon: 'G', color: 'bg-[#553b08] text-white' },
     7: { name: "Anna's Archive", nameZh: "Anna's Archive", icon: 'A', color: 'bg-[#8b5cf6] text-white' },
-    8: { name: 'LibGen', nameZh: 'LibGen', icon: 'L', color: 'bg-[#10b981] text-white' },
+    8: { name: 'Library Genesis', nameZh: 'Library Genesis', icon: 'L', color: 'bg-[#10b981] text-white' },
     9: { name: 'Jiumo', nameZh: '鸠摩搜书', icon: '鸠', color: 'bg-[#f59e0b] text-white' },
   }
   
   const info = platformMap[platform] || { name: 'Unknown', nameZh: '未知', icon: '?', color: 'bg-gray-500 text-white' }
   return {
     ...info,
-    displayName: info.name
+    displayName: localeStore.currentLang === 'zh' ? info.nameZh : info.name
   }
 }
 
