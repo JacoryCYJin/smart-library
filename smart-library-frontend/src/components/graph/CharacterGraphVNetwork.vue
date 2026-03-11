@@ -157,12 +157,15 @@ const categories = computed(() => {
  * 生成分类颜色（仅使用主题色）
  */
 const generateCategoryColor = (_category, index) => {
-  // 仅使用主题色系
   const colors = [
-    '#102a43', // ink - 深海军蓝（主色）
-    '#d64545', // pop - 砖红色（强调色）
-    '#627d98', // ink-light - 中灰蓝（次要色）
-    '#d9e2ec', // structure - 淡灰蓝（结构色，需要加深边框）
+    '#102a43', // ink - 深海军蓝
+    '#d64545', // pop - 砖红色
+    '#627d98', // ink-light - 中灰蓝
+    '#486581', // 深灰蓝
+    '#9fb3c8', // 浅灰蓝
+    '#bcccdc', // 极浅灰蓝
+    '#c94040', // 深砖红
+    '#e07575', // 浅砖红
   ]
   return colors[index % colors.length]
 }
@@ -178,18 +181,17 @@ const configs = defineConfigs({
     panEnabled: true,
     zoomEnabled: true,
     layoutHandler: new vNG.ForceLayout({
-      positionFixedByDrag: false, // 拖动后不固定位置，继续参与力导向计算
-      positionFixedByClickWithAltKey: true, // Alt+点击可以固定节点
+      positionFixedByDrag: false,
+      positionFixedByClickWithAltKey: true,
       createSimulation: (d3, nodes, edges) => {
-        // 自定义 d3-force 参数
         const forceLink = d3.forceLink(edges).id((d) => d.id)
         return d3
           .forceSimulation(nodes)
-          .force('edge', forceLink.distance(150).strength(0.5)) // 边的理想长度和强度
-          .force('charge', d3.forceManyBody().strength(-800)) // 节点间排斥力
-          .force('center', d3.forceCenter().strength(0.05)) // 向中心聚拢的力
-          .force('collide', d3.forceCollide().radius(50).strength(0.7)) // 防止节点重叠
-          .alphaMin(0.001) // 最小能量阈值
+          .force('edge', forceLink.distance(150).strength(0.5))
+          .force('charge', d3.forceManyBody().strength(-800))
+          .force('center', d3.forceCenter().strength(0.05))
+          .force('collide', d3.forceCollide().radius(50).strength(0.7))
+          .alphaMin(0.001)
       },
     }),
   },
@@ -200,13 +202,13 @@ const configs = defineConfigs({
       type: 'circle',
       radius: (node) => node.radius || 30,
       color: (node) => node.color || '#102a43',
-      strokeWidth: 0, // 去掉边框
+      strokeWidth: 0,
       strokeColor: 'transparent',
     },
     hover: {
       type: 'circle',
-      radius: (node) => ((node.radius || 20) * 1.15), // hover 时放大 15%
-      color: (node) => node.color, // 保持原色
+      radius: (node) => ((node.radius || 20) * 1.15),
+      color: (node) => node.color,
       strokeWidth: 0,
       strokeColor: 'transparent',
       strokeDasharray: 0,
@@ -214,9 +216,9 @@ const configs = defineConfigs({
     selected: {
       type: 'circle',
       radius: (node) => node.radius || 20,
-      color: (node) => node.color || '#102a43', // 保持原色
+      color: (node) => node.color || '#102a43',
       strokeWidth: 3,
-      strokeColor: '#d64545', // 选中时显示红色边框
+      strokeColor: '#d64545',
     },
     label: {
       visible: true,
@@ -235,11 +237,11 @@ const configs = defineConfigs({
     selectable: true,
     normal: {
       width: 2,
-      color: '#627d98', // 使用主题色 ink-light
+      color: '#627d98',
     },
     hover: {
-      width: 2, // 保持原宽度
-      color: '#627d98', // 保持原色，不变色
+      width: 2,
+      color: '#627d98',
     },
     selected: {
       width: 3,
@@ -250,17 +252,17 @@ const configs = defineConfigs({
         type: (edge) => (edge.isDirected ? 'arrow' : 'none'),
         width: 8,
         height: 8,
-        color: null, // null 表示使用边的颜色
+        color: null,
       },
     },
     label: {
       visible: true,
-      text: 'label', // 使用边数据中的 label 字段作为标签
+      text: 'label',
       fontSize: 11,
-      color: '#102a43', // 使用主题色 ink
+      color: '#102a43',
       background: {
         visible: true,
-        color: '#f6f9fc', // 更接近渐变的浅色
+        color: '#f6f9fc',
         padding: {
           vertical: 2,
           horizontal: 6,
@@ -275,10 +277,7 @@ const configs = defineConfigs({
  * 转换数据为 v-network-graph 格式
  */
 const convertToVNetworkGraphData = () => {
-  if (!graphData.value || !graphData.value.nodes.length) {
-    console.log('❌ 没有图谱数据')
-    return
-  }
+  if (!graphData.value || !graphData.value.nodes.length) return
 
   const { nodes: rawNodes, edges: rawEdges } = graphData.value
 
@@ -287,10 +286,8 @@ const convertToVNetworkGraphData = () => {
   const layoutsObj = {}
 
   rawNodes.forEach((node) => {
-    // 根据 weight 计算节点大小（20-35）
     const nodeRadius = 20 + (node.weight / 100) * 15
 
-    // 生成分类颜色
     if (!categoryColors.value[node.category]) {
       const colorIndex = Object.keys(categoryColors.value).length
       categoryColors.value[node.category] = generateCategoryColor(node.category, colorIndex)
@@ -304,27 +301,26 @@ const convertToVNetworkGraphData = () => {
       radius: nodeRadius,
     }
 
-    // 初始位置由 ForceLayout 自动计算，这里只需要提供空对象
     layoutsObj[node.id] = {}
   })
 
   nodes.value = nodesObj
   layouts.value = { nodes: layoutsObj }
 
-  // 转换边（确保 label 字段存在）
+  // 转换边
   const edgesObj = {}
   rawEdges.forEach((edge, index) => {
     edgesObj[`edge${index}`] = {
       source: edge.source,
       target: edge.target,
-      label: edge.label || '', // 确保 label 字段存在
-      isDirected: edge.isDirected !== false, // 默认为有向
+      label: edge.label || '',
+      isDirected: edge.isDirected !== false,
     }
   })
 
   edges.value = edgesObj
 
-  // GSAP 动画入场
+  // 入场动画
   nextTick(() => {
     gsap.from('.graph', {
       opacity: 0,
@@ -349,26 +345,20 @@ const loadGraph = async () => {
     if (res.code === 0 && res.data) {
       graphData.value = res.data
       
-      // 检查是否为空
       if (!res.data.nodes || res.data.nodes.length === 0) {
         isEmpty.value = true
-        // 通知父组件：数据库中确定没有图谱
         emit('graph-loaded', false)
       } else {
-        // 转换数据为 v-network-graph 格式
         convertToVNetworkGraphData()
-        // 通知父组件：有图谱数据
         emit('graph-loaded', true)
       }
     } else {
       isEmpty.value = true
-      // 通知父组件：没有图谱
       emit('graph-loaded', false)
     }
   } catch (err) {
     console.error('加载人物关系图谱失败:', err)
     error.value = true
-    // 发生错误时，保持显示（可能是网络问题）
     emit('graph-loaded', true)
   } finally {
     loading.value = false
@@ -394,11 +384,13 @@ const retryGenerate = async () => {
 }
 
 // 监听 resourceId 变化
-watch(() => props.resourceId, () => {
-  if (props.resourceId) {
-    loadGraph()
-  }
-}, { immediate: true })
+watch(
+  () => props.resourceId,
+  (newId) => {
+    if (newId) loadGraph()
+  },
+  { immediate: true }
+)
 </script>
 
 <style scoped>
