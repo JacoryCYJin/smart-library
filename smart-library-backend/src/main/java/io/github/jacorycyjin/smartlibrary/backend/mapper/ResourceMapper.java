@@ -109,4 +109,45 @@ public interface ResourceMapper {
     int updateUserScore(@Param("resourceId") String resourceId, 
                         @Param("userScore") java.math.BigDecimal userScore,
                         @Param("userScoreCount") Integer userScoreCount);
+
+    /**
+     * 根据资源ID查询单个资源
+     * 
+     * @param resourceId 资源ID
+     * @return 资源实体
+     */
+    Resource selectById(@Param("resourceId") String resourceId);
+
+    /**
+     * 根据资源ID查询人物关系图谱
+     * 
+     * @param resourceId 资源ID
+     * @return 图谱实体
+     */
+    io.github.jacorycyjin.smartlibrary.backend.entity.ResourceCharacterGraph selectGraphByResourceId(@Param("resourceId") String resourceId);
+
+    /**
+     * 插入人物关系图谱
+     * 
+     * @param graph 图谱实体
+     * @return 影响行数
+     */
+    int insertGraph(io.github.jacorycyjin.smartlibrary.backend.entity.ResourceCharacterGraph graph);
+
+    /**
+     * 更新人物关系图谱
+     * 
+     * @param graph 图谱实体
+     * @return 影响行数
+     */
+    int updateGraph(io.github.jacorycyjin.smartlibrary.backend.entity.ResourceCharacterGraph graph);
+
+    /**
+     * 更新资源的 has_graph 字段
+     * 
+     * @param resourceId 资源ID
+     * @param hasGraph 是否有图谱（0-无 / 1-有）
+     * @return 影响行数
+     */
+    int updateHasGraph(@Param("resourceId") String resourceId, @Param("hasGraph") Integer hasGraph);
 }

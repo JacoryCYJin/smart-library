@@ -140,6 +140,11 @@ public class ResourceDTO {
     private BigDecimal sentimentScore;
 
     /**
+     * AI图谱标识：0=无图谱，1=已生成图谱
+     */
+    private Integer hasGraph;
+
+    /**
      * 总浏览量
      */
     private Integer viewCount;
@@ -203,6 +208,7 @@ public class ResourceDTO {
                 .userScoreCount(entity.getUserScoreCount())
                 .finalScore(entity.getFinalScore())
                 .sentimentScore(entity.getSentimentScore())
+                .hasGraph(entity.getHasGraph())
                 .viewCount(entity.getViewCount())
                 .commentCount(entity.getCommentCount())
                 .starCount(entity.getStarCount())

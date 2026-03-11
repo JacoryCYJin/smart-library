@@ -5,7 +5,7 @@ import router from '@/router'
 // 创建 axios 实例
 const service = axios.create({
   baseURL: '/api', // 使用代理，所有请求都通过 /api 前缀
-  timeout: 10000 // 请求超时时间 10秒
+  timeout: 60000 // 请求超时时间 60秒（AI 生成图谱需要较长时间）
 })
 
 // 1. 请求拦截器 (Request Interceptor)

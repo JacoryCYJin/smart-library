@@ -39,7 +39,8 @@ public class WebConfig implements WebMvcConfigurer {
                         "/category/**",
                         "/tag/**",
                         "/author/**",
-                        "/comment/list"      // 评论列表不需要登录
+                        "/comment/list",     // 评论列表不需要登录
+                        "/graph/**"          // AI 人物关系图谱不需要登录（游客可访问）
                         // /favorite/check 需要经过拦截器（设置 UserContext），但不强制登录
                         // /comment/create 和 /comment/{id} 需要登录
                         // /favorite/add, /favorite/remove, /favorite/list, /favorite/count 需要登录

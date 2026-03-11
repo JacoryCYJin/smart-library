@@ -252,6 +252,16 @@
             </div>
           </div>
 
+          <!-- 人物关系图谱区域（只在有图谱或未检查时显示） -->
+          <div v-if="shouldShowGraph" class="border-t border-structure pt-12 mb-16">
+            <CharacterGraph 
+              :resource-id="book.resourceId" 
+              :width="1000" 
+              :height="600"
+              @graph-loaded="handleGraphLoaded"
+            />
+          </div>
+
           <!-- 资源链接区域 -->
           <div v-if="hasReviewLinks || hasDownloadLinks" class="border-t border-structure pt-12 mb-16">
             <!-- 解读页 - 横向滚动视频卡片 -->
@@ -300,15 +310,6 @@
                           <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
                         </svg>
                         <span class="leading-none">{{ getPlatformInfo(link.platform).displayName }}</span>
-                      </div>
-                      
-                      <!-- 播放按钮 -->
-                      <div class="absolute inset-0 flex items-center justify-center bg-black/20 group-hover/card:bg-black/30 transition-colors">
-                        <div class="w-16 h-16 bg-white/90 rounded-full flex items-center justify-center group-hover/card:scale-110 transition-transform">
-                          <svg class="w-8 h-8 text-ink ml-1" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M8 5v14l11-7z"/>
-                          </svg>
-                        </div>
                       </div>
                     </div>
                     
@@ -527,6 +528,7 @@ import { useLocaleStore } from '@/stores/locale'
 import { useAuthStore } from '@/stores/auth'
 import { useFavorite } from '@/composables/useFavorite'
 import CommentMasonry from '@/components/comment/CommentMasonry.vue'
+import CharacterGraph from '@/components/graph/CharacterGraphVNetwork.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -663,6 +665,19 @@ const commentForm = ref({
   content: '',
 })
 const submitting = ref(false)
+
+// 人物关系图谱显示控制
+const shouldShowGraph = ref(true) // 默认显示，等待组件加载结果
+
+/**
+ * 处理图谱加载结果
+ */
+const handleGraphLoaded = (hasGraph) => {
+  // 如果数据库中确定没有图谱（空数组），隐藏整个模块
+  if (!hasGraph) {
+    shouldShowGraph.value = false
+  }
+}
 
 /**
  * 加载书籍详情
