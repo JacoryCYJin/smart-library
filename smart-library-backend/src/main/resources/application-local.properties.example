@@ -1,0 +1,13 @@
+# Local Development Configuration Example
+# Copy this file to application-local.properties and fill in your actual values
+
+# Database Configuration
+spring.datasource.username=root
+spring.datasource.password=your_database_password
+
+# MinIO Configuration
+minio.access-key=minioadmin
+minio.secret-key=minioadmin
+
+# SiliconFlow AI Configuration
+siliconflow.api-key=your_siliconflow_api_key

@@ -73,6 +73,9 @@ smart-library-backend/.springBeans
 smart-library-backend/.sts4-cache
 smart-library-backend/build/
 
+# Local Configuration (contains sensitive data)
+smart-library-backend/src/main/resources/application-local.properties
+
 # ===================================
 # Frontend (Vue / Vite / Node)
 # ===================================
