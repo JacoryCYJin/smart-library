@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.github.jacorycyjin.smartlibrary.backend.mapper.BookmarkMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BookmarkResultMap" type="io.github.jacorycyjin.smartlibrary.backend.entity.Bookmark">
+        <id property="id" column="id"/>
+        <result property="bookmarkId" column="bookmark_id"/>
+        <result property="resourceId" column="resource_id"/>
+        <result property="content" column="content"/>
+        <result property="authorName" column="author_name"/>
+        <result property="bookTitle" column="book_title"/>
+        <result property="clickCount" column="click_count"/>
+        <result property="status" column="status"/>
+        <result property="ctime" column="ctime"/>
+        <result property="mtime" column="mtime"/>
+        <result property="deleted" column="deleted"/>
+    </resultMap>
+
+    <!-- 随机获取一个书签（排除用户已交互的资源） -->
+    <select id="selectRandomBookmark" resultMap="BookmarkResultMap">
+        SELECT b.*
+        FROM bookmark b
+        WHERE b.status = 1
+          AND b.deleted = 0
+          <if test="userId != null and userId != ''">
+              <!-- 排除用户已收藏的资源 -->
+              AND NOT EXISTS (
+                  SELECT 1 FROM user_favorite uf
+                  WHERE uf.resource_id = b.resource_id
+                    AND uf.user_id = #{userId}
+              )
+              <!-- 排除用户已评论的资源 -->
+              AND NOT EXISTS (
+                  SELECT 1 FROM comment c
+                  WHERE c.resource_id = b.resource_id
+                    AND c.user_id = #{userId}
+                    AND c.deleted = 0
+              )
+          </if>
+        ORDER BY RAND()
+        LIMIT 1
+    </select>
+
+    <!-- 根据书签ID查询 -->
+    <select id="selectByBookmarkId" resultMap="BookmarkResultMap">
+        SELECT *
+        FROM bookmark
+        WHERE bookmark_id = #{bookmarkId}
+          AND deleted = 0
+    </select>
+
+    <!-- 增加点击次数 -->
+    <update id="incrementClickCount">
+        UPDATE bookmark
+        SET click_count = click_count + 1,
+            mtime = NOW()
+        WHERE bookmark_id = #{bookmarkId}
+          AND deleted = 0
+    </update>
+
+    <!-- 查询所有上架书签 -->
+    <select id="selectAllActive" resultMap="BookmarkResultMap">
+        SELECT *
+        FROM bookmark
+        WHERE status = 1
+          AND deleted = 0
+        ORDER BY ctime DESC
+    </select>
+
+</mapper>

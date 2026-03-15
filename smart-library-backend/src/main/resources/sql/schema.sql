@@ -370,7 +370,8 @@ CREATE TABLE bookmark
     bookmark_id VARCHAR(50)  NOT NULL UNIQUE,
     resource_id VARCHAR(50)  NOT NULL COMMENT '点击跳转目标',
     content     VARCHAR(500) NOT NULL COMMENT '金句内容',
-    author_note VARCHAR(100) COMMENT '作者/出处',
+    author_name VARCHAR(100) COMMENT '作者姓名',
+    book_title  VARCHAR(255) COMMENT '书籍标题',
 
     click_count INT      DEFAULT 0 COMMENT '引流次数',
     status      TINYINT  DEFAULT 1 COMMENT '1-上架 / 0-下架',

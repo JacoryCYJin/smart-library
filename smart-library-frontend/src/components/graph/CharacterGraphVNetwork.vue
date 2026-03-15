@@ -223,7 +223,14 @@ const configs = defineConfigs({
     label: {
       visible: true,
       text: 'name',
-      fontSize: 15,
+      fontSize: (node) => {
+        const nameLength = node.name?.length || 0
+        // 根据字数动态调整字体大小
+        if (nameLength <= 2) return 15      // 2字以内: 15px
+        if (nameLength <= 4) return 13      // 3-4字: 13px
+        if (nameLength <= 6) return 11      // 5-6字: 11px
+        return 9                             // 7字以上: 9px
+      },
       color: '#ffffff',
       fontFamily: undefined,
       direction: 'center',

@@ -49,6 +49,12 @@ const router = createRouter({
       component: () => import('@/views/web/LoginView.vue'),
       meta: { layout: 'none' } // 登录页不使用布局
     },
+    {
+      path: '/bookmark-test',
+      name: 'bookmark-test',
+      component: () => import('@/views/web/BookmarkTestView.vue'),
+      meta: { layout: 'web' }
+    },
 
     // ================= 管理端路由 (Admin) =================
     // {

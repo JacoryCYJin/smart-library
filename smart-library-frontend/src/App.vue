@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import WebLayout from '@/layouts/WebLayout.vue'
 import AdminLayout from '@/layouts/AdminLayout.vue'
+import FloatingBookmark from '@/components/bookmark/FloatingBookmark.vue'
 
 const route = useRoute()
 
@@ -35,4 +36,7 @@ const keepAlivePages = computed(() => {
     </router-view>
   </component>
   <router-view v-else />
+
+  <!-- 漂流书签组件（全局） -->
+  <FloatingBookmark />
 </template>
