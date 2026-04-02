@@ -1,6 +1,5 @@
 package io.github.jacorycyjin.smartlibrary.backend.service.impl;
 
-import io.github.jacorycyjin.smartlibrary.backend.dto.UserFavoriteDTO;
 import io.github.jacorycyjin.smartlibrary.backend.entity.UserFavorite;
 import io.github.jacorycyjin.smartlibrary.backend.mapper.UserFavoriteMapper;
 import io.github.jacorycyjin.smartlibrary.backend.mapper.ResourceMapper;

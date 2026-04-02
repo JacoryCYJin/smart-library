@@ -142,7 +142,7 @@ const formatDate = (dateStr) => {
 const loadUserProfile = async () => {
   try {
     const res = await getProfile()
-    if (res.code === 200) {
+    if (res.code === 0) {
       user.value = res.data
       // 初始化编辑表单
       editForm.username = res.data.username
@@ -163,13 +163,13 @@ const loadStats = async () => {
   try {
     // 加载收藏数量
     const favoriteRes = await countUserFavorites()
-    if (favoriteRes.code === 200) {
+    if (favoriteRes.code === 0) {
       stats.favoriteCount = favoriteRes.data
     }
 
     // 加载浏览历史数量
     const historyRes = await countBrowseHistory()
-    if (historyRes.code === 200) {
+    if (historyRes.code === 0) {
       stats.historyCount = historyRes.data
     }
   } catch (error) {
@@ -184,7 +184,7 @@ const handleSave = async () => {
   saving.value = true
   try {
     const res = await updateProfile(editForm)
-    if (res.code === 200) {
+    if (res.code === 0) {
       Message.success('保存成功')
       isEditing.value = false
       // 重新加载用户信息
