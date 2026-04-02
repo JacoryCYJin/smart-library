@@ -259,4 +259,48 @@ public class UserServiceImpl implements UserService {
         
         return true;
     }
+
+    /**
+     * 更新用户信息
+     * 
+     * @param userDTO 用户信息
+     * @return 是否更新成功
+     */
+    @Override
+    public Boolean updateUser(UserDTO userDTO) {
+        ValidationUtil.validateNotEmpty(userDTO.getUserId(), "用户ID");
+        
+        // 构建更新参数
+        Map<String, Object> params = new HashMap<>();
+        params.put("userId", userDTO.getUserId());
+        
+        if (userDTO.getUsername() != null && !userDTO.getUsername().isEmpty()) {
+            params.put("username", userDTO.getUsername());
+        }
+        if (userDTO.getPhone() != null && !userDTO.getPhone().isEmpty()) {
+            params.put("phone", userDTO.getPhone());
+        }
+        if (userDTO.getEmail() != null && !userDTO.getEmail().isEmpty()) {
+            params.put("email", userDTO.getEmail());
+        }
+        if (userDTO.getAvatarUrl() != null) {
+            params.put("avatarUrl", userDTO.getAvatarUrl());
+        }
+        if (userDTO.getBio() != null) {
+            params.put("bio", userDTO.getBio());
+        }
+        
+        params.put("mtime", LocalDateTime.now());
+        
+        // 更新数据库
+        int result = userMapper.updateUser(params);
+        
+        // 清除 Redis 缓存
+        if (result > 0) {
+            String cacheKey = USER_CACHE_PREFIX + userDTO.getUserId();
+            redisTemplate.delete(cacheKey);
+        }
+        
+        return result > 0;
+    }
 }

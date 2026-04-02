@@ -72,4 +72,30 @@
         </where>
     </select>
 
+    <!-- 更新用户信息 -->
+    <update id="updateUser" parameterType="map">
+        UPDATE user
+        <set>
+            <if test="username != null and username != ''">
+                username = #{username},
+            </if>
+            <if test="phone != null and phone != ''">
+                phone = #{phone},
+            </if>
+            <if test="email != null and email != ''">
+                email = #{email},
+            </if>
+            <if test="avatarUrl != null">
+                avatar_url = #{avatarUrl},
+            </if>
+            <if test="bio != null">
+                bio = #{bio},
+            </if>
+            <if test="mtime != null">
+                mtime = #{mtime}
+            </if>
+        </set>
+        WHERE user_id = #{userId}
+    </update>
+
 </mapper>

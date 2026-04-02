@@ -49,6 +49,33 @@ const router = createRouter({
       component: () => import('@/views/web/LoginView.vue'),
       meta: { layout: 'none' } // 登录页不使用布局
     },
+    {
+      path: '/profile',
+      name: 'profile',
+      component: () => import('@/views/web/ProfileView.vue'),
+      meta: { 
+        layout: 'web',
+        requiresAuth: true
+      }
+    },
+    {
+      path: '/favorites',
+      name: 'favorites',
+      component: () => import('@/views/web/FavoritesView.vue'),
+      meta: { 
+        layout: 'web',
+        requiresAuth: true
+      }
+    },
+    {
+      path: '/history',
+      name: 'history',
+      component: () => import('@/views/web/HistoryView.vue'),
+      meta: { 
+        layout: 'web',
+        requiresAuth: true
+      }
+    },
 
     // ================= 管理端路由 (Admin) =================
     // {

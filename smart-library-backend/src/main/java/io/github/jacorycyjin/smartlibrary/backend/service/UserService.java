@@ -55,4 +55,12 @@ public interface UserService {
      * @return 是否退出成功
      */
     Boolean logout(String token);
+
+    /**
+     * 更新用户信息
+     * 
+     * @param userDTO 用户信息
+     * @return 是否更新成功
+     */
+    Boolean updateUser(UserDTO userDTO);
 }

@@ -1,9 +1,9 @@
 package io.github.jacorycyjin.smartlibrary.backend.controller;
 
-import io.github.jacorycyjin.smartlibrary.backend.common.annotation.CurrentUserId;
-import io.github.jacorycyjin.smartlibrary.backend.common.annotation.RequireLogin;
 import io.github.jacorycyjin.smartlibrary.backend.common.dto.PageDTO;
 import io.github.jacorycyjin.smartlibrary.backend.common.response.Result;
+import io.github.jacorycyjin.smartlibrary.backend.common.enums.ApiCode;
+import io.github.jacorycyjin.smartlibrary.backend.common.util.UserContext;
 import io.github.jacorycyjin.smartlibrary.backend.common.vo.PageVO;
 import io.github.jacorycyjin.smartlibrary.backend.dto.CommentDTO;
 import io.github.jacorycyjin.smartlibrary.backend.form.CommentCreateForm;
@@ -56,15 +56,16 @@ public class CommentController {
     /**
      * 创建评论（需要登录）
      * 
-     * @param userId 当前用户ID（自动注入）
      * @param form 评论表单
      * @return 评论ID
      */
     @PostMapping("/create")
-    @RequireLogin
-    public Result<String> createComment(
-            @CurrentUserId String userId,
-            @Valid @RequestBody CommentCreateForm form) {
+    public Result<String> createComment(@Valid @RequestBody CommentCreateForm form) {
+        String userId = UserContext.getCurrentUserId();
+        if (userId == null) {
+            return Result.fail(ApiCode.UNAUTHORIZED.getCode(), "未登录");
+        }
+        
         String commentId = commentService.createComment(userId, form);
         return Result.success(commentId);
     }
@@ -72,15 +73,16 @@ public class CommentController {
     /**
      * 删除评论（需要登录）
      * 
-     * @param userId 当前用户ID（自动注入）
      * @param commentId 评论ID
      * @return 成功消息
      */
     @DeleteMapping("/{commentId}")
-    @RequireLogin
-    public Result<Void> deleteComment(
-            @CurrentUserId String userId,
-            @PathVariable String commentId) {
+    public Result<Void> deleteComment(@PathVariable String commentId) {
+        String userId = UserContext.getCurrentUserId();
+        if (userId == null) {
+            return Result.fail(ApiCode.UNAUTHORIZED.getCode(), "未登录");
+        }
+        
         commentService.deleteComment(userId, commentId);
         return Result.success(null);
     }

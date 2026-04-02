@@ -55,6 +55,13 @@
             <if test="resourceId != null and resourceId != ''">
                 AND resource_id = #{resourceId}
             </if>
+            <!-- 批量资源ID查询 -->
+            <if test="resourceIds != null and resourceIds.size() > 0">
+                AND resource_id IN
+                <foreach collection="resourceIds" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
             <!-- 资源类型筛选 -->
             <if test="type != null">
                 AND type = #{type}

@@ -36,4 +36,12 @@ public interface UserMapper {
      * @return 用户列表
      */
     List<User> selectByUserIds(@Param("userIds") List<String> userIds);
+
+    /**
+     * 更新用户信息
+     * 
+     * @param params 更新参数
+     * @return 影响行数
+     */
+    int updateUser(Map<String, Object> params);
 }

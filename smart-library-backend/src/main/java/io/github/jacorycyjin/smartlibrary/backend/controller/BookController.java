@@ -3,11 +3,13 @@ package io.github.jacorycyjin.smartlibrary.backend.controller;
 import io.github.jacorycyjin.smartlibrary.backend.common.dto.PageDTO;
 import io.github.jacorycyjin.smartlibrary.backend.common.response.Result;
 import io.github.jacorycyjin.smartlibrary.backend.common.vo.PageVO;
+import io.github.jacorycyjin.smartlibrary.backend.common.util.UserContext;
 import io.github.jacorycyjin.smartlibrary.backend.converter.ResourceConverter;
 import io.github.jacorycyjin.smartlibrary.backend.dto.ResourceDTO;
 import io.github.jacorycyjin.smartlibrary.backend.form.ResourceSearchForm;
 import io.github.jacorycyjin.smartlibrary.backend.mapper.ResourceLinkMapper;
 import io.github.jacorycyjin.smartlibrary.backend.service.ResourceService;
+import io.github.jacorycyjin.smartlibrary.backend.service.BrowseHistoryService;
 import io.github.jacorycyjin.smartlibrary.backend.vo.ResourceDetailVO;
 import io.github.jacorycyjin.smartlibrary.backend.vo.ResourcePublicVO;
 import jakarta.annotation.Resource;
@@ -30,6 +32,9 @@ public class BookController {
 
     @Resource
     private ResourceLinkMapper resourceLinkMapper;
+
+    @Resource
+    private BrowseHistoryService browseHistoryService;
 
     /**
      * 搜索图书（支持多条件查询和分页）
@@ -73,6 +78,12 @@ public class BookController {
         
         // 增加浏览量
         resourceService.incrementViewCount(bookId);
+        
+        // 记录用户浏览历史（如果已登录）
+        String userId = UserContext.getCurrentUserId();
+        if (userId != null) {
+            browseHistoryService.recordBrowseHistory(userId, bookId);
+        }
         
         // 转换为 DetailVO（包含完整分类层级和链接分组）
         ResourceDetailVO detailVO = ResourceConverter.toDetailVO(resourceDTO, resourceLinkMapper);

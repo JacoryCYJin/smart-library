@@ -4,9 +4,12 @@ import io.github.jacorycyjin.smartlibrary.backend.dto.UserFavoriteDTO;
 import io.github.jacorycyjin.smartlibrary.backend.entity.UserFavorite;
 import io.github.jacorycyjin.smartlibrary.backend.mapper.UserFavoriteMapper;
 import io.github.jacorycyjin.smartlibrary.backend.mapper.ResourceMapper;
+import io.github.jacorycyjin.smartlibrary.backend.mapper.CategoryMapper;
+import io.github.jacorycyjin.smartlibrary.backend.mapper.TagMapper;
 import io.github.jacorycyjin.smartlibrary.backend.service.UserFavoriteService;
 import io.github.jacorycyjin.smartlibrary.backend.common.exception.BusinessException;
 import io.github.jacorycyjin.smartlibrary.backend.common.enums.ApiCode;
+import io.github.jacorycyjin.smartlibrary.backend.vo.ResourcePublicVO;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,6 +33,12 @@ public class UserFavoriteServiceImpl implements UserFavoriteService {
     
     @jakarta.annotation.Resource
     private ResourceMapper resourceMapper;
+    
+    @jakarta.annotation.Resource
+    private CategoryMapper categoryMapper;
+    
+    @jakarta.annotation.Resource
+    private TagMapper tagMapper;
     
     /**
      * 添加收藏
@@ -109,18 +118,42 @@ public class UserFavoriteServiceImpl implements UserFavoriteService {
      * @param userId 用户ID
      * @param limit 查询数量
      * @param offset 偏移量
-     * @return 收藏列表
+     * @return 收藏的资源列表
      */
     @Override
-    public List<UserFavoriteDTO> getUserFavorites(String userId, Integer limit, Integer offset) {
+    public List<ResourcePublicVO> getUserFavorites(String userId, Integer limit, Integer offset) {
         Map<String, Object> params = new HashMap<>();
         params.put("userId", userId);
         params.put("limit", limit);
         params.put("offset", offset);
         
         List<UserFavorite> favorites = userFavoriteMapper.selectFavoritesByUserId(params);
-        return favorites.stream()
-                .map(UserFavoriteDTO::fromEntity)
+        
+        if (favorites == null || favorites.isEmpty()) {
+            return List.of();
+        }
+        
+        // 提取资源ID列表
+        List<String> resourceIds = favorites.stream()
+                .map(UserFavorite::getResourceId)
+                .collect(Collectors.toList());
+        
+        // 批量查询资源信息
+        Map<String, Object> resourceParams = new HashMap<>();
+        resourceParams.put("resourceIds", resourceIds);
+        List<io.github.jacorycyjin.smartlibrary.backend.entity.Resource> resources = resourceMapper.searchResources(resourceParams);
+        
+        // 转换为 VO
+        return resources.stream()
+                .map(resource -> {
+                    io.github.jacorycyjin.smartlibrary.backend.dto.ResourceDTO dto = 
+                        io.github.jacorycyjin.smartlibrary.backend.converter.ResourceConverter.toDTO(
+                            resource, 
+                            categoryMapper, 
+                            tagMapper
+                        );
+                    return io.github.jacorycyjin.smartlibrary.backend.vo.ResourcePublicVO.fromDTO(dto);
+                })
                 .collect(Collectors.toList());
     }
     

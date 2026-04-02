@@ -2,14 +2,11 @@ package io.github.jacorycyjin.smartlibrary.backend.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.lang.NonNull;
-import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import java.util.List;
-
 /**
- * Web 配置（注册拦截器和参数解析器）
+ * Web 配置（注册拦截器）
  * 
  * @author Jacory
  * @date 2025/02/25
@@ -34,25 +31,17 @@ public class WebConfig implements WebMvcConfigurer {
                 .excludePathPatterns(
                         "/user/login",
                         "/user/register",
-                        "/book/**",
+                        "/book/search",      // 图书搜索不需要登录（游客可访问）
                         "/literature/**",
                         "/category/**",
                         "/tag/**",
                         "/author/**",
                         "/comment/list",     // 评论列表不需要登录
                         "/graph/**"          // AI 人物关系图谱不需要登录（游客可访问）
+                        // /book/{bookId} 需要经过拦截器（设置 UserContext 以记录浏览历史），但不强制登录
                         // /favorite/check 需要经过拦截器（设置 UserContext），但不强制登录
                         // /comment/create 和 /comment/{id} 需要登录
                         // /favorite/add, /favorite/remove, /favorite/list, /favorite/count 需要登录
                 );
-    }
-    
-    /**
-     * 注册自定义参数解析器
-     * 用于自动注入 @CurrentUserId 参数
-     */
-    @Override
-    public void addArgumentResolvers(@NonNull List<HandlerMethodArgumentResolver> resolvers) {
-        resolvers.add(new CurrentUserIdArgumentResolver());
     }
 }

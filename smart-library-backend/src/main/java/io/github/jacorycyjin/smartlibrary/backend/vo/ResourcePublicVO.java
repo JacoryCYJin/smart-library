@@ -7,6 +7,7 @@ import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -110,6 +111,11 @@ public class ResourcePublicVO {
      * 标签列表
      */
     private List<TagVO> tags;
+
+    /**
+     * 最后浏览时间（仅在浏览历史场景下有值）
+     */
+    private LocalDateTime mtime;
 
     /**
      * 从 DTO 转换为 VO

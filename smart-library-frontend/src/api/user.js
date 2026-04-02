@@ -54,3 +54,27 @@ export function logout() {
     method: 'post'
   })
 }
+
+/**
+ * 获取当前用户信息
+ * @returns {Promise}
+ */
+export function getProfile() {
+  return request({
+    url: '/user/profile',
+    method: 'post'
+  })
+}
+
+/**
+ * 更新用户信息
+ * @param {Object} data - 用户信息
+ * @returns {Promise}
+ */
+export function updateProfile(data) {
+  return request({
+    url: '/user/update',
+    method: 'post',
+    data
+  })
+}

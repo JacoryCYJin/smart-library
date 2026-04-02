@@ -27,9 +27,9 @@ public class CommentCreateForm {
     private String content;
 
     /**
-     * 评分（1-5）
+     * 评分（0-10）
      */
-    @DecimalMin(value = "1.0", message = "评分最低为1分")
-    @DecimalMax(value = "5.0", message = "评分最高为5分")
+    @DecimalMin(value = "0.0", message = "评分最低为0分")
+    @DecimalMax(value = "10.0", message = "评分最高为10分")
     private BigDecimal score;
 }

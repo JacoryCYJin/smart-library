@@ -1,6 +1,6 @@
 package io.github.jacorycyjin.smartlibrary.backend.service;
 
-import io.github.jacorycyjin.smartlibrary.backend.dto.UserFavoriteDTO;
+import io.github.jacorycyjin.smartlibrary.backend.vo.ResourcePublicVO;
 
 import java.util.List;
 
@@ -45,9 +45,9 @@ public interface UserFavoriteService {
      * @param userId 用户ID
      * @param limit 查询数量
      * @param offset 偏移量
-     * @return 收藏列表
+     * @return 收藏的资源列表
      */
-    List<UserFavoriteDTO> getUserFavorites(String userId, Integer limit, Integer offset);
+    List<ResourcePublicVO> getUserFavorites(String userId, Integer limit, Integer offset);
     
     /**
      * 统计用户收藏数量

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.github.jacorycyjin.smartlibrary.backend.mapper.UserBrowseHistoryMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="UserBrowseHistoryResultMap" type="io.github.jacorycyjin.smartlibrary.backend.entity.UserBrowseHistory">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="resource_id" property="resourceId"/>
+        <result column="view_count" property="viewCount"/>
+        <result column="ctime" property="ctime"/>
+        <result column="mtime" property="mtime"/>
+    </resultMap>
+
+    <!-- 根据用户ID查询浏览历史 -->
+    <select id="selectByUserId" resultMap="UserBrowseHistoryResultMap">
+        SELECT id, user_id, resource_id, view_count, ctime, mtime
+        FROM user_browse_history
+        WHERE user_id = #{userId}
+        ORDER BY mtime DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <!-- 统计用户浏览历史数量 -->
+    <select id="countByUserId" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM user_browse_history
+        WHERE user_id = #{userId}
+    </select>
+
+    <!-- 记录或更新浏览历史 -->
+    <insert id="insertOrUpdate">
+        INSERT INTO user_browse_history (user_id, resource_id, view_count, ctime, mtime)
+        VALUES (#{userId}, #{resourceId}, 1, NOW(), NOW())
+        ON DUPLICATE KEY UPDATE
+            view_count = view_count + 1,
+            mtime = NOW()
+    </insert>
+
+</mapper>

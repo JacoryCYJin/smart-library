@@ -49,17 +49,18 @@ public class AuthInterceptor implements HandlerInterceptor {
             Boolean isBlacklisted = redisTemplate.hasKey(blacklistKey);
             
             if (Boolean.TRUE.equals(isBlacklisted)) {
-                // token 已被加入黑名单（用户已退出），不设置 UserContext
-                // 让请求继续，但 UserContext 为空，业务层会检查并返回 401
                 return true;
             }
             
             // 2. 验证 token
-            if (jwtUtil.validateToken(token)) {
+            boolean isValid = jwtUtil.validateToken(token);
+            
+            if (isValid) {
                 String userId = jwtUtil.getUserIdFromToken(token);
                 
                 // 3. 查询用户信息（使用 Redis 缓存）并存入 ThreadLocal
                 UserDTO user = userService.getUserById(userId);
+                
                 if (user != null) {
                     UserContext.setCurrentUser(user);
                     
