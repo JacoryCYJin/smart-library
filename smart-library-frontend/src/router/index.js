@@ -78,18 +78,46 @@ const router = createRouter({
     },
 
     // ================= 管理端路由 (Admin) =================
-    // {
-    //   path: '/admin',
-    //   name: 'admin-dashboard',
-    //   component: () => import('@/views/admin/Dashboard.vue'),
-    //   meta: { layout: 'admin' } // ⚠️ 关键标记：告诉 App.vue 用 AdminLayout
-    // },
-    // {
-    //   path: '/admin/books',
-    //   name: 'admin-books',
-    //   component: () => import('@/views/admin/BookManage.vue'),
-    //   meta: { layout: 'admin' }
-    // },
+    {
+      path: '/admin',
+      name: 'admin-dashboard',
+      component: () => import('@/views/admin/DashboardView.vue'),
+      meta: { 
+        layout: 'admin',
+        requiresAuth: true,
+        requiresAdmin: true
+      }
+    },
+    {
+      path: '/admin/users',
+      name: 'admin-users',
+      component: () => import('@/views/admin/UserManageView.vue'),
+      meta: { 
+        layout: 'admin',
+        requiresAuth: true,
+        requiresAdmin: true
+      }
+    },
+    {
+      path: '/admin/resources',
+      name: 'admin-resources',
+      component: () => import('@/views/admin/ResourceManageView.vue'),
+      meta: { 
+        layout: 'admin',
+        requiresAuth: true,
+        requiresAdmin: true
+      }
+    },
+    {
+      path: '/admin/comments',
+      name: 'admin-comments',
+      component: () => import('@/views/admin/CommentManageView.vue'),
+      meta: { 
+        layout: 'admin',
+        requiresAuth: true,
+        requiresAdmin: true
+      }
+    },
     {
       path: '/:pathMatch(.*)*',
       name: 'not-found',
@@ -103,16 +131,24 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const authStore = useAuthStore()
   
-  // 需要登录的路由（可以在 meta 中标记）
+  // 需要登录的路由
   if (to.meta.requiresAuth && !authStore.isLoggedIn) {
     // 未登录，跳转到登录页，并记录原始目标路由
     next({
       name: 'login',
       query: { redirect: to.fullPath }
     })
-  } else {
-    next()
+    return
   }
+  
+  // 需要管理员权限的路由
+  if (to.meta.requiresAdmin && !authStore.isAdmin) {
+    // 不是管理员，跳转到首页
+    next({ name: 'home' })
+    return
+  }
+  
+  next()
 })
 
 export default router

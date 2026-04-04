@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="io.github.jacorycyjin.smartlibrary.backend.mapper.CommentMapper">
 
-    <!-- 评论结果映射 -->
+    <!-- 评论结果映射（管理员用，包含用户名和资源标题） -->
     <resultMap id="CommentResultMap" type="io.github.jacorycyjin.smartlibrary.backend.entity.Comment">
         <id column="id" property="id"/>
         <result column="comment_id" property="commentId"/>
@@ -16,6 +16,12 @@
         <result column="ctime" property="ctime"/>
         <result column="mtime" property="mtime"/>
         <result column="deleted" property="deleted"/>
+    </resultMap>
+
+    <!-- 管理员评论结果映射（包含用户名和资源标题） -->
+    <resultMap id="AdminCommentResultMap" type="io.github.jacorycyjin.smartlibrary.backend.entity.Comment" extends="CommentResultMap">
+        <result column="username" property="username"/>
+        <result column="resource_title" property="resourceTitle"/>
     </resultMap>
 
     <!-- 根据资源ID查询已通过审核的评论列表（支持分页） -->
@@ -74,5 +80,78 @@
           AND resource_id = #{resourceId}
           AND deleted = 0
         LIMIT 1
+    </select>
+
+    <!-- 根据评论ID查询评论 -->
+    <select id="findByCommentId" parameterType="string" resultMap="CommentResultMap">
+        SELECT *
+        FROM comment
+        WHERE comment_id = #{commentId}
+    </select>
+
+    <!-- 根据评论ID更新评论 -->
+    <update id="updateByCommentId" parameterType="io.github.jacorycyjin.smartlibrary.backend.entity.Comment">
+        UPDATE comment
+        <set>
+            <if test="content != null">content = #{content},</if>
+            <if test="score != null">score = #{score},</if>
+            <if test="auditStatus != null">audit_status = #{auditStatus},</if>
+            <if test="rejectionReason != null">rejection_reason = #{rejectionReason},</if>
+            <if test="deleted != null">deleted = #{deleted},</if>
+            mtime = NOW()
+        </set>
+        WHERE comment_id = #{commentId}
+    </update>
+
+    <!-- 统计评论数量 -->
+    <select id="countByParams" parameterType="map" resultType="java.lang.Long">
+        SELECT COUNT(*) as count
+        FROM comment
+        <where>
+            <if test="deleted != null">
+                AND deleted = #{deleted}
+            </if>
+            <if test="auditStatus != null">
+                AND audit_status = #{auditStatus}
+            </if>
+            <if test="resourceId != null and resourceId != ''">
+                AND resource_id = #{resourceId}
+            </if>
+            <if test="userId != null and userId != ''">
+                AND user_id = #{userId}
+            </if>
+        </where>
+    </select>
+
+    <!-- 管理员查询评论列表（关联用户名和资源标题） -->
+    <select id="searchComments" parameterType="map" resultMap="AdminCommentResultMap">
+        SELECT 
+            c.*,
+            u.username,
+            r.title as resource_title
+        FROM comment c
+        LEFT JOIN user u ON c.user_id = u.user_id
+        LEFT JOIN resource r ON c.resource_id = r.resource_id
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND c.content LIKE CONCAT('%', #{keyword}, '%')
+            </if>
+            <if test="username != null and username != ''">
+                AND u.username LIKE CONCAT('%', #{username}, '%')
+            </if>
+            <if test="resourceId != null and resourceId != ''">
+                AND c.resource_id = #{resourceId}
+            </if>
+            <if test="userId != null and userId != ''">
+                AND c.user_id = #{userId}
+            </if>
+            <if test="auditStatus != null">
+                AND c.audit_status = #{auditStatus}
+            </if>
+            <if test="deleted != null">
+                AND c.deleted = #{deleted}
+            </if>
+        </where>
+        ORDER BY c.ctime DESC
     </select>
 </mapper>

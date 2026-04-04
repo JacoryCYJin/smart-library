@@ -78,4 +78,16 @@ public class Comment {
      * 是否删除：0=未删除，1=已删除
      */
     private Integer deleted;
+
+    // ========== 管理员查询扩展字段 ==========
+
+    /**
+     * 用户名（管理员查询时关联）
+     */
+    private String username;
+
+    /**
+     * 资源标题（管理员查询时关联）
+     */
+    private String resourceTitle;
 }

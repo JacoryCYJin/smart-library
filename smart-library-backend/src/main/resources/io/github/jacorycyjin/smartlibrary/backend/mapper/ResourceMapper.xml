@@ -353,4 +353,46 @@
         SET has_graph = #{hasGraph}
         WHERE resource_id = #{resourceId}
     </update>
+
+    <!-- 根据资源ID查询资源 -->
+    <select id="findByResourceId" parameterType="string" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM resource
+        WHERE resource_id = #{resourceId}
+    </select>
+
+    <!-- 根据资源ID更新资源 -->
+    <update id="updateByResourceId" parameterType="io.github.jacorycyjin.smartlibrary.backend.entity.Resource">
+        UPDATE resource
+        <set>
+            <if test="title != null">title = #{title},</if>
+            <if test="authorName != null">author_name = #{authorName},</if>
+            <if test="translatorName != null">translator_name = #{translatorName},</if>
+            <if test="coverUrl != null">cover_url = #{coverUrl},</if>
+            <if test="summary != null">summary = #{summary},</if>
+            <if test="pubDate != null">pub_date = #{pubDate},</if>
+            <if test="isbn != null">isbn = #{isbn},</if>
+            <if test="publisher != null">publisher = #{publisher},</if>
+            <if test="price != null">price = #{price},</if>
+            <if test="pageCount != null">page_count = #{pageCount},</if>
+            <if test="deleted != null">deleted = #{deleted},</if>
+            mtime = NOW()
+        </set>
+        WHERE resource_id = #{resourceId}
+    </update>
+
+    <!-- 统计资源数量 -->
+    <select id="countByParams" parameterType="map" resultType="java.lang.Long">
+        SELECT COUNT(*) as count
+        FROM resource
+        <where>
+            <if test="deleted != null">
+                AND deleted = #{deleted}
+            </if>
+            <if test="type != null">
+                AND type = #{type}
+            </if>
+        </where>
+    </select>
 </mapper>

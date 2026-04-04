@@ -98,4 +98,69 @@
         WHERE user_id = #{userId}
     </update>
 
+    <!-- 根据用户ID查询用户 -->
+    <select id="findByUserId" parameterType="string" resultMap="UserResultMap">
+        SELECT id, user_id, username, password, phone, email, avatar_url, role, bio, status, ctime, mtime, deleted
+        FROM user
+        WHERE user_id = #{userId}
+    </select>
+
+    <!-- 根据用户ID更新用户 -->
+    <update id="updateByUserId" parameterType="io.github.jacorycyjin.smartlibrary.backend.entity.User">
+        UPDATE user
+        <set>
+            <if test="username != null">username = #{username},</if>
+            <if test="password != null">password = #{password},</if>
+            <if test="phone != null">phone = #{phone},</if>
+            <if test="email != null">email = #{email},</if>
+            <if test="avatarUrl != null">avatar_url = #{avatarUrl},</if>
+            <if test="role != null">role = #{role},</if>
+            <if test="bio != null">bio = #{bio},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="deleted != null">deleted = #{deleted},</if>
+            mtime = NOW()
+        </set>
+        WHERE user_id = #{userId}
+    </update>
+
+    <!-- 统计用户数量 -->
+    <select id="countByParams" parameterType="map" resultType="java.lang.Long">
+        SELECT COUNT(*) as count
+        FROM user
+        <where>
+            <if test="deleted != null">
+                AND deleted = #{deleted}
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+            <if test="role != null">
+                AND role = #{role}
+            </if>
+        </where>
+    </select>
+
+    <!-- 管理员查询用户列表 -->
+    <select id="searchUsers" parameterType="map" resultMap="UserResultMap">
+        SELECT id, user_id, username, phone, email, avatar_url, role, bio, status, ctime, mtime, deleted
+        FROM user
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND (username LIKE CONCAT('%', #{keyword}, '%')
+                OR email LIKE CONCAT('%', #{keyword}, '%')
+                OR phone LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+            <if test="role != null">
+                AND role = #{role}
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+            <if test="deleted != null">
+                AND deleted = #{deleted}
+            </if>
+        </where>
+        ORDER BY ctime DESC
+    </select>
+
 </mapper>

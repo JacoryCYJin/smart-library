@@ -150,4 +150,28 @@ public interface ResourceMapper {
      * @return 影响行数
      */
     int updateHasGraph(@Param("resourceId") String resourceId, @Param("hasGraph") Integer hasGraph);
+
+    /**
+     * 根据资源ID查询资源
+     * 
+     * @param resourceId 资源业务ID
+     * @return 资源信息
+     */
+    Resource findByResourceId(@Param("resourceId") String resourceId);
+
+    /**
+     * 根据资源ID更新资源
+     * 
+     * @param resource 资源信息
+     * @return 影响行数
+     */
+    int updateByResourceId(Resource resource);
+
+    /**
+     * 统计资源数量
+     * 
+     * @param params 查询参数
+     * @return 资源数量
+     */
+    Long countByParams(Map<String, Object> params);
 }

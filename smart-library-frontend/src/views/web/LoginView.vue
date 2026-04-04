@@ -161,9 +161,15 @@ async function handleLogin() {
       authStore.login(res.data)
       Message.success('登录成功')
       
-      // 跳转到首页或之前的页面
-      const redirect = router.currentRoute.value.query.redirect || '/'
-      router.push(redirect)
+      // 根据用户角色跳转
+      if (res.data.role === 1) {
+        // 管理员跳转到管理后台
+        router.push('/admin')
+      } else {
+        // 普通用户跳转到首页或之前的页面
+        const redirect = router.currentRoute.value.query.redirect || '/'
+        router.push(redirect)
+      }
     } else {
       Message.error(res.message || '登录失败')
     }

@@ -14,6 +14,8 @@ export const useAuthStore = defineStore('auth', () => {
   const userId = computed(() => user.value?.userId || null)
   const username = computed(() => user.value?.username || '未登录')
   const avatarUrl = computed(() => user.value?.avatarUrl || '')
+  const role = computed(() => user.value?.role || 0) // 0-普通用户 / 1-管理员
+  const isAdmin = computed(() => role.value === 1)
 
   /**
    * 登录
@@ -58,6 +60,8 @@ export const useAuthStore = defineStore('auth', () => {
     userId,
     username,
     avatarUrl,
+    role,
+    isAdmin,
     // 方法
     login,
     logout,

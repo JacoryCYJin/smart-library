@@ -62,4 +62,36 @@ public interface CommentMapper {
      * @return 评论实体（如果存在）
      */
     Comment selectByUserAndResource(@Param("userId") String userId, @Param("resourceId") String resourceId);
+
+    /**
+     * 根据评论ID查询评论
+     * 
+     * @param commentId 评论业务ID
+     * @return 评论信息
+     */
+    Comment findByCommentId(@Param("commentId") String commentId);
+
+    /**
+     * 根据评论ID更新评论
+     * 
+     * @param comment 评论信息
+     * @return 影响行数
+     */
+    int updateByCommentId(Comment comment);
+
+    /**
+     * 统计评论数量
+     * 
+     * @param params 查询参数
+     * @return 评论数量
+     */
+    Long countByParams(java.util.Map<String, Object> params);
+
+    /**
+     * 管理员查询评论列表
+     * 
+     * @param params 查询参数
+     * @return 评论列表
+     */
+    List<Comment> searchComments(java.util.Map<String, Object> params);
 }

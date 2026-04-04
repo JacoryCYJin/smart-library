@@ -56,4 +56,11 @@ public interface UserFavoriteMapper {
      * @return 收藏数量
      */
     int countFavoritesByUserId(String userId);
+
+    /**
+     * 统计所有收藏数量
+     * 
+     * @return 收藏总数
+     */
+    Long countAll();
 }
