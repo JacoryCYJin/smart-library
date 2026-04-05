@@ -167,6 +167,7 @@ async function loadUsers() {
       Message.error(res.message || '加载用户列表失败')
     }
   } catch (error) {
+    console.error(error)
     Message.error('加载用户列表失败')
   } finally {
     loading.value = false
@@ -197,6 +198,7 @@ async function toggleUserStatus(user) {
       Message.error(res.message || `${action}失败`)
     }
   } catch (error) {
+    console.error(error)
     Message.error(`${action}失败`)
   }
 }
@@ -214,6 +216,7 @@ async function toggleUserRole(user) {
       Message.error(res.message || '设置失败')
     }
   } catch (error) {
+    console.error(error)
     Message.error('设置失败')
   }
 }

@@ -26,7 +26,7 @@
         :pagination="false"
         :scroll="{ x: 900 }"
         row-key="categoryId"
-        :default-expand-all-rows="false"
+        v-model:expandedKeys="expandedKeys"
         :indent-size="20"
       >
         <template #categoryName="{ record }">
@@ -109,6 +109,7 @@ const categoryTree = ref([])
 const showForm = ref(false)
 const isEdit = ref(false)
 const currentCategory = ref(null)
+const expandedKeys = ref([])
 
 // 表格列定义
 const columns = [
@@ -143,6 +144,20 @@ const columns = [
 ]
 
 /**
+ * 递归获取所有分类 ID
+ */
+function getAllCategoryIds(nodes) {
+  let ids = []
+  nodes.forEach(node => {
+    ids.push(node.categoryId)
+    if (node.children && node.children.length > 0) {
+      ids = ids.concat(getAllCategoryIds(node.children))
+    }
+  })
+  return ids
+}
+
+/**
  * 加载分类树
  */
 async function loadCategoryTree() {
@@ -152,6 +167,7 @@ async function loadCategoryTree() {
     
     if (res.code === 0) {
       categoryTree.value = res.data || []
+      expandedKeys.value = getAllCategoryIds(categoryTree.value)
     } else {
       Message.error(res.message || '加载分类树失败')
     }

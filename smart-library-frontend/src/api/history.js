@@ -14,3 +14,14 @@ export function getBrowseHistory(data) {
     data
   })
 }
+
+/**
+ * 统计用户浏览历史数量
+ * @returns {Promise}
+ */
+export function countBrowseHistory() {
+  return request({
+    url: '/history/count',
+    method: 'get'
+  })
+}

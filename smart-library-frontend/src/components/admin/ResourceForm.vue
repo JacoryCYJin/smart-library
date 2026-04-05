@@ -178,8 +178,9 @@ const loadResourceDetail = async () => {
       })
     }
   } catch (error) {
-    Message.error('加载资源详情失败')
-  } finally {
+      console.error(error)
+      Message.error('加载资源详情失败')
+    } finally {
     loading.value = false
   }
 }
@@ -242,7 +243,8 @@ const handleSubmit = async () => {
       return false
     }
   } catch (error) {
-    Message.error('操作失败')
+    console.error(error)
+    Message.error(isEdit.value ? '修改失败' : '添加失败')
     return false
   } finally {
     loading.value = false

@@ -39,4 +39,44 @@ public interface AuthorMapper {
      * @return 作者信息
      */
     Author selectAuthorById(@Param("authorId") String authorId);
+
+    /**
+     * 统一查询作者列表（支持多条件动态查询）
+     * 
+     * @param params 查询参数
+     * @return 作者列表
+     */
+    List<Author> searchAuthors(Map<String, Object> params);
+
+    /**
+     * 统计作者数量
+     * 
+     * @param params 查询参数
+     * @return 作者数量
+     */
+    int countAuthors(Map<String, Object> params);
+
+    /**
+     * 插入作者
+     * 
+     * @param author 作者信息
+     * @return 影响行数
+     */
+    int insert(Author author);
+
+    /**
+     * 更新作者
+     * 
+     * @param author 作者信息
+     * @return 影响行数
+     */
+    int update(Author author);
+
+    /**
+     * 根据作者ID查询关联的资源数量
+     * 
+     * @param authorId 作者ID
+     * @return 资源数量
+     */
+    int countResourcesByAuthorId(@Param("authorId") String authorId);
 }

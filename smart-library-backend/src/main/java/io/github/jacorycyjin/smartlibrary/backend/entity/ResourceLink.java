@@ -1,6 +1,9 @@
 package io.github.jacorycyjin.smartlibrary.backend.entity;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
@@ -11,6 +14,9 @@ import java.time.LocalDateTime;
  * @date 2026/03/06
  */
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class ResourceLink {
     private Long id;
     private String linkId;

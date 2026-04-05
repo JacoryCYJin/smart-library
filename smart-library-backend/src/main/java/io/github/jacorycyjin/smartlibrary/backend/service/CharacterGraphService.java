@@ -27,6 +27,15 @@ public interface CharacterGraphService {
     String generateAndSaveGraph(String resourceId);
     
     /**
+     * 为指定资源强制生成并保存人物关系图谱（跳过体裁判定）
+     * 用于管理员手动触发的强制生成场景
+     *
+     * @param resourceId 资源ID
+     * @return 图谱ID
+     */
+    String generateAndSaveGraphForce(String resourceId);
+    
+    /**
      * 根据资源ID获取人物关系图谱
      *
      * @param resourceId 资源ID

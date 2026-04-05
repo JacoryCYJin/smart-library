@@ -181,6 +181,90 @@ public class CharacterGraphServiceImpl implements CharacterGraphService {
     }
     
     @Override
+    public String generateAndSaveGraphForce(String resourceId) {
+        // 1. 查询资源信息
+        Resource resource = resourceMapper.selectById(resourceId);
+        if (resource == null) {
+            throw new BusinessException(ApiCode.RESOURCE_NOT_FOUND.getCode(), "资源不存在");
+        }
+        
+        // 2. 检查是否已有图谱
+        ResourceCharacterGraph existingGraph = resourceMapper.selectGraphByResourceId(resourceId);
+        if (existingGraph != null) {
+            if (existingGraph.getGenerateStatus() == GraphGenerateStatus.SUCCESS.getCode()) {
+                log.info("资源 {} 已存在图谱记录，直接返回", resourceId);
+                return existingGraph.getGraphId();
+            }
+        }
+        
+        // 3. 创建图谱记录（状态：生成中）
+        String graphId = UUIDUtil.generateUUID();
+        ResourceCharacterGraph graph = new ResourceCharacterGraph();
+        graph.setGraphId(graphId);
+        graph.setResourceId(resourceId);
+        graph.setGenerateStatus(GraphGenerateStatus.GENERATING.getCode());
+        graph.setAiModel(siliconFlowConfig.getModel());
+        
+        if (existingGraph == null) {
+            resourceMapper.insertGraph(graph);
+        } else {
+            graph.setGraphId(existingGraph.getGraphId());
+            resourceMapper.updateGraph(graph);
+            graphId = existingGraph.getGraphId();
+        }
+        
+        // 4. 强制生成图谱（使用强制生成提示词）
+        try {
+            long startTime = System.currentTimeMillis();
+            
+            // 使用强制生成模式的提示词
+            String userPrompt = String.format(
+                AIPromptConstants.CHARACTER_GRAPH_USER_PROMPT_TEMPLATE,
+                resource.getTitle(),
+                resource.getAuthorName() != null ? resource.getAuthorName() : "未知作者"
+            );
+            
+            CharacterGraphDTO graphDTO = aiService.chatJson(
+                AIPromptConstants.CHARACTER_GRAPH_FORCE_SYSTEM_PROMPT,  // 使用强制生成提示词
+                userPrompt,
+                CharacterGraphDTO.class
+            );
+            
+            long endTime = System.currentTimeMillis();
+            int generateTime = (int) (endTime - startTime);
+            
+            // 5. 保存图谱数据（即使为空也保存）
+            String graphJson = objectMapper.writeValueAsString(graphDTO);
+            graph.setGraphJson(graphJson);
+            graph.setGenerateStatus(GraphGenerateStatus.SUCCESS.getCode());
+            graph.setGenerateTime(generateTime);
+            
+            resourceMapper.updateGraph(graph);
+            
+            // 6. 如果图谱非空，更新 has_graph 字段
+            if (graphDTO.getNodes() != null && !graphDTO.getNodes().isEmpty()) {
+                resourceMapper.updateHasGraph(resourceId, 1);
+                log.info("资源 {} 强制生成图谱成功，图谱ID: {}, 节点数: {}, 边数: {}", 
+                    resourceId, graphId, graphDTO.getNodes().size(), graphDTO.getEdges().size());
+            } else {
+                log.info("资源 {} 强制生成图谱为空，图谱ID: {}", resourceId, graphId);
+            }
+            
+            return graphId;
+            
+        } catch (Exception e) {
+            log.error("资源 {} 强制生成图谱失败", resourceId, e);
+            
+            // 更新失败状态
+            graph.setGenerateStatus(GraphGenerateStatus.FAILED.getCode());
+            graph.setErrorMessage(e.getMessage());
+            resourceMapper.updateGraph(graph);
+            
+            throw new BusinessException(ApiCode.SERVER_ERROR.getCode(), "强制生成图谱失败: " + e.getMessage());
+        }
+    }
+    
+    @Override
     public CharacterGraphDTO getGraphByResourceId(String resourceId) {
         try {
             // 从数据库查询图谱记录

@@ -129,6 +129,46 @@ const router = createRouter({
       }
     },
     {
+      path: '/admin/authors',
+      name: 'admin-authors',
+      component: () => import('@/views/admin/AuthorManageView.vue'),
+      meta: { 
+        layout: 'admin',
+        requiresAuth: true,
+        requiresAdmin: true
+      }
+    },
+    {
+      path: '/admin/links',
+      name: 'admin-links',
+      component: () => import('@/views/admin/LinkManageView.vue'),
+      meta: { 
+        layout: 'admin',
+        requiresAuth: true,
+        requiresAdmin: true
+      }
+    },
+    {
+      path: '/admin/graphs',
+      name: 'admin-graphs',
+      component: () => import('@/views/admin/GraphManageView.vue'),
+      meta: { 
+        layout: 'admin',
+        requiresAuth: true,
+        requiresAdmin: true
+      }
+    },
+    {
+      path: '/admin/ranking',
+      name: 'admin-ranking',
+      component: () => import('@/views/admin/RankingView.vue'),
+      meta: { 
+        layout: 'admin',
+        requiresAuth: true,
+        requiresAdmin: true
+      }
+    },
+    {
       path: '/:pathMatch(.*)*',
       name: 'not-found',
       component: NotFound,

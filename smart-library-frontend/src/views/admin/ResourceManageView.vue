@@ -88,6 +88,16 @@
             >
               编辑
             </a-button>
+            <a-dropdown @select="(value) => handleGraphAction(value, record.resourceId)">
+              <a-button type="text" size="small">
+                生成图谱
+                <icon-down />
+              </a-button>
+              <template #content>
+                <a-doption value="normal">普通生成</a-doption>
+                <a-doption value="force">强制生成</a-doption>
+              </template>
+            </a-dropdown>
             <a-button
               v-if="record.deleted === 0"
               type="text"
@@ -140,7 +150,8 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { Message } from '@arco-design/web-vue'
-import { getResourceList, deleteResource, restoreResource } from '@/api/admin'
+import { IconDown } from '@arco-design/web-vue/es/icon'
+import { getResourceList, deleteResource, restoreResource, triggerGraphGeneration } from '@/api/admin'
 import AdminPagination from '@/components/admin/AdminPagination.vue'
 import ResourceForm from '@/components/admin/ResourceForm.vue'
 
@@ -245,6 +256,7 @@ const loadResourceList = async () => {
       pagination.total = res.data.totalCount
     }
   } catch (error) {
+    console.error(error)
     Message.error('加载资源列表失败')
   } finally {
     loading.value = false
@@ -287,8 +299,9 @@ const handleOffline = async (resourceId) => {
       loadResourceList()
     }
   } catch (error) {
-    Message.error('下架失败')
-  }
+      console.error(error)
+      Message.error('下架失败')
+    }
 }
 
 // 上架资源（恢复）
@@ -300,13 +313,30 @@ const handleOnline = async (resourceId) => {
       loadResourceList()
     }
   } catch (error) {
+    console.error(error)
     Message.error('上架失败')
   }
 }
 
 // 删除资源（暂时不实现物理删除，保留接口）
-const handleDelete = async (resourceId) => {
+const handleDelete = async () => {
   Message.warning('永久删除功能暂未开放')
+}
+
+// 生成图谱
+const handleGraphAction = async (action, resourceId) => {
+  try {
+    const forceGenerate = action === 'force'
+    const res = await triggerGraphGeneration(resourceId, forceGenerate)
+    if (res.code === 0) {
+      Message.success(forceGenerate ? '已触发强制生成图谱' : '已触发生成图谱')
+    } else {
+      Message.error(res.message || '触发失败')
+    }
+  } catch (error) {
+    console.error(error)
+    Message.error('触发失败')
+  }
 }
 
 // 添加资源

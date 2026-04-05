@@ -36,9 +36,7 @@
     <!-- Main Content -->
     <div class="flex-1 flex flex-col min-w-0">
       <!-- Header -->
-      <header class="h-16 bg-white flex items-center justify-between px-8" style="box-shadow: 0 1px 3px rgba(16, 42, 67, 0.06)">
-        <h1 class="text-xl font-semibold text-ink">{{ currentPageTitle }}</h1>
-
+      <header class="h-16 bg-white flex items-center justify-end px-8" style="box-shadow: 0 1px 3px rgba(16, 42, 67, 0.06)">
         <div class="flex items-center gap-6">
           <button
             @click="handleBackToHome"
@@ -73,14 +71,13 @@
 </template>
 
 <script setup>
-import { computed, h } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { h } from 'vue'
+import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { Message } from '@arco-design/web-vue'
 import { logout as logoutApi } from '@/api/user'
 import logoUrl from '@/assets/images/logo-dark.png'
 
-const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
 
@@ -120,14 +117,36 @@ const menuItems = [
     icon: h('svg', { class: 'w-5 h-5', fill: 'none', stroke: 'currentColor', viewBox: '0 0 24 24' }, [
       h('path', { 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'stroke-width': '2', d: 'M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z' })
     ])
+  },
+  {
+    path: '/admin/authors',
+    label: '作者管理',
+    icon: h('svg', { class: 'w-5 h-5', fill: 'none', stroke: 'currentColor', viewBox: '0 0 24 24' }, [
+      h('path', { 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'stroke-width': '2', d: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' })
+    ])
+  },
+  {
+    path: '/admin/links',
+    label: '链接管理',
+    icon: h('svg', { class: 'w-5 h-5', fill: 'none', stroke: 'currentColor', viewBox: '0 0 24 24' }, [
+      h('path', { 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'stroke-width': '2', d: 'M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1' })
+    ])
+  },
+  {
+    path: '/admin/graphs',
+    label: 'AI 图谱管理',
+    icon: h('svg', { class: 'w-5 h-5', fill: 'none', stroke: 'currentColor', viewBox: '0 0 24 24' }, [
+      h('path', { 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'stroke-width': '2', d: 'M13 10V3L4 14h7v7l9-11h-7z' })
+    ])
+  },
+  {
+    path: '/admin/ranking',
+    label: '排行榜',
+    icon: h('svg', { class: 'w-5 h-5', fill: 'none', stroke: 'currentColor', viewBox: '0 0 24 24' }, [
+      h('path', { 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'stroke-width': '2', d: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z' })
+    ])
   }
 ]
-
-// 当前页面标题
-const currentPageTitle = computed(() => {
-  const item = menuItems.find(m => m.path === route.path)
-  return item ? item.label : '管理后台'
-})
 
 // 返回首页
 const handleBackToHome = () => {

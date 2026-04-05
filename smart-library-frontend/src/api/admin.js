@@ -230,3 +230,215 @@ export function deleteCategory(categoryId) {
     method: 'delete'
   })
 }
+
+// ==================== 作者管理 ====================
+
+/**
+ * 获取作者列表
+ */
+export function getAuthorList(params) {
+  return request({
+    url: '/admin/authors/list',
+    method: 'post',
+    data: params
+  })
+}
+
+/**
+ * 创建作者
+ */
+export function createAuthor(data) {
+  return request({
+    url: '/admin/authors/create',
+    method: 'post',
+    data
+  })
+}
+
+/**
+ * 更新作者
+ */
+export function updateAuthor(authorId, data) {
+  return request({
+    url: `/admin/authors/${authorId}`,
+    method: 'put',
+    data
+  })
+}
+
+/**
+ * 删除作者
+ */
+export function deleteAuthor(authorId) {
+  return request({
+    url: `/admin/authors/${authorId}`,
+    method: 'delete'
+  })
+}
+
+/**
+ * 获取作者详情
+ */
+export function getAuthorDetail(authorId) {
+  return request({
+    url: `/admin/authors/${authorId}`,
+    method: 'get'
+  })
+}
+
+// ==================== 资源链接管理 ====================
+
+/**
+ * 获取资源链接列表
+ */
+export function getLinkList(params) {
+  return request({
+    url: '/admin/links/list',
+    method: 'post',
+    data: params
+  })
+}
+
+/**
+ * 创建资源链接
+ */
+export function createLink(data) {
+  return request({
+    url: '/admin/links/create',
+    method: 'post',
+    data
+  })
+}
+
+/**
+ * 更新资源链接
+ */
+export function updateLink(linkId, data) {
+  return request({
+    url: `/admin/links/${linkId}`,
+    method: 'put',
+    data
+  })
+}
+
+/**
+ * 删除资源链接
+ */
+export function deleteLink(linkId) {
+  return request({
+    url: `/admin/links/${linkId}`,
+    method: 'delete'
+  })
+}
+
+/**
+ * 获取资源链接详情
+ */
+export function getLinkDetail(linkId) {
+  return request({
+    url: `/admin/links/${linkId}`,
+    method: 'get'
+  })
+}
+
+// ==================== AI 图谱管理 ====================
+
+/**
+ * 获取 AI 图谱列表
+ */
+export function getGraphList(params) {
+  return request({
+    url: '/admin/graphs/list',
+    method: 'post',
+    data: params
+  })
+}
+
+/**
+ * 手动触发图谱生成
+ * @param {string} resourceId - 资源ID
+ * @param {boolean} forceGenerate - 是否强制生成（跳过AI判断）
+ */
+export function triggerGraphGeneration(resourceId, forceGenerate = false) {
+  return request({
+    url: `/admin/graphs/trigger/${resourceId}`,
+    method: 'post',
+    params: { forceGenerate }
+  })
+}
+
+/**
+ * 重试失败的图谱生成
+ */
+export function retryGraphGeneration(graphId) {
+  return request({
+    url: `/admin/graphs/retry/${graphId}`,
+    method: 'post'
+  })
+}
+
+/**
+ * 删除图谱
+ */
+export function deleteGraph(graphId) {
+  return request({
+    url: `/admin/graphs/${graphId}`,
+    method: 'delete'
+  })
+}
+
+/**
+ * 获取图谱详情
+ */
+export function getGraphDetail(graphId) {
+  return request({
+    url: `/admin/graphs/${graphId}`,
+    method: 'get'
+  })
+}
+
+// ==================== 排行榜统计 ====================
+
+/**
+ * 获取浏览量排行榜
+ */
+export function getViewRanking(limit = 10) {
+  return request({
+    url: '/admin/ranking/views',
+    method: 'get',
+    params: { limit }
+  })
+}
+
+/**
+ * 获取收藏量排行榜
+ */
+export function getFavoriteRanking(limit = 10) {
+  return request({
+    url: '/admin/ranking/favorites',
+    method: 'get',
+    params: { limit }
+  })
+}
+
+/**
+ * 获取评论量排行榜
+ */
+export function getCommentRanking(limit = 10) {
+  return request({
+    url: '/admin/ranking/comments',
+    method: 'get',
+    params: { limit }
+  })
+}
+
+/**
+ * 获取评分排行榜
+ */
+export function getRatingRanking(limit = 10) {
+  return request({
+    url: '/admin/ranking/ratings',
+    method: 'get',
+    params: { limit }
+  })
+}

@@ -51,12 +51,119 @@
             country,
             photo_url AS photoUrl,
             description,
+            source_origin AS sourceOrigin,
+            source_url AS sourceUrl,
             ctime,
             mtime,
             deleted
         FROM author
         WHERE author_id = #{authorId}
           AND deleted = 0
+    </select>
+
+    <!-- 统一查询作者列表（支持多条件动态查询） -->
+    <select id="searchAuthors" resultType="io.github.jacorycyjin.smartlibrary.backend.entity.Author">
+        SELECT 
+            id,
+            author_id AS authorId,
+            name,
+            original_name AS originalName,
+            country,
+            photo_url AS photoUrl,
+            description,
+            source_origin AS sourceOrigin,
+            source_url AS sourceUrl,
+            ctime,
+            mtime,
+            deleted
+        FROM author
+        <where>
+            deleted = 0
+            <if test="keyword != null and keyword != ''">
+                AND (name LIKE CONCAT('%', #{keyword}, '%') 
+                     OR original_name LIKE CONCAT('%', #{keyword}, '%')
+                     OR country LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+            <if test="sourceOrigin != null">
+                AND source_origin = #{sourceOrigin}
+            </if>
+        </where>
+        ORDER BY ctime DESC
+        <if test="offset != null and pageSize != null">
+            LIMIT #{offset}, #{pageSize}
+        </if>
+    </select>
+
+    <!-- 统计作者数量 -->
+    <select id="countAuthors" resultType="int">
+        SELECT COUNT(*)
+        FROM author
+        <where>
+            deleted = 0
+            <if test="keyword != null and keyword != ''">
+                AND (name LIKE CONCAT('%', #{keyword}, '%') 
+                     OR original_name LIKE CONCAT('%', #{keyword}, '%')
+                     OR country LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+            <if test="sourceOrigin != null">
+                AND source_origin = #{sourceOrigin}
+            </if>
+        </where>
+    </select>
+
+    <!-- 插入作者 -->
+    <insert id="insert">
+        INSERT INTO author (
+            author_id,
+            name,
+            original_name,
+            country,
+            photo_url,
+            description,
+            source_origin,
+            source_url,
+            ctime,
+            mtime,
+            deleted
+        ) VALUES (
+            #{authorId},
+            #{name},
+            #{originalName},
+            #{country},
+            #{photoUrl},
+            #{description},
+            #{sourceOrigin},
+            #{sourceUrl},
+            NOW(),
+            NOW(),
+            0
+        )
+    </insert>
+
+    <!-- 更新作者 -->
+    <update id="update">
+        UPDATE author
+        <set>
+            <if test="name != null">name = #{name},</if>
+            <if test="originalName != null">original_name = #{originalName},</if>
+            <if test="country != null">country = #{country},</if>
+            <if test="photoUrl != null">photo_url = #{photoUrl},</if>
+            <if test="description != null">description = #{description},</if>
+            <if test="sourceOrigin != null">source_origin = #{sourceOrigin},</if>
+            <if test="sourceUrl != null">source_url = #{sourceUrl},</if>
+            mtime = NOW()
+        </set>
+        WHERE author_id = #{authorId}
+          AND deleted = 0
+    </update>
+
+    <!-- 根据作者ID查询关联的资源数量 -->
+    <select id="countResourcesByAuthorId" resultType="int">
+        SELECT COUNT(DISTINCT rel.resource_id)
+        FROM resource_author_rel rel
+        INNER JOIN resource r ON rel.resource_id = r.resource_id
+        WHERE rel.author_id = #{authorId}
+          AND r.deleted = 0
     </select>
 
 </mapper>

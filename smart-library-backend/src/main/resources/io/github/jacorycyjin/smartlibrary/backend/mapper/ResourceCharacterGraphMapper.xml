@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="io.github.jacorycyjin.smartlibrary.backend.mapper.ResourceCharacterGraphMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="GraphResultMap" type="io.github.jacorycyjin.smartlibrary.backend.entity.ResourceCharacterGraph">
+        <id property="graphId" column="graph_id"/>
+        <result property="resourceId" column="resource_id"/>
+        <result property="graphJson" column="graph_json"/>
+        <result property="generateStatus" column="generate_status"/>
+        <result property="errorMessage" column="error_message"/>
+        <result property="aiModel" column="ai_model"/>
+        <result property="tokenUsage" column="token_usage"/>
+        <result property="generateTime" column="generate_time"/>
+        <result property="ctime" column="ctime"/>
+        <result property="mtime" column="mtime"/>
+        <result property="deleted" column="deleted"/>
+    </resultMap>
+
+    <!-- 根据资源ID查询图谱 -->
+    <select id="selectByResourceId" resultMap="GraphResultMap">
+        SELECT
+            graph_id,
+            resource_id,
+            graph_json,
+            generate_status,
+            error_message,
+            ai_model,
+            token_usage,
+            generate_time,
+            ctime,
+            mtime,
+            deleted
+        FROM resource_character_graph
+        WHERE resource_id = #{resourceId}
+          AND deleted = 0
+        LIMIT 1
+    </select>
+
+    <!-- 统一查询图谱列表（支持多条件动态查询） -->
+    <select id="searchGraphs" resultMap="GraphResultMap">
+        SELECT
+            graph_id,
+            resource_id,
+            graph_json,
+            generate_status,
+            error_message,
+            ai_model,
+            token_usage,
+            generate_time,
+            ctime,
+            mtime,
+            deleted
+        FROM resource_character_graph
+        <where>
+            deleted = 0
+            <if test="resourceId != null and resourceId != ''">
+                AND resource_id = #{resourceId}
+            </if>
+            <if test="generateStatus != null">
+                AND generate_status = #{generateStatus}
+            </if>
+        </where>
+        ORDER BY ctime DESC
+        <if test="offset != null and pageSize != null">
+            LIMIT #{offset}, #{pageSize}
+        </if>
+    </select>
+
+    <!-- 统计图谱数量 -->
+    <select id="countGraphs" resultType="int">
+        SELECT COUNT(*)
+        FROM resource_character_graph
+        <where>
+            deleted = 0
+            <if test="resourceId != null and resourceId != ''">
+                AND resource_id = #{resourceId}
+            </if>
+            <if test="generateStatus != null">
+                AND generate_status = #{generateStatus}
+            </if>
+        </where>
+    </select>
+
+    <!-- 根据图谱ID查询图谱 -->
+    <select id="selectByGraphId" resultMap="GraphResultMap">
+        SELECT
+            graph_id,
+            resource_id,
+            graph_json,
+            generate_status,
+            error_message,
+            ai_model,
+            token_usage,
+            generate_time,
+            ctime,
+            mtime,
+            deleted
+        FROM resource_character_graph
+        WHERE graph_id = #{graphId}
+          AND deleted = 0
+    </select>
+
+    <!-- 插入图谱 -->
+    <insert id="insert">
+        INSERT INTO resource_character_graph (
+            graph_id,
+            resource_id,
+            graph_json,
+            generate_status,
+            error_message,
+            ai_model,
+            token_usage,
+            generate_time,
+            ctime,
+            mtime,
+            deleted
+        ) VALUES (
+            #{graphId},
+            #{resourceId},
+            #{graphJson},
+            #{generateStatus},
+            #{errorMessage},
+            #{aiModel},
+            #{tokenUsage},
+            #{generateTime},
+            NOW(),
+            NOW(),
+            0
+        )
+    </insert>
+
+    <!-- 更新图谱 -->
+    <update id="update">
+        UPDATE resource_character_graph
+        <set>
+            <if test="graphJson != null">graph_json = #{graphJson},</if>
+            <if test="generateStatus != null">generate_status = #{generateStatus},</if>
+            <if test="errorMessage != null">error_message = #{errorMessage},</if>
+            <if test="aiModel != null">ai_model = #{aiModel},</if>
+            <if test="tokenUsage != null">token_usage = #{tokenUsage},</if>
+            <if test="generateTime != null">generate_time = #{generateTime},</if>
+            mtime = NOW()
+        </set>
+        WHERE graph_id = #{graphId}
+          AND deleted = 0
+    </update>
+
+    <!-- 删除图谱（软删除） -->
+    <update id="deleteById">
+        UPDATE resource_character_graph
+        SET deleted = 1,
+            mtime = NOW()
+        WHERE graph_id = #{graphId}
+          AND deleted = 0
+    </update>
+
+</mapper>

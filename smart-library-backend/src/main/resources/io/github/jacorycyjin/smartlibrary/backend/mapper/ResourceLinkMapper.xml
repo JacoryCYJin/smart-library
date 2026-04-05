@@ -44,4 +44,156 @@
         ORDER BY sort_order ASC, ctime DESC
     </select>
 
+    <!-- 统一查询资源链接列表（支持多条件动态查询） -->
+    <select id="searchLinks" resultMap="ResourceLinkResultMap">
+        SELECT
+            link_id,
+            resource_id,
+            link_type,
+            platform,
+            url,
+            title,
+            description,
+            cover_url,
+            sort_order,
+            click_count,
+            status,
+            ctime,
+            mtime,
+            deleted
+        FROM resource_link
+        <where>
+            deleted = 0
+            <if test="resourceId != null and resourceId != ''">
+                AND resource_id = #{resourceId}
+            </if>
+            <if test="linkType != null">
+                AND link_type = #{linkType}
+            </if>
+            <if test="platform != null">
+                AND platform = #{platform}
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND (title LIKE CONCAT('%', #{keyword}, '%') 
+                     OR description LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+        </where>
+        ORDER BY sort_order ASC, ctime DESC
+        <if test="offset != null and pageSize != null">
+            LIMIT #{offset}, #{pageSize}
+        </if>
+    </select>
+
+    <!-- 统计链接数量 -->
+    <select id="countLinks" resultType="int">
+        SELECT COUNT(*)
+        FROM resource_link
+        <where>
+            deleted = 0
+            <if test="resourceId != null and resourceId != ''">
+                AND resource_id = #{resourceId}
+            </if>
+            <if test="linkType != null">
+                AND link_type = #{linkType}
+            </if>
+            <if test="platform != null">
+                AND platform = #{platform}
+            </if>
+            <if test="status != null">
+                AND status = #{status}
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND (title LIKE CONCAT('%', #{keyword}, '%') 
+                     OR description LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+        </where>
+    </select>
+
+    <!-- 根据链接ID查询链接 -->
+    <select id="selectLinkById" resultMap="ResourceLinkResultMap">
+        SELECT
+            link_id,
+            resource_id,
+            link_type,
+            platform,
+            url,
+            title,
+            description,
+            cover_url,
+            sort_order,
+            click_count,
+            status,
+            ctime,
+            mtime,
+            deleted
+        FROM resource_link
+        WHERE link_id = #{linkId}
+          AND deleted = 0
+    </select>
+
+    <!-- 插入链接 -->
+    <insert id="insert">
+        INSERT INTO resource_link (
+            link_id,
+            resource_id,
+            link_type,
+            platform,
+            url,
+            title,
+            description,
+            cover_url,
+            sort_order,
+            click_count,
+            status,
+            ctime,
+            mtime,
+            deleted
+        ) VALUES (
+            #{linkId},
+            #{resourceId},
+            #{linkType},
+            #{platform},
+            #{url},
+            #{title},
+            #{description},
+            #{coverUrl},
+            #{sortOrder},
+            0,
+            #{status},
+            NOW(),
+            NOW(),
+            0
+        )
+    </insert>
+
+    <!-- 更新链接 -->
+    <update id="update">
+        UPDATE resource_link
+        <set>
+            <if test="linkType != null">link_type = #{linkType},</if>
+            <if test="platform != null">platform = #{platform},</if>
+            <if test="url != null">url = #{url},</if>
+            <if test="title != null">title = #{title},</if>
+            <if test="description != null">description = #{description},</if>
+            <if test="coverUrl != null">cover_url = #{coverUrl},</if>
+            <if test="sortOrder != null">sort_order = #{sortOrder},</if>
+            <if test="status != null">status = #{status},</if>
+            mtime = NOW()
+        </set>
+        WHERE link_id = #{linkId}
+          AND deleted = 0
+    </update>
+
+    <!-- 删除链接（软删除） -->
+    <update id="deleteById">
+        UPDATE resource_link
+        SET deleted = 1,
+            mtime = NOW()
+        WHERE link_id = #{linkId}
+          AND deleted = 0
+    </update>
+
 </mapper>

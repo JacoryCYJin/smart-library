@@ -258,6 +258,7 @@ const loadCommentList = async () => {
       pagination.total = res.data.totalCount
     }
   } catch (error) {
+    console.error(error)
     Message.error('加载评论列表失败')
   } finally {
     loading.value = false
@@ -285,8 +286,9 @@ const handleDelete = async (commentId) => {
       loadCommentList()
     }
   } catch (error) {
-    Message.error('删除失败')
-  }
+        console.error(error)
+        Message.error('删除失败')
+      }
 }
 
 // 恢复评论
@@ -298,7 +300,8 @@ const handleRestore = async (commentId) => {
       loadCommentList()
     }
   } catch (error) {
-    Message.error('恢复失败')
+    console.error(error)
+    Message.error('操作失败')
   }
 }
 
