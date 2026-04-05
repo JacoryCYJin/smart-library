@@ -119,6 +119,16 @@ const router = createRouter({
       }
     },
     {
+      path: '/admin/categories',
+      name: 'admin-categories',
+      component: () => import('@/views/admin/CategoryManageView.vue'),
+      meta: { 
+        layout: 'admin',
+        requiresAuth: true,
+        requiresAdmin: true
+      }
+    },
+    {
       path: '/:pathMatch(.*)*',
       name: 'not-found',
       component: NotFound,

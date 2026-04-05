@@ -8,7 +8,7 @@
 
     <!-- 搜索栏 -->
     <div class="bg-white rounded-xl p-6" style="box-shadow: 0 2px 8px rgba(16, 42, 67, 0.08)">
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
         <a-input
           v-model="searchForm.keyword"
           placeholder="搜索标题/ISBN"
@@ -36,6 +36,12 @@
           class="px-6 py-2 bg-ink text-white rounded-lg hover:opacity-90 transition-opacity"
         >
           搜索
+        </button>
+        <button
+          @click="handleAdd"
+          class="px-6 py-2 bg-pop text-white rounded-lg hover:opacity-90 transition-opacity"
+        >
+          添加资源
         </button>
       </div>
     </div>
@@ -76,6 +82,13 @@
         <template #actions="{ record }">
           <a-space>
             <a-button
+              type="text"
+              size="small"
+              @click="handleEdit(record.resourceId)"
+            >
+              编辑
+            </a-button>
+            <a-button
               v-if="record.deleted === 0"
               type="text"
               status="warning"
@@ -114,6 +127,13 @@
         @page-size-change="handlePageSizeChange"
       />
     </div>
+
+    <!-- 资源表单弹窗 -->
+    <ResourceForm
+      v-model="formVisible"
+      :resource-id="currentResourceId"
+      @success="handleFormSuccess"
+    />
   </div>
 </template>
 
@@ -122,6 +142,7 @@ import { ref, reactive, onMounted } from 'vue'
 import { Message } from '@arco-design/web-vue'
 import { getResourceList, deleteResource, restoreResource } from '@/api/admin'
 import AdminPagination from '@/components/admin/AdminPagination.vue'
+import ResourceForm from '@/components/admin/ResourceForm.vue'
 
 // 搜索表单
 const searchForm = reactive({
@@ -140,6 +161,10 @@ const pagination = reactive({
   pageSize: 10,
   total: 0
 })
+
+// 表单弹窗
+const formVisible = ref(false)
+const currentResourceId = ref(null)
 
 // 表格列定义
 const columns = [
@@ -200,7 +225,7 @@ const columns = [
   {
     title: '操作',
     slotName: 'actions',
-    width: 200,
+    width: 250,
     fixed: 'right'
   }
 ]
@@ -282,6 +307,23 @@ const handleOnline = async (resourceId) => {
 // 删除资源（暂时不实现物理删除，保留接口）
 const handleDelete = async (resourceId) => {
   Message.warning('永久删除功能暂未开放')
+}
+
+// 添加资源
+const handleAdd = () => {
+  currentResourceId.value = null
+  formVisible.value = true
+}
+
+// 编辑资源
+const handleEdit = (resourceId) => {
+  currentResourceId.value = resourceId
+  formVisible.value = true
+}
+
+// 表单提交成功
+const handleFormSuccess = () => {
+  loadResourceList()
 }
 
 // 分页变化

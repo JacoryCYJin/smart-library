@@ -104,4 +104,37 @@
         SELECT category_id
         FROM category_descendants
     </select>
+
+    <!-- 插入分类 -->
+    <insert id="insert" parameterType="io.github.jacorycyjin.smartlibrary.backend.entity.Category">
+        INSERT INTO category (category_id, parent_id, name, level, sort_order, ctime, mtime, deleted)
+        VALUES (#{categoryId}, #{parentId}, #{name}, #{level}, #{sortOrder}, NOW(), NOW(), 0)
+    </insert>
+
+    <!-- 更新分类 -->
+    <update id="update" parameterType="io.github.jacorycyjin.smartlibrary.backend.entity.Category">
+        UPDATE category
+        SET name = #{name},
+            parent_id = #{parentId},
+            level = #{level},
+            sort_order = #{sortOrder},
+            mtime = NOW()
+        WHERE category_id = #{categoryId}
+    </update>
+
+    <!-- 根据分类ID查询分类 -->
+    <select id="findByCategoryId" resultMap="CategoryResultMap">
+        SELECT *
+        FROM category
+        WHERE category_id = #{categoryId}
+    </select>
+
+    <!-- 统计分类下的资源数量 -->
+    <select id="countResourcesByCategoryId" resultType="long">
+        SELECT COUNT(DISTINCT rcr.resource_id)
+        FROM resource_category_rel rcr
+        INNER JOIN resource r ON rcr.resource_id = r.resource_id
+        WHERE rcr.category_id = #{categoryId}
+          AND r.deleted = 0
+    </select>
 </mapper>

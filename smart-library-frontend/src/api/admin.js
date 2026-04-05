@@ -125,3 +125,108 @@ export function restoreComment(commentId) {
     method: 'put'
   })
 }
+
+/**
+ * 添加资源
+ */
+export function createResource(data) {
+  return request({
+    url: '/admin/resources/create',
+    method: 'post',
+    data
+  })
+}
+
+/**
+ * 更新资源
+ */
+export function updateResource(resourceId, data) {
+  return request({
+    url: `/admin/resources/${resourceId}`,
+    method: 'put',
+    data
+  })
+}
+
+/**
+ * 获取资源详情（用于编辑）
+ */
+export function getResourceDetail(resourceId) {
+  return request({
+    url: `/admin/resources/${resourceId}`,
+    method: 'get'
+  })
+}
+
+/**
+ * 获取所有分类列表
+ */
+export function getAllCategories() {
+  return request({
+    url: '/admin/categories',
+    method: 'get'
+  })
+}
+
+/**
+ * 获取所有标签列表
+ */
+export function getAllTags() {
+  return request({
+    url: '/admin/tags',
+    method: 'get'
+  })
+}
+
+/**
+ * 搜索作者
+ */
+export function searchAuthors(keyword) {
+  return request({
+    url: '/admin/authors/search',
+    method: 'get',
+    params: { keyword }
+  })
+}
+
+/**
+ * 获取分类树
+ */
+export function getCategoryTree() {
+  return request({
+    url: '/admin/categories/tree',
+    method: 'get'
+  })
+}
+
+/**
+ * 创建分类
+ */
+export function createCategory(data) {
+  return request({
+    url: '/admin/categories',
+    method: 'post',
+    data
+  })
+}
+
+/**
+ * 更新分类
+ */
+export function updateCategory(categoryId, data) {
+  return request({
+    url: `/admin/categories/${categoryId}`,
+    method: 'put',
+    data
+  })
+}
+
+/**
+ * 删除分类
+ */
+export function deleteCategory(categoryId) {
+  return request({
+    url: `/admin/categories/${categoryId}`,
+    method: 'delete'
+  })
+}

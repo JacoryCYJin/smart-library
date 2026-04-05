@@ -72,4 +72,54 @@ public interface AdminService {
      * 恢复评论
      */
     void restoreComment(String commentId);
+
+    /**
+     * 添加资源
+     */
+    void createResource(io.github.jacorycyjin.smartlibrary.backend.form.ResourceForm form);
+
+    /**
+     * 更新资源
+     */
+    void updateResource(io.github.jacorycyjin.smartlibrary.backend.form.ResourceForm form);
+
+    /**
+     * 获取资源详情（用于编辑）
+     */
+    Map<String, Object> getResourceDetail(String resourceId);
+
+    /**
+     * 获取所有分类列表
+     */
+    java.util.List<Map<String, Object>> getAllCategories();
+
+    /**
+     * 获取所有标签列表
+     */
+    java.util.List<Map<String, Object>> getAllTags();
+
+    /**
+     * 搜索作者
+     */
+    java.util.List<Map<String, Object>> searchAuthors(String keyword);
+
+    /**
+     * 获取分类树（带统计）
+     */
+    java.util.List<Map<String, Object>> getCategoryTree();
+
+    /**
+     * 添加分类
+     */
+    void createCategory(io.github.jacorycyjin.smartlibrary.backend.form.CategoryForm form);
+
+    /**
+     * 更新分类
+     */
+    void updateCategory(io.github.jacorycyjin.smartlibrary.backend.form.CategoryForm form);
+
+    /**
+     * 删除分类
+     */
+    void deleteCategory(String categoryId);
 }

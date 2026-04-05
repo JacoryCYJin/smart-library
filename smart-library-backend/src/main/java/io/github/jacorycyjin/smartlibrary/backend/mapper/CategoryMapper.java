@@ -52,4 +52,36 @@ public interface CategoryMapper {
      * @return 分类ID列表（包含自身）
      */
     List<String> selectDescendantIds(@Param("categoryId") String categoryId);
+
+    /**
+     * 插入分类
+     * 
+     * @param category 分类实体
+     * @return 影响行数
+     */
+    int insert(io.github.jacorycyjin.smartlibrary.backend.entity.Category category);
+
+    /**
+     * 更新分类
+     * 
+     * @param category 分类实体
+     * @return 影响行数
+     */
+    int update(io.github.jacorycyjin.smartlibrary.backend.entity.Category category);
+
+    /**
+     * 根据分类ID查询分类
+     * 
+     * @param categoryId 分类业务ID
+     * @return 分类实体
+     */
+    io.github.jacorycyjin.smartlibrary.backend.entity.Category findByCategoryId(@Param("categoryId") String categoryId);
+
+    /**
+     * 统计分类下的资源数量
+     * 
+     * @param categoryId 分类业务ID
+     * @return 资源数量
+     */
+    Long countResourcesByCategoryId(@Param("categoryId") String categoryId);
 }
