@@ -2,10 +2,11 @@
   <div class="admin-layout min-h-screen bg-canvas flex">
     <!-- Sidebar -->
     <aside class="w-64 bg-white flex-shrink-0" style="box-shadow: 2px 0 8px rgba(16, 42, 67, 0.06)">
+      <!-- Logo 区域 -->
       <div class="h-16 flex items-center px-6 border-b border-structure/30">
-        <div class="flex items-center gap-2">
-          <img :src="logoUrl" alt="Logo" class="h-8 w-8" />
-          <span class="font-serif text-xl font-bold text-ink">阅墨管理</span>
+        <div class="flex items-center gap-3">
+          <img :src="logoUrl" alt="阅墨 Logo" class="h-8 w-8" />
+          <span class="font-serif text-xl font-bold text-ink">阅墨</span>
         </div>
       </div>
 
@@ -38,15 +39,16 @@
       <!-- Header -->
       <header class="h-16 bg-white flex items-center justify-end px-8" style="box-shadow: 0 1px 3px rgba(16, 42, 67, 0.06)">
         <div class="flex items-center gap-6">
-          <button
-            @click="handleBackToHome"
-            class="flex items-center gap-2 text-sm text-ink-light hover:text-ink transition-colors"
-          >
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-            </svg>
-            <span>返回首页</span>
-          </button>
+          <!-- 用户信息 -->
+          <div class="flex items-center gap-3">
+            <div v-if="authStore.avatarUrl" class="w-8 h-8 rounded-full overflow-hidden">
+              <img :src="authStore.avatarUrl" alt="头像" class="w-full h-full object-cover" />
+            </div>
+            <div v-else class="w-8 h-8 rounded-full bg-ink text-white flex items-center justify-center text-sm font-medium">
+              {{ authStore.username.charAt(0).toUpperCase() }}
+            </div>
+            <span class="text-sm font-medium text-ink">{{ authStore.username }}</span>
+          </div>
 
           <div class="h-4 w-px bg-structure"></div>
 
@@ -76,10 +78,13 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { Message } from '@arco-design/web-vue'
 import { logout as logoutApi } from '@/api/user'
-import logoUrl from '@/assets/images/logo-dark.png'
+import logoDark from '@/assets/images/logo-light.png'
 
 const router = useRouter()
 const authStore = useAuthStore()
+
+// Logo URL
+const logoUrl = logoDark
 
 // 菜单项
 const menuItems = [
@@ -147,11 +152,6 @@ const menuItems = [
     ])
   }
 ]
-
-// 返回首页
-const handleBackToHome = () => {
-  router.push('/')
-}
 
 // 退出登录
 const handleLogout = async () => {
