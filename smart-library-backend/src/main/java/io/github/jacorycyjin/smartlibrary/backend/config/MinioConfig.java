@@ -31,6 +31,13 @@ public class MinioConfig {
         private String userAvatars;
         private String attachments;
         private String nlpCorpus;
+        
+        /**
+         * 获取用户头像bucket（兼容方法）
+         */
+        public String getAvatars() {
+            return userAvatars;
+        }
     }
     
     /**

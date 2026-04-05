@@ -154,4 +154,13 @@
         </where>
         ORDER BY c.ctime DESC
     </select>
+
+    <!-- 统计用户的评论数量 -->
+    <select id="countByUserId" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM comment
+        WHERE user_id = #{userId}
+          AND audit_status = 1
+          AND deleted = 0
+    </select>
 </mapper>

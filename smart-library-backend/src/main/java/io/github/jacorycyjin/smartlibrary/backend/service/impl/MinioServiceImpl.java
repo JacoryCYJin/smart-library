@@ -42,6 +42,11 @@ public class MinioServiceImpl implements MinioService {
         ensureBucketExists(minioConfig.getBuckets().getCovers());
         ensureBucketExists(minioConfig.getBuckets().getAttachments());
         ensureBucketExists(minioConfig.getBuckets().getNlpCorpus());
+        
+        // 用户头像 bucket 需要设置为公开访问
+        String userAvatarsBucket = minioConfig.getBuckets().getUserAvatars();
+        ensureBucketExists(userAvatarsBucket);
+        setPublicBucketPolicy(userAvatarsBucket);
     }
     
     @Override
@@ -104,6 +109,13 @@ public class MinioServiceImpl implements MinioService {
     @Override
     public String getFileUrl(String fileName, String bucketName) {
         try {
+            // 对于用户头像，使用简单的永久 URL（需要 bucket 设置为 public）
+            // 对于其他文件，使用预签名 URL
+            if (bucketName.equals(minioConfig.getBuckets().getUserAvatars())) {
+                // 简单的永久 URL: http://endpoint/bucket/filename
+                return minioConfig.getEndpoint() + "/" + bucketName + "/" + fileName;
+            }
+            
             // 生成 7 天有效期的预签名 URL
             return minioClient.getPresignedObjectUrl(
                 GetPresignedObjectUrlArgs.builder()
@@ -139,6 +151,33 @@ public class MinioServiceImpl implements MinioService {
         } catch (Exception e) {
             log.error("检查/创建 bucket 失败: {}", e.getMessage(), e);
             throw new BusinessException(ApiCode.SERVER_ERROR.getCode(), "Bucket 初始化失败");
+        }
+    }
+    
+    /**
+     * 设置 bucket 为公开访问
+     * 
+     * @param bucketName bucket 名称
+     */
+    private void setPublicBucketPolicy(String bucketName) {
+        try {
+            // MinIO 公开访问策略 JSON
+            String policy = String.format(
+                "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":{\"AWS\":[\"*\"]},\"Action\":[\"s3:GetObject\"],\"Resource\":[\"arn:aws:s3:::%s/*\"]}]}",
+                bucketName
+            );
+            
+            minioClient.setBucketPolicy(
+                SetBucketPolicyArgs.builder()
+                    .bucket(bucketName)
+                    .config(policy)
+                    .build()
+            );
+            
+            log.info("设置 bucket {} 为公开访问", bucketName);
+        } catch (Exception e) {
+            log.error("设置 bucket 公开访问失败: {}", e.getMessage(), e);
+            // 不抛出异常，因为这不是致命错误
         }
     }
     

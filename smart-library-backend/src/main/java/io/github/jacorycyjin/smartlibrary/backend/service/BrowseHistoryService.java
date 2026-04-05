@@ -29,4 +29,12 @@ public interface BrowseHistoryService {
      * @param resourceId 资源ID
      */
     void recordBrowseHistory(String userId, String resourceId);
+
+    /**
+     * 统计用户浏览历史数量
+     * 
+     * @param userId 用户ID
+     * @return 浏览历史数量
+     */
+    Integer countBrowseHistory(String userId);
 }

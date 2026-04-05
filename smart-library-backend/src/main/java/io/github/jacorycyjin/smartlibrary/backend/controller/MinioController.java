@@ -53,4 +53,38 @@ public class MinioController {
         log.info("附件上传成功，URL: {}", url);
         return Result.success(url);
     }
+
+    /**
+     * 通用文件上传（支持指定bucket）
+     * 
+     * @param file 文件
+     * @param bucketName bucket名称（avatar/cover/attachment）
+     * @return 文件访问 URL
+     */
+    @PostMapping("/upload")
+    public Result<String> upload(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam(value = "bucketName", defaultValue = "avatar") String bucketName) {
+        log.info("收到文件上传请求，文件名: {}, 大小: {} bytes, bucket: {}", 
+                file.getOriginalFilename(), file.getSize(), bucketName);
+        
+        // 根据bucketName选择对应的bucket
+        String bucket;
+        switch (bucketName.toLowerCase()) {
+            case "cover":
+                bucket = minioConfig.getBuckets().getCovers();
+                break;
+            case "attachment":
+                bucket = minioConfig.getBuckets().getAttachments();
+                break;
+            case "avatar":
+            default:
+                bucket = minioConfig.getBuckets().getAvatars();
+                break;
+        }
+        
+        String url = minioService.uploadFile(file, bucket);
+        log.info("文件上传成功，URL: {}", url);
+        return Result.success(url);
+    }
 }

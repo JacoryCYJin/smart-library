@@ -142,4 +142,91 @@ public class UserController {
         }
         return Result.success(true);
     }
+
+    /**
+     * 统计用户的评论数量
+     * 
+     * @return 评论数量
+     */
+    @PostMapping("/count-comments")
+    public Result<Integer> countComments() {
+        String userId = UserContext.getCurrentUserId();
+        if (userId == null) {
+            return Result.fail(ApiCode.UNAUTHORIZED.getCode(), "未登录");
+        }
+        
+        Integer count = userService.countUserComments(userId);
+        return Result.success(count);
+    }
+
+    /**
+     * 修改密码
+     * 
+     * @param params 包含旧密码和新密码
+     * @return 是否修改成功
+     */
+    @PostMapping("/change-password")
+    public Result<Boolean> changePassword(@RequestBody java.util.Map<String, String> params) {
+        String userId = UserContext.getCurrentUserId();
+        if (userId == null) {
+            return Result.fail(ApiCode.UNAUTHORIZED.getCode(), "未登录");
+        }
+        
+        String oldPassword = params.get("oldPassword");
+        String newPassword = params.get("newPassword");
+        
+        Boolean success = userService.changePassword(userId, oldPassword, newPassword);
+        if (!success) {
+            return Result.fail(ApiCode.PARAM_INVALID.getCode(), "修改密码失败");
+        }
+        return Result.success(true);
+    }
+
+    /**
+     * 修改手机号
+     * 
+     * @param params 包含旧手机号、新手机号和密码
+     * @return 是否修改成功
+     */
+    @PostMapping("/change-phone")
+    public Result<Boolean> changePhone(@RequestBody java.util.Map<String, String> params) {
+        String userId = UserContext.getCurrentUserId();
+        if (userId == null) {
+            return Result.fail(ApiCode.UNAUTHORIZED.getCode(), "未登录");
+        }
+        
+        String oldPhone = params.get("oldPhone");
+        String newPhone = params.get("newPhone");
+        String password = params.get("password");
+        
+        Boolean success = userService.changePhone(userId, oldPhone, newPhone, password);
+        if (!success) {
+            return Result.fail(ApiCode.PARAM_INVALID.getCode(), "修改手机号失败");
+        }
+        return Result.success(true);
+    }
+
+    /**
+     * 修改邮箱
+     * 
+     * @param params 包含旧邮箱、新邮箱和密码
+     * @return 是否修改成功
+     */
+    @PostMapping("/change-email")
+    public Result<Boolean> changeEmail(@RequestBody java.util.Map<String, String> params) {
+        String userId = UserContext.getCurrentUserId();
+        if (userId == null) {
+            return Result.fail(ApiCode.UNAUTHORIZED.getCode(), "未登录");
+        }
+        
+        String oldEmail = params.get("oldEmail");
+        String newEmail = params.get("newEmail");
+        String password = params.get("password");
+        
+        Boolean success = userService.changeEmail(userId, oldEmail, newEmail, password);
+        if (!success) {
+            return Result.fail(ApiCode.PARAM_INVALID.getCode(), "修改邮箱失败");
+        }
+        return Result.success(true);
+    }
 }

@@ -78,3 +78,61 @@ export function updateProfile(data) {
     data
   })
 }
+
+/**
+ * 统计用户的评论数量
+ * @returns {Promise}
+ */
+export function countUserComments() {
+  return request({
+    url: '/user/count-comments',
+    method: 'post'
+  })
+}
+
+/**
+ * 修改密码
+ * @param {Object} data - 包含旧密码和新密码
+ * @param {string} data.oldPassword - 旧密码
+ * @param {string} data.newPassword - 新密码
+ * @returns {Promise}
+ */
+export function changePassword(data) {
+  return request({
+    url: '/user/change-password',
+    method: 'post',
+    data
+  })
+}
+
+/**
+ * 修改手机号
+ * @param {Object} data - 包含旧手机号、新手机号和密码
+ * @param {string} data.oldPhone - 旧手机号
+ * @param {string} data.newPhone - 新手机号
+ * @param {string} data.password - 密码确认
+ * @returns {Promise}
+ */
+export function changePhone(data) {
+  return request({
+    url: '/user/change-phone',
+    method: 'post',
+    data
+  })
+}
+
+/**
+ * 修改邮箱
+ * @param {Object} data - 包含旧邮箱、新邮箱和密码
+ * @param {string} data.oldEmail - 旧邮箱
+ * @param {string} data.newEmail - 新邮箱
+ * @param {string} data.password - 密码确认
+ * @returns {Promise}
+ */
+export function changeEmail(data) {
+  return request({
+    url: '/user/change-email',
+    method: 'post',
+    data
+  })
+}

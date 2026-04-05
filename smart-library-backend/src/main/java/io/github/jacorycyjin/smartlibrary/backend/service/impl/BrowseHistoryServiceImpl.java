@@ -120,4 +120,15 @@ public class BrowseHistoryServiceImpl implements BrowseHistoryService {
     public void recordBrowseHistory(String userId, String resourceId) {
         browseHistoryMapper.insertOrUpdate(userId, resourceId);
     }
+
+    /**
+     * 统计用户浏览历史数量
+     * 
+     * @param userId 用户ID
+     * @return 浏览历史数量
+     */
+    @Override
+    public Integer countBrowseHistory(String userId) {
+        return browseHistoryMapper.countByUserId(userId);
+    }
 }

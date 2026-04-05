@@ -94,4 +94,12 @@ public interface CommentMapper {
      * @return 评论列表
      */
     List<Comment> searchComments(java.util.Map<String, Object> params);
+
+    /**
+     * 统计用户的评论数量
+     * 
+     * @param userId 用户ID
+     * @return 评论数量
+     */
+    Integer countByUserId(@Param("userId") String userId);
 }

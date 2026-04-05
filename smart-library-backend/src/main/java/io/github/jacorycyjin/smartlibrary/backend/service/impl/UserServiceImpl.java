@@ -39,6 +39,9 @@ public class UserServiceImpl implements UserService {
     @jakarta.annotation.Resource
     private RedisTemplate<String, Object> redisTemplate;
     
+    @jakarta.annotation.Resource
+    private io.github.jacorycyjin.smartlibrary.backend.mapper.CommentMapper commentMapper;
+    
     // Redis key 前缀
     private static final String USER_CACHE_PREFIX = "user:info:";
     // 用户信息缓存时间：30 分钟
@@ -298,6 +301,192 @@ public class UserServiceImpl implements UserService {
         // 清除 Redis 缓存
         if (result > 0) {
             String cacheKey = USER_CACHE_PREFIX + userDTO.getUserId();
+            redisTemplate.delete(cacheKey);
+        }
+        
+        return result > 0;
+    }
+
+    /**
+     * 统计用户的评论数量
+     * 
+     * @param userId 用户ID
+     * @return 评论数量
+     */
+    @Override
+    public Integer countUserComments(String userId) {
+        ValidationUtil.validateNotEmpty(userId, "用户ID");
+        return commentMapper.countByUserId(userId);
+    }
+
+    /**
+     * 修改密码
+     * 
+     * @param userId 用户ID
+     * @param oldPassword 旧密码
+     * @param newPassword 新密码
+     * @return 是否修改成功
+     */
+    @Override
+    public Boolean changePassword(String userId, String oldPassword, String newPassword) {
+        ValidationUtil.validateNotEmpty(userId, "用户ID");
+        ValidationUtil.validateNotEmpty(oldPassword, "旧密码");
+        ValidationUtil.validateNotEmpty(newPassword, "新密码");
+        ValidationUtil.validatePasswordFormat(newPassword);
+        
+        // 查询用户
+        UserDTO user = getUserById(userId);
+        if (user == null) {
+            throw new BusinessException(ApiCode.PARAM_INVALID.getCode(), "用户不存在");
+        }
+        
+        // 验证旧密码
+        if (!PasswordUtil.matches(oldPassword, user.getPassword())) {
+            throw new BusinessException(ApiCode.PARAM_INVALID.getCode(), "旧密码错误");
+        }
+        
+        // 加密新密码
+        String encodedPassword = PasswordUtil.encode(newPassword);
+        
+        // 更新密码
+        Map<String, Object> params = new HashMap<>();
+        params.put("userId", userId);
+        params.put("password", encodedPassword);
+        params.put("mtime", LocalDateTime.now());
+        
+        int result = userMapper.updateUser(params);
+        
+        // 清除 Redis 缓存
+        if (result > 0) {
+            String cacheKey = USER_CACHE_PREFIX + userId;
+            redisTemplate.delete(cacheKey);
+        }
+        
+        return result > 0;
+    }
+
+    /**
+     * 修改手机号
+     * 
+     * @param userId 用户ID
+     * @param oldPhone 旧手机号
+     * @param newPhone 新手机号
+     * @param password 密码确认
+     * @return 是否修改成功
+     */
+    @Override
+    public Boolean changePhone(String userId, String oldPhone, String newPhone, String password) {
+        ValidationUtil.validateNotEmpty(userId, "用户ID");
+        ValidationUtil.validateNotEmpty(oldPhone, "当前手机号");
+        ValidationUtil.validateNotEmpty(newPhone, "新手机号");
+        ValidationUtil.validateNotEmpty(password, "密码");
+        
+        // 验证新手机号格式
+        if (!newPhone.matches("^1[3-9]\\d{9}$")) {
+            throw new BusinessException(ApiCode.PARAM_INVALID.getCode(), "手机号格式不正确");
+        }
+        
+        // 查询用户
+        UserDTO user = getUserById(userId);
+        if (user == null) {
+            throw new BusinessException(ApiCode.PARAM_INVALID.getCode(), "用户不存在");
+        }
+        
+        // 验证旧手机号
+        if (!oldPhone.equals(user.getPhone())) {
+            throw new BusinessException(ApiCode.PARAM_INVALID.getCode(), "当前手机号不正确");
+        }
+        
+        // 验证密码
+        if (!PasswordUtil.matches(password, user.getPassword())) {
+            throw new BusinessException(ApiCode.PARAM_INVALID.getCode(), "密码错误");
+        }
+        
+        // 检查新手机号是否已被使用
+        UserSearchForm searchForm = new UserSearchForm();
+        searchForm.setPhone(newPhone);
+        searchForm.setDeleted(0);
+        searchForm.setLimit(1);
+        List<UserDTO> existingUsers = searchUser(searchForm);
+        if (existingUsers != null && !existingUsers.isEmpty()) {
+            throw new BusinessException(ApiCode.PARAM_INVALID.getCode(), "该手机号已被使用");
+        }
+        
+        // 更新手机号
+        Map<String, Object> params = new HashMap<>();
+        params.put("userId", userId);
+        params.put("phone", newPhone);
+        params.put("mtime", LocalDateTime.now());
+        
+        int result = userMapper.updateUser(params);
+        
+        // 清除 Redis 缓存
+        if (result > 0) {
+            String cacheKey = USER_CACHE_PREFIX + userId;
+            redisTemplate.delete(cacheKey);
+        }
+        
+        return result > 0;
+    }
+
+    /**
+     * 修改邮箱
+     * 
+     * @param userId 用户ID
+     * @param oldEmail 旧邮箱
+     * @param newEmail 新邮箱
+     * @param password 密码确认
+     * @return 是否修改成功
+     */
+    @Override
+    public Boolean changeEmail(String userId, String oldEmail, String newEmail, String password) {
+        ValidationUtil.validateNotEmpty(userId, "用户ID");
+        ValidationUtil.validateNotEmpty(oldEmail, "当前邮箱");
+        ValidationUtil.validateNotEmpty(newEmail, "新邮箱");
+        ValidationUtil.validateNotEmpty(password, "密码");
+        
+        // 验证新邮箱格式
+        if (!newEmail.matches("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$")) {
+            throw new BusinessException(ApiCode.PARAM_INVALID.getCode(), "邮箱格式不正确");
+        }
+        
+        // 查询用户
+        UserDTO user = getUserById(userId);
+        if (user == null) {
+            throw new BusinessException(ApiCode.PARAM_INVALID.getCode(), "用户不存在");
+        }
+        
+        // 验证旧邮箱
+        if (!oldEmail.equals(user.getEmail())) {
+            throw new BusinessException(ApiCode.PARAM_INVALID.getCode(), "当前邮箱不正确");
+        }
+        
+        // 验证密码
+        if (!PasswordUtil.matches(password, user.getPassword())) {
+            throw new BusinessException(ApiCode.PARAM_INVALID.getCode(), "密码错误");
+        }
+        
+        // 检查新邮箱是否已被使用
+        UserSearchForm searchForm = new UserSearchForm();
+        searchForm.setEmail(newEmail);
+        searchForm.setDeleted(0);
+        searchForm.setLimit(1);
+        List<UserDTO> existingUsers = searchUser(searchForm);
+        if (existingUsers != null && !existingUsers.isEmpty()) {
+            throw new BusinessException(ApiCode.PARAM_INVALID.getCode(), "该邮箱已被使用");
+        }
+        
+        // 更新邮箱
+        Map<String, Object> params = new HashMap<>();
+        params.put("userId", userId);
+        params.put("email", newEmail);
+        params.put("mtime", LocalDateTime.now());
+        
+        int result = userMapper.updateUser(params);
+        
+        // 清除 Redis 缓存
+        if (result > 0) {
+            String cacheKey = USER_CACHE_PREFIX + userId;
             redisTemplate.delete(cacheKey);
         }
         

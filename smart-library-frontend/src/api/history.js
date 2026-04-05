@@ -22,6 +22,6 @@ export function getBrowseHistory(data) {
 export function countBrowseHistory() {
   return request({
     url: '/history/count',
-    method: 'get'
+    method: 'post'
   })
 }

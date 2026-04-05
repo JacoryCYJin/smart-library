@@ -55,4 +55,20 @@ public class BrowseHistoryController {
         
         return Result.success(pageVO);
     }
+
+    /**
+     * 统计用户浏览历史数量
+     * 
+     * @return 浏览历史数量
+     */
+    @PostMapping("/count")
+    public Result<Integer> countBrowseHistory() {
+        String userId = UserContext.getCurrentUserId();
+        if (userId == null) {
+            return Result.fail(ApiCode.UNAUTHORIZED.getCode(), "未登录");
+        }
+        
+        Integer count = browseHistoryService.countBrowseHistory(userId);
+        return Result.success(count);
+    }
 }

@@ -23,6 +23,7 @@ const authStore = useAuthStore()
 const currentLang = computed(() => localeStore.currentLang)
 const isLoggedIn = computed(() => authStore.isLoggedIn)
 const username = computed(() => authStore.username)
+const avatarUrl = computed(() => authStore.avatarUrl)
 
 const labels = computed(() => {
   if (currentLang.value === 'en') {
@@ -293,7 +294,11 @@ onUnmounted(() => {
                     class="flex items-center gap-2 p-1 rounded-full hover:bg-slate-50 transition-colors"
                     aria-label="User menu"
                   >
-                    <div class="h-9 w-9 rounded-full bg-ink text-white flex items-center justify-center text-sm font-semibold">
+                    <!-- 如果有头像则显示头像，否则显示用户名首字母 -->
+                    <div v-if="avatarUrl" class="h-9 w-9 rounded-full overflow-hidden">
+                      <img :src="avatarUrl" :alt="username" class="w-full h-full object-cover" />
+                    </div>
+                    <div v-else class="h-9 w-9 rounded-full bg-ink text-white flex items-center justify-center text-sm font-semibold">
                       {{ username.charAt(0).toUpperCase() }}
                     </div>
                   </button>
