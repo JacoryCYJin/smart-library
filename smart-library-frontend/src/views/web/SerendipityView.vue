@@ -102,7 +102,7 @@ const loading = ref(false)
 const loadRecommendations = async () => {
   loading.value = true
   try {
-    const res = await getRecommendations(12)
+    const res = await getRecommendations(6)
     if (res.code === 0) {
       books.value = res.data
     } else {
