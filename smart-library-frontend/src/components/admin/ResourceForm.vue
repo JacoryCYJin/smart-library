@@ -101,57 +101,86 @@
       <template v-if="props.resourceId">
         <a-divider />
         
-        <!-- 人物关系图谱 -->
-        <a-form-item label="人物关系图谱">
-          <a-space>
-            <span v-if="graphStatus === 2" class="text-sm text-ink-light">
-              已生成
-            </span>
-            <span v-else-if="graphStatus === 1" class="text-sm text-ink-light">
-              生成中...
-            </span>
-            <span v-else-if="graphStatus === 3" class="text-sm text-pop">
-              生成失败
-            </span>
-            <span v-else class="text-sm text-ink-light">
-              未生成
-            </span>
-            
-            <a-button
-              type="outline"
-              @click="handleGenerateGraph"
-              :loading="graphLoading"
-            >
-              {{ graphStatus === 2 ? '更新' : '生成' }}
-            </a-button>
-          </a-space>
-        </a-form-item>
-        
-        <!-- 情感走向 -->
-        <a-form-item label="情感走向">
-          <a-space>
-            <span v-if="emotionStatus === 2" class="text-sm text-ink-light">
-              已生成
-            </span>
-            <span v-else-if="emotionStatus === 1" class="text-sm text-ink-light">
-              生成中...
-            </span>
-            <span v-else-if="emotionStatus === 3" class="text-sm text-pop">
-              生成失败
-            </span>
-            <span v-else class="text-sm text-ink-light">
-              未生成
-            </span>
-            
-            <a-button
-              type="outline"
-              @click="handleGenerateEmotionArc"
-              :loading="emotionLoading"
-            >
-              {{ emotionStatus === 2 ? '更新' : '生成' }}
-            </a-button>
-          </a-space>
-        </a-form-item>
+        <!-- 左右并排布局 -->
+        <a-row :gutter="16">
+          <!-- 左侧：人物关系图谱 -->
+          <a-col :span="12">
+            <a-form-item label="人物关系图谱">
+              <a-space direction="vertical" fill>
+                <a-space>
+                  <span v-if="graphStatus === 2" class="text-sm text-green-600">
+                    ✓ 已生成
+                  </span>
+                  <span v-else-if="graphStatus === -1" class="text-sm text-orange-600">
+                    ○ 空数据（AI 认为不符合）
+                  </span>
+                  <span v-else class="text-sm text-ink-light">
+                    ✗ 未生成
+                  </span>
+                  
+                  <a-button
+                    type="outline"
+                    size="small"
+                    @click="handleGenerateGraph"
+                    :loading="graphLoading"
+                  >
+                    {{ graphStatus === 0 ? '生成' : '更新' }}
+                  </a-button>
+                </a-space>
+                
+                <!-- JSON 数据预览 -->
+                <div v-if="graphData && graphStatus !== 0" class="mt-2">
+                  <a-textarea
+                    :model-value="JSON.stringify(graphData, null, 2)"
+                    :auto-size="{ minRows: 10, maxRows: 20 }"
+                    readonly
+                    class="font-mono text-xs"
+                    placeholder="暂无数据"
+                  />
+                </div>
+              </a-space>
+            </a-form-item>
+          </a-col>
+          
+          <!-- 右侧：情感走向 -->
+          <a-col :span="12">
+            <a-form-item label="情感走向">
+              <a-space direction="vertical" fill>
+                <a-space>
+                  <span v-if="emotionStatus === 2" class="text-sm text-green-600">
+                    ✓ 已生成
+                  </span>
+                  <span v-else-if="emotionStatus === -1" class="text-sm text-orange-600">
+                    ○ 空数据（AI 认为不符合）
+                  </span>
+                  <span v-else class="text-sm text-ink-light">
+                    ✗ 未生成
+                  </span>
+                  
+                  <a-button
+                    type="outline"
+                    size="small"
+                    @click="handleGenerateEmotionArc"
+                    :loading="emotionLoading"
+                  >
+                    {{ emotionStatus === 0 ? '生成' : '更新' }}
+                  </a-button>
+                </a-space>
+                
+                <!-- JSON 数据预览 -->
+                <div v-if="emotionData && emotionStatus !== 0" class="mt-2">
+                  <a-textarea
+                    :model-value="JSON.stringify(emotionData, null, 2)"
+                    :auto-size="{ minRows: 10, maxRows: 20 }"
+                    readonly
+                    class="font-mono text-xs"
+                    placeholder="暂无数据"
+                  />
+                </div>
+              </a-space>
+            </a-form-item>
+          </a-col>
+        </a-row>
       </template>
     </a-form>
 
@@ -195,8 +224,10 @@ const isEditMode = ref(false) // 是否处于编辑模式
 const loading = ref(false)
 const graphLoading = ref(false)
 const emotionLoading = ref(false)
-const graphStatus = ref(0) // 0=未生成, 1=生成中, 2=已完成, 3=失败
-const emotionStatus = ref(0) // 0=未生成, 1=生成中, 2=已完成, 3=失败
+const graphStatus = ref(0) // 0=未生成, -1=空数据(AI认为不符合), 2=有数据
+const emotionStatus = ref(0) // 0=未生成, -1=空数据(AI认为不符合), 2=有数据
+const graphData = ref(null) // 人物关系图谱数据
+const emotionData = ref(null) // 情感走向数据
 
 // 计算模态框标题
 const modalTitle = computed(() => {
@@ -274,25 +305,49 @@ const loadResourceDetail = async () => {
 // 加载 AI 生成状态
 const loadAIStatus = async () => {
   try {
-    // 加载人物关系图谱状态
-    const graphRes = await getGraph(props.resourceId)
+    // 加载人物关系图谱状态（管理员后台不自动生成）
+    const graphRes = await getGraph(props.resourceId, false)
     if (graphRes.code === 0 && graphRes.data) {
-      graphStatus.value = graphRes.data.generateStatus || 0
+      // 判断是否为空数据（AI 认为不符合）
+      const hasNodes = graphRes.data.nodes && graphRes.data.nodes.length > 0
+      if (hasNodes) {
+        graphStatus.value = 2 // 有数据
+        graphData.value = graphRes.data // 保存图谱数据用于预览
+      } else {
+        graphStatus.value = -1 // 空数据（AI 认为不符合）
+        graphData.value = null
+      }
+    } else {
+      graphStatus.value = 0 // 未生成
+      graphData.value = null
     }
   } catch (error) {
-    // 未生成时会返回错误，这是正常的
+    // 未生成时会返回 null
     graphStatus.value = 0
+    graphData.value = null
   }
 
   try {
-    // 加载情感走向状态
-    const emotionRes = await getEmotionArc(props.resourceId)
+    // 加载情感走向状态（管理员后台不自动生成）
+    const emotionRes = await getEmotionArc(props.resourceId, false)
     if (emotionRes.code === 0 && emotionRes.data) {
-      emotionStatus.value = emotionRes.data.generateStatus || 0
+      const { chapterCount, data } = emotionRes.data
+      // 判断是否为空数据（AI 认为不符合）
+      if (chapterCount > 0) {
+        emotionStatus.value = 2 // 有数据
+        emotionData.value = data // 保存情感走向数据用于预览
+      } else {
+        emotionStatus.value = -1 // 空数据（AI 认为不符合）
+        emotionData.value = null
+      }
+    } else {
+      emotionStatus.value = 0 // 未生成
+      emotionData.value = null
     }
   } catch (error) {
-    // 未生成时会返回错误，这是正常的
+    // 未生成时会返回 null
     emotionStatus.value = 0
+    emotionData.value = null
   }
 }
 
@@ -370,10 +425,14 @@ const handleSubmit = async () => {
 const handleGenerateGraph = async () => {
   graphLoading.value = true
   try {
-    const res = await triggerGraphGeneration(props.resourceId, true) // 强制生成
+    // 使用强制生成模式（forceMode=true），跳过 AI 判断，直接生成图谱
+    const res = await triggerGraphGeneration(props.resourceId, true)
     if (res.code === 0) {
-      Message.success('已触发生成人物关系图谱')
-      graphStatus.value = 1 // 设置为生成中
+      Message.success(graphStatus.value === 0 ? '已触发生成人物关系图谱' : '已触发更新人物关系图谱')
+      // 3 秒后重新加载状态
+      setTimeout(() => {
+        loadAIStatus()
+      }, 3000)
     } else {
       Message.error(res.message || '触发失败')
     }
@@ -389,10 +448,14 @@ const handleGenerateGraph = async () => {
 const handleGenerateEmotionArc = async () => {
   emotionLoading.value = true
   try {
-    const res = await triggerEmotionArcGeneration(props.resourceId, true) // 强制生成
+    // 使用强制生成模式（forceMode=true），跳过 AI 判断，直接生成情感走向
+    const res = await triggerEmotionArcGeneration(props.resourceId, true)
     if (res.code === 0) {
-      Message.success('已触发生成情感走向')
-      emotionStatus.value = 1 // 设置为生成中
+      Message.success(emotionStatus.value === 0 ? '已触发生成情感走向' : '已触发更新情感走向')
+      // 3 秒后重新加载状态
+      setTimeout(() => {
+        loadAIStatus()
+      }, 3000)
     } else {
       Message.error(res.message || '触发失败')
     }

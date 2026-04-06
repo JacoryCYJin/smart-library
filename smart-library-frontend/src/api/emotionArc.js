@@ -3,11 +3,13 @@ import request from '@/utils/request'
 /**
  * 获取情感走向数据
  * @param {string} resourceId - 资源ID
+ * @param {boolean} autoGenerate - 是否自动生成（可选，默认 true）
  */
-export function getEmotionArc(resourceId) {
+export function getEmotionArc(resourceId, autoGenerate = true) {
   return request({
     url: `/emotion-arc/${resourceId}`,
-    method: 'get'
+    method: 'get',
+    params: { autoGenerate }
   })
 }
 

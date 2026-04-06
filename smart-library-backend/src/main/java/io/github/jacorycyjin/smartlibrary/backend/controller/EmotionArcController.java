@@ -26,14 +26,16 @@ public class EmotionArcController {
 
     /**
      * 获取资源的情感走向
-     * 如果不存在则自动触发生成
-     *
+     * 
      * @param resourceId 资源ID
+     * @param autoGenerate 是否自动生成（可选，默认 true）
      * @return 情感走向数据
      */
     @GetMapping("/{resourceId}")
-    public Result<Map<String, Object>> getEmotionArc(@PathVariable String resourceId) {
-        log.info("获取情感走向，资源ID: {}", resourceId);
+    public Result<Map<String, Object>> getEmotionArc(
+            @PathVariable String resourceId,
+            @RequestParam(required = false, defaultValue = "true") Boolean autoGenerate) {
+        log.info("获取情感走向，资源ID: {}, 自动生成: {}", resourceId, autoGenerate);
         
         try {
             // 1. 先尝试从数据库获取已有情感走向
@@ -43,12 +45,16 @@ public class EmotionArcController {
                 return Result.success(existingArc);
             }
             
-            // 2. 如果不存在，自动触发生成（异步）
-            log.info("情感走向不存在，自动触发生成，资源ID: {}", resourceId);
-            emotionArcService.generateAndSaveEmotionArc(resourceId);
-            
-            // 3. 返回 null，前端显示加载状态并轮询
-            return Result.success(null);
+            // 2. 如果不存在，根据 autoGenerate 参数决定是否自动生成
+            if (autoGenerate) {
+                log.info("情感走向不存在，自动触发生成，资源ID: {}", resourceId);
+                emotionArcService.generateAndSaveEmotionArc(resourceId);
+                // 返回 null，前端显示加载状态并轮询
+                return Result.success(null);
+            } else {
+                log.info("情感走向不存在，不自动生成，资源ID: {}", resourceId);
+                return Result.success(null);
+            }
             
         } catch (Exception e) {
             log.error("获取情感走向失败，资源ID: {}", resourceId, e);

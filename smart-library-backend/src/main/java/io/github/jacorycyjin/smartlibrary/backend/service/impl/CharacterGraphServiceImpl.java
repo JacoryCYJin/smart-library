@@ -188,13 +188,12 @@ public class CharacterGraphServiceImpl implements CharacterGraphService {
             throw new BusinessException(ApiCode.RESOURCE_NOT_FOUND.getCode(), "资源不存在");
         }
         
-        // 2. 检查是否已有图谱
+        // 2. 检查是否已有图谱（强制模式：允许覆盖已有数据）
         ResourceCharacterGraph existingGraph = resourceMapper.selectGraphByResourceId(resourceId);
         if (existingGraph != null) {
-            if (existingGraph.getGenerateStatus() == GraphGenerateStatus.SUCCESS.getCode()) {
-                log.info("资源 {} 已存在图谱记录，直接返回", resourceId);
-                return existingGraph.getGraphId();
-            }
+            log.info("资源 {} 强制重新生成图谱（覆盖已有数据）", resourceId);
+        } else {
+            log.info("资源 {} 首次生成图谱", resourceId);
         }
         
         // 3. 创建图谱记录（状态：生成中）

@@ -101,7 +101,8 @@ public class AdminEmotionArcServiceImpl implements AdminEmotionArcService {
 
         // 检查是否已有情感走向
         ResourceEmotionArc existingArc = emotionArcMapper.selectByResourceId(resourceId);
-        if (existingArc != null) {
+        if (existingArc != null && (forceGenerate == null || !forceGenerate)) {
+            // 非强制模式：已有情感走向时抛出异常
             throw new BusinessException(ApiCode.PARAM_INVALID.getCode(), "该资源已有情感走向，请使用重试功能");
         }
 

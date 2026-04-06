@@ -103,14 +103,15 @@ public class AdminGraphServiceImpl implements AdminGraphService {
 
         // 检查是否已有图谱
         ResourceCharacterGraph existingGraph = graphMapper.selectByResourceId(resourceId);
-        if (existingGraph != null) {
+        if (existingGraph != null && (forceGenerate == null || !forceGenerate)) {
+            // 非强制模式：已有图谱时抛出异常
             throw new BusinessException(ApiCode.PARAM_INVALID.getCode(), "该资源已有图谱，请使用重试功能");
         }
 
         // 调用 AI 服务生成图谱（异步）
         try {
             if (forceGenerate != null && forceGenerate) {
-                // 强制生成模式：跳过体裁判定
+                // 强制生成模式：跳过体裁判定，允许覆盖已有数据
                 characterGraphService.generateAndSaveGraphForce(resourceId);
             } else {
                 // 普通模式：AI 智能判断

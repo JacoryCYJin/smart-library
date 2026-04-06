@@ -35,14 +35,16 @@ public class CharacterGraphController {
     
     /**
      * 获取资源的人物关系图谱
-     * 如果不存在则自动触发生成
-     *
+     * 
      * @param resourceId 资源ID
+     * @param autoGenerate 是否自动生成（可选，默认 true）
      * @return 图谱数据
      */
     @GetMapping("/{resourceId}")
-    public Result<CharacterGraphDTO> getOrGenerateGraph(@PathVariable String resourceId) {
-        log.info("获取图谱，资源ID: {}", resourceId);
+    public Result<CharacterGraphDTO> getGraph(
+            @PathVariable String resourceId,
+            @RequestParam(required = false, defaultValue = "true") Boolean autoGenerate) {
+        log.info("获取图谱，资源ID: {}, 自动生成: {}", resourceId, autoGenerate);
         
         try {
             // 1. 先尝试从数据库获取已有图谱
@@ -52,12 +54,16 @@ public class CharacterGraphController {
                 return Result.success(existingGraph);
             }
             
-            // 2. 如果不存在，自动触发生成（异步）
-            log.info("图谱不存在，自动触发生成，资源ID: {}", resourceId);
-            characterGraphService.generateAndSaveGraph(resourceId);
-            
-            // 3. 返回 null，前端显示加载状态并轮询
-            return Result.success(null);
+            // 2. 如果不存在，根据 autoGenerate 参数决定是否自动生成
+            if (autoGenerate) {
+                log.info("图谱不存在，自动触发生成，资源ID: {}", resourceId);
+                characterGraphService.generateAndSaveGraph(resourceId);
+                // 返回 null，前端显示加载状态并轮询
+                return Result.success(null);
+            } else {
+                log.info("图谱不存在，不自动生成，资源ID: {}", resourceId);
+                return Result.success(null);
+            }
             
         } catch (Exception e) {
             log.error("获取图谱失败，资源ID: {}", resourceId, e);
