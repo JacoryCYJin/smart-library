@@ -22,6 +22,7 @@
         >
           <button
             type="button"
+            @click="scrollToStory"
             class="pointer-events-auto cursor-pointer font-serif inline-flex items-center justify-center rounded-full bg-[#102A43] px-9 py-4 text-lg font-medium text-white transition-all duration-300 hover:bg-[#102A43]/90 hover:shadow-xl hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-[#102A43]/20"
           >
             开始探索
@@ -76,6 +77,15 @@ const pickBookColor = () => {
   const roll = Math.random()
   if (roll < 0.1) return popColor
   return palette[Math.floor(Math.random() * palette.length)]
+}
+
+// 平滑滚动到故事区
+const scrollToStory = () => {
+  const heroHeight = heroRootRef.value?.offsetHeight || window.innerHeight
+  window.scrollTo({
+    top: heroHeight,
+    behavior: 'smooth'
+  })
 }
 
 const createWalls = (width, height) => {
