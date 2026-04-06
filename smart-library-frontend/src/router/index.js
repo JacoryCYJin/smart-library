@@ -76,6 +76,12 @@ const router = createRouter({
         requiresAuth: true
       }
     },
+    {
+      path: '/serendipity',
+      name: 'serendipity',
+      component: () => import('@/views/web/SerendipityView.vue'),
+      meta: { layout: 'web' }
+    },
 
     // ================= 管理端路由 (Admin) =================
     {

@@ -46,4 +46,13 @@ public interface UserBrowseHistoryMapper {
      * @return 影响行数
      */
     int insertOrUpdate(@Param("userId") String userId, @Param("resourceId") String resourceId);
+
+    /**
+     * 获取用户浏览过的资源的分类ID列表（去重）
+     * 
+     * @param userId 用户ID
+     * @param limit 最多返回多少个分类
+     * @return 分类ID列表
+     */
+    List<String> selectCategoryIdsByUserId(@Param("userId") String userId, @Param("limit") Integer limit);
 }

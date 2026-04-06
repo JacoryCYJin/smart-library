@@ -395,4 +395,29 @@
             </if>
         </where>
     </select>
+
+    <!-- 从指定分类中随机推荐资源 -->
+    <select id="randomRecommendByCategories" resultMap="BaseResultMap">
+        SELECT DISTINCT r.*
+        FROM resource r
+        INNER JOIN resource_category_rel rel ON r.resource_id = rel.resource_id
+        WHERE r.type = 1
+        AND r.deleted = 0
+        AND rel.category_id IN
+        <foreach collection="categoryIds" item="categoryId" open="(" separator="," close=")">
+            #{categoryId}
+        </foreach>
+        ORDER BY RAND()
+        LIMIT #{limit}
+    </select>
+
+    <!-- 完全随机推荐资源 -->
+    <select id="randomRecommend" resultMap="BaseResultMap">
+        SELECT *
+        FROM resource
+        WHERE type = 1
+        AND deleted = 0
+        ORDER BY RAND()
+        LIMIT #{limit}
+    </select>
 </mapper>

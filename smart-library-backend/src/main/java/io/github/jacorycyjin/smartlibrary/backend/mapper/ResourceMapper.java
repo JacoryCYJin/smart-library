@@ -174,4 +174,22 @@ public interface ResourceMapper {
      * @return 资源数量
      */
     Long countByParams(Map<String, Object> params);
+
+    /**
+     * 从指定分类中随机推荐资源
+     * 
+     * @param categoryIds 分类ID列表
+     * @param limit 推荐数量
+     * @return 资源列表
+     */
+    List<Resource> randomRecommendByCategories(@Param("categoryIds") List<String> categoryIds, 
+                                                @Param("limit") Integer limit);
+
+    /**
+     * 完全随机推荐资源
+     * 
+     * @param limit 推荐数量
+     * @return 资源列表
+     */
+    List<Resource> randomRecommend(@Param("limit") Integer limit);
 }

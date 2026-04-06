@@ -37,4 +37,17 @@
             mtime = NOW()
     </insert>
 
+    <!-- 获取用户浏览过的资源的分类ID列表（去重，按最近浏览时间排序） -->
+    <select id="selectCategoryIdsByUserId" resultType="java.lang.String">
+        SELECT DISTINCT rel.category_id
+        FROM (
+            SELECT resource_id
+            FROM user_browse_history
+            WHERE user_id = #{userId}
+            ORDER BY mtime DESC
+        ) h
+        INNER JOIN resource_category_rel rel ON h.resource_id = rel.resource_id
+        LIMIT #{limit}
+    </select>
+
 </mapper>

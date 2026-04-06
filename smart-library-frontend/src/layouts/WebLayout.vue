@@ -180,14 +180,15 @@ onUnmounted(() => {
               >
                 {{ labels.explore }}
               </a>
-              <a
+              <!-- 文献功能暂时不用 -->
+              <!-- <a
                 href="#"
                 class="px-3 py-2 rounded-md text-base text-ink font-medium hover:text-[#627D98] hover:bg-slate-50"
               >
                 {{ labels.research }}
-              </a>
+              </a> -->
               <a
-                href="#"
+                href="/serendipity"
                 class="px-3 py-2 rounded-md text-base text-ink font-medium hover:text-[#627D98] hover:bg-slate-50"
               >
                 <span class="inline-flex items-center gap-1">
