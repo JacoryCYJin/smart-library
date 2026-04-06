@@ -12,6 +12,8 @@ import io.github.jacorycyjin.smartlibrary.backend.service.AdminCommentService;
 import io.github.jacorycyjin.smartlibrary.backend.service.AdminCategoryService;
 import io.github.jacorycyjin.smartlibrary.backend.vo.AdminStatsVO;
 import jakarta.annotation.Resource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -27,6 +29,8 @@ import java.util.Map;
 @RequestMapping("/admin")
 public class AdminController {
 
+    private static final Logger log = LoggerFactory.getLogger(AdminController.class);
+
     @Resource
     private AdminStatsService adminStatsService;
 
@@ -38,6 +42,9 @@ public class AdminController {
 
     @Resource
     private AdminGraphService adminGraphService;
+
+    @Resource
+    private io.github.jacorycyjin.smartlibrary.backend.service.AdminEmotionArcService adminEmotionArcService;
 
     @Resource
     private AdminUserService adminUserService;
@@ -378,6 +385,7 @@ public class AdminController {
     public Result<Void> triggerGraphGeneration(
             @PathVariable String resourceId,
             @RequestParam(defaultValue = "false") Boolean forceGenerate) {
+        log.info("触发图谱生成: resourceId={}, forceGenerate={}", resourceId, forceGenerate);
         adminGraphService.triggerGraphGeneration(resourceId, forceGenerate);
         return Result.success();
     }
@@ -406,6 +414,58 @@ public class AdminController {
     @GetMapping("/graphs/{graphId}")
     public Result<Map<String, Object>> getGraphDetail(@PathVariable String graphId) {
         return Result.success(adminGraphService.getGraphDetail(graphId));
+    }
+
+    // ==================== AI 情感走向管理 ====================
+
+    /**
+     * 获取 AI 情感走向列表
+     */
+    @PostMapping("/emotion-arcs/list")
+    public Result<PageDTO> getEmotionArcList(@RequestBody io.github.jacorycyjin.smartlibrary.backend.form.AdminSearchForm form) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("generateStatus", form.getGenerateStatus());
+        params.put("offset", (form.getPageNum() - 1) * form.getPageSize());
+        params.put("pageSize", form.getPageSize());
+        return Result.success(adminEmotionArcService.getEmotionArcList(params));
+    }
+
+    /**
+     * 手动触发情感走向生成
+     */
+    @PostMapping("/emotion-arcs/trigger/{resourceId}")
+    public Result<Void> triggerEmotionArcGeneration(
+            @PathVariable String resourceId,
+            @RequestParam(defaultValue = "false") Boolean forceGenerate) {
+        log.info("触发情感走向生成: resourceId={}, forceGenerate={}", resourceId, forceGenerate);
+        adminEmotionArcService.triggerEmotionArcGeneration(resourceId, forceGenerate);
+        return Result.success();
+    }
+
+    /**
+     * 重试失败的情感走向生成
+     */
+    @PostMapping("/emotion-arcs/retry/{arcId}")
+    public Result<Void> retryEmotionArcGeneration(@PathVariable String arcId) {
+        adminEmotionArcService.retryEmotionArcGeneration(arcId);
+        return Result.success();
+    }
+
+    /**
+     * 删除情感走向
+     */
+    @DeleteMapping("/emotion-arcs/{arcId}")
+    public Result<Void> deleteEmotionArc(@PathVariable String arcId) {
+        adminEmotionArcService.deleteEmotionArc(arcId);
+        return Result.success();
+    }
+
+    /**
+     * 获取情感走向详情
+     */
+    @GetMapping("/emotion-arcs/{arcId}")
+    public Result<Map<String, Object>> getEmotionArcDetail(@PathVariable String arcId) {
+        return Result.success(adminEmotionArcService.getEmotionArcDetail(arcId));
     }
 
     // ==================== 排行榜统计 ====================

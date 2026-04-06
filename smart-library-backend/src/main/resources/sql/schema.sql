@@ -179,6 +179,35 @@ CREATE TABLE resource_character_graph
   COLLATE = utf8mb4_unicode_ci COMMENT ='AI人物关系图谱表';
 
 -- ==========================================
+-- 2.3 AI情感走向图表 (Emotion Arc)
+-- 说明: 存储大模型生成的书籍情感走向JSON数据
+-- ==========================================
+CREATE TABLE resource_emotion_arc
+(
+    id              BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '主键ID',
+    arc_id          VARCHAR(50) NOT NULL UNIQUE COMMENT '情感走向业务标识(UUID)',
+    resource_id     VARCHAR(50) NOT NULL UNIQUE COMMENT '关联资源ID(一对一关系)',
+
+    arc_json        JSON COMMENT 'ECharts折线图数据(包含chapters数组)',
+
+    generate_status TINYINT     DEFAULT 0 COMMENT '生成状态: 0-未生成 / 1-生成中 / 2-生成成功 / -1-生成失败',
+    error_message   VARCHAR(500) COMMENT '错误信息(失败时记录)',
+
+    ai_model        VARCHAR(50) COMMENT 'AI模型标识(如: gpt-4, claude-3等)',
+    token_usage     INT COMMENT 'Token消耗量',
+    generate_time   INT COMMENT '生成耗时(毫秒)',
+
+    ctime           DATETIME    DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    mtime           DATETIME    DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    deleted         TINYINT     DEFAULT 0 COMMENT '逻辑删除: 0-未删 / 1-已删',
+
+    INDEX idx_resource_id (resource_id),
+    INDEX idx_generate_status (generate_status)
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci COMMENT ='AI情感走向图表';
+
+-- ==========================================
 -- 3. 基础元数据 (Tag/Category/Author)
 -- ==========================================
 CREATE TABLE author

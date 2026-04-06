@@ -42,8 +42,8 @@
 
       <!-- v-network-graph 画布 -->
       <div 
-        class="relative w-full rounded-2xl border border-structure overflow-hidden"
-        style="background: linear-gradient(to bottom right, #f0f4f8, #ffffff);"
+        class="relative w-full rounded-2xl border overflow-hidden"
+        style="background: linear-gradient(to bottom right, #f0f4f8, #ffffff); border-color: #d9e2ec;"
         :style="{ height: `${height}px` }"
       >
         <v-network-graph
@@ -187,7 +187,7 @@ const configs = defineConfigs({
         const forceLink = d3.forceLink(edges).id((d) => d.id)
         return d3
           .forceSimulation(nodes)
-          .force('edge', forceLink.distance(150).strength(0.5))
+          .force('edge', forceLink.distance(120).strength(0.5))
           .force('charge', d3.forceManyBody().strength(-800))
           .force('center', d3.forceCenter().strength(0.05))
           .force('collide', d3.forceCollide().radius(50).strength(0.7))
@@ -223,7 +223,7 @@ const configs = defineConfigs({
     label: {
       visible: true,
       text: 'name',
-      fontSize: 15,
+      fontSize: 13,
       color: '#ffffff',
       fontFamily: undefined,
       direction: 'center',
@@ -286,7 +286,7 @@ const convertToVNetworkGraphData = () => {
   const layoutsObj = {}
 
   rawNodes.forEach((node) => {
-    const nodeRadius = 20 + (node.weight / 100) * 15
+    const nodeRadius = 16 + (node.weight / 100) * 10
 
     if (!categoryColors.value[node.category]) {
       const colorIndex = Object.keys(categoryColors.value).length
@@ -333,6 +333,7 @@ const convertToVNetworkGraphData = () => {
 
 /**
  * 加载图谱数据
+ * 如果返回 null，说明正在生成中，3 秒后重新查询
  */
 const loadGraph = async () => {
   loading.value = true
@@ -346,12 +347,19 @@ const loadGraph = async () => {
       graphData.value = res.data
       
       if (!res.data.nodes || res.data.nodes.length === 0) {
+        // AI 判断不适合生成（空数组）
         isEmpty.value = true
         emit('graph-loaded', false)
       } else {
         convertToVNetworkGraphData()
         emit('graph-loaded', true)
       }
+    } else if (res.code === 0 && res.data === null) {
+      // 返回 null 表示正在生成中，3 秒后重新查询
+      setTimeout(() => {
+        loadGraph()
+      }, 3000)
+      return // 保持 loading 状态
     } else {
       isEmpty.value = true
       emit('graph-loaded', false)
@@ -361,7 +369,10 @@ const loadGraph = async () => {
     error.value = true
     emit('graph-loaded', true)
   } finally {
-    loading.value = false
+    // 只有在非生成中状态才关闭 loading
+    if (graphData.value !== null || isEmpty.value || error.value) {
+      loading.value = false
+    }
   }
 }
 

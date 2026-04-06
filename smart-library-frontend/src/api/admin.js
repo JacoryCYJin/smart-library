@@ -361,9 +361,8 @@ export function getGraphList(params) {
  */
 export function triggerGraphGeneration(resourceId, forceGenerate = false) {
   return request({
-    url: `/admin/graphs/trigger/${resourceId}`,
-    method: 'post',
-    params: { forceGenerate }
+    url: `/admin/graphs/trigger/${resourceId}?forceGenerate=${forceGenerate}`,
+    method: 'post'
   })
 }
 
@@ -393,6 +392,61 @@ export function deleteGraph(graphId) {
 export function getGraphDetail(graphId) {
   return request({
     url: `/admin/graphs/${graphId}`,
+    method: 'get'
+  })
+}
+
+// ==================== AI 情感走向管理 ====================
+
+/**
+ * 获取 AI 情感走向列表
+ */
+export function getEmotionArcList(params) {
+  return request({
+    url: '/admin/emotion-arcs/list',
+    method: 'post',
+    data: params
+  })
+}
+
+/**
+ * 手动触发情感走向生成
+ * @param {string} resourceId - 资源ID
+ * @param {boolean} forceGenerate - 是否强制生成（跳过AI判断）
+ */
+export function triggerEmotionArcGeneration(resourceId, forceGenerate = false) {
+  return request({
+    url: `/admin/emotion-arcs/trigger/${resourceId}?forceGenerate=${forceGenerate}`,
+    method: 'post'
+  })
+}
+
+/**
+ * 重试失败的情感走向生成
+ */
+export function retryEmotionArcGeneration(arcId) {
+  return request({
+    url: `/admin/emotion-arcs/retry/${arcId}`,
+    method: 'post'
+  })
+}
+
+/**
+ * 删除情感走向
+ */
+export function deleteEmotionArc(arcId) {
+  return request({
+    url: `/admin/emotion-arcs/${arcId}`,
+    method: 'delete'
+  })
+}
+
+/**
+ * 获取情感走向详情
+ */
+export function getEmotionArcDetail(arcId) {
+  return request({
+    url: `/admin/emotion-arcs/${arcId}`,
     method: 'get'
   })
 }

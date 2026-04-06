@@ -252,14 +252,31 @@
             </div>
           </div>
 
-          <!-- 人物关系图谱区域（只在有图谱或未检查时显示） -->
-          <div v-if="shouldShowGraph" class="border-t border-structure pt-12 mb-16">
-            <CharacterGraph 
-              :resource-id="book.resourceId" 
-              :width="1000" 
-              :height="600"
-              @graph-loaded="handleGraphLoaded"
-            />
+          <!-- AI 分析区域（人物关系图谱 + 情感走向） -->
+          <div v-if="shouldShowAISection" class="border-t border-structure pt-12 mb-16">
+            <h2 class="text-2xl font-bold text-ink mb-6">AI 智能分析</h2>
+            
+            <!-- 左右并排布局 -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <!-- 左侧：人物关系图谱 -->
+              <div v-if="shouldShowGraph" class="flex flex-col">
+                <CharacterGraph 
+                  :resource-id="book.resourceId" 
+                  :width="500" 
+                  :height="550"
+                  @graph-loaded="handleGraphLoaded"
+                />
+              </div>
+
+              <!-- 右侧：情感走向图 -->
+              <div v-if="shouldShowEmotionArc" class="flex flex-col">
+                <EmotionArcChart 
+                  :resource-id="book.resourceId"
+                  :height="550"
+                  @arc-loaded="handleEmotionArcLoaded"
+                />
+              </div>
+            </div>
           </div>
 
           <!-- 资源链接区域 -->
@@ -529,6 +546,7 @@ import { useAuthStore } from '@/stores/auth'
 import { useFavorite } from '@/composables/useFavorite'
 import CommentMasonry from '@/components/comment/CommentMasonry.vue'
 import CharacterGraph from '@/components/graph/CharacterGraphVNetwork.vue'
+import EmotionArcChart from '@/components/emotion/EmotionArcChart.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -668,16 +686,26 @@ const submitting = ref(false)
 
 // 人物关系图谱显示控制
 const shouldShowGraph = ref(true) // 默认显示，等待组件加载结果
+const shouldShowEmotionArc = ref(true) // 默认显示情感走向
 
 /**
  * 处理图谱加载结果
  */
 const handleGraphLoaded = (hasGraph) => {
-  // 如果数据库中确定没有图谱（空数组），隐藏整个模块
-  if (!hasGraph) {
-    shouldShowGraph.value = false
-  }
+  // 保持显示，即使没有数据也让用户可以触发生成
+  // 不再隐藏组件
 }
+
+/**
+ * 处理情感走向加载结果
+ */
+const handleEmotionArcLoaded = (hasArc) => {
+  // 保持显示，即使没有数据也让用户可以触发生成
+  // 不再隐藏组件
+}
+
+// 计算是否显示 AI 分析区域（至少有一个可显示）
+const shouldShowAISection = computed(() => shouldShowGraph.value || shouldShowEmotionArc.value)
 
 /**
  * 加载书籍详情

@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.github.jacorycyjin.smartlibrary.backend.mapper.ResourceEmotionArcMapper">
+
+    <!-- ResultMap -->
+    <resultMap id="BaseResultMap" type="io.github.jacorycyjin.smartlibrary.backend.entity.ResourceEmotionArc">
+        <id column="id" property="id"/>
+        <result column="arc_id" property="arcId"/>
+        <result column="resource_id" property="resourceId"/>
+        <result column="arc_json" property="arcJson"/>
+        <result column="generate_status" property="generateStatus"/>
+        <result column="error_message" property="errorMessage"/>
+        <result column="ai_model" property="aiModel"/>
+        <result column="token_usage" property="tokenUsage"/>
+        <result column="generate_time" property="generateTime"/>
+        <result column="ctime" property="ctime"/>
+        <result column="mtime" property="mtime"/>
+        <result column="deleted" property="deleted"/>
+    </resultMap>
+
+    <!-- 根据资源ID查询 -->
+    <select id="selectByResourceId" resultMap="BaseResultMap">
+        SELECT *
+        FROM resource_emotion_arc
+        WHERE resource_id = #{resourceId}
+          AND deleted = 0
+    </select>
+
+    <!-- 插入 -->
+    <insert id="insert" parameterType="io.github.jacorycyjin.smartlibrary.backend.entity.ResourceEmotionArc">
+        INSERT INTO resource_emotion_arc (arc_id, resource_id, arc_json, generate_status, error_message,
+                                          ai_model, token_usage, generate_time)
+        VALUES (#{arcId}, #{resourceId}, #{arcJson}, #{generateStatus}, #{errorMessage},
+                #{aiModel}, #{tokenUsage}, #{generateTime})
+    </insert>
+
+    <!-- 更新情感走向数据 -->
+    <update id="updateArcData">
+        UPDATE resource_emotion_arc
+        SET arc_json        = #{arcJson},
+            generate_status = #{generateStatus},
+            error_message   = #{errorMessage},
+            ai_model        = #{aiModel},
+            token_usage     = #{tokenUsage},
+            generate_time   = #{generateTime}
+        WHERE resource_id = #{resourceId}
+          AND deleted = 0
+    </update>
+
+    <!-- 更新生成状态 -->
+    <update id="updateGenerateStatus">
+        UPDATE resource_emotion_arc
+        SET generate_status = #{generateStatus},
+            error_message   = #{errorMessage}
+        WHERE resource_id = #{resourceId}
+          AND deleted = 0
+    </update>
+
+    <!-- 逻辑删除 -->
+    <update id="deleteByResourceId">
+        UPDATE resource_emotion_arc
+        SET deleted = 1
+        WHERE resource_id = #{resourceId}
+    </update>
+
+    <!-- 根据 arcId 查询 -->
+    <select id="selectByArcId" resultMap="BaseResultMap">
+        SELECT *
+        FROM resource_emotion_arc
+        WHERE arc_id = #{arcId}
+          AND deleted = 0
+    </select>
+
+    <!-- 根据 arcId 逻辑删除 -->
+    <update id="deleteByArcId">
+        UPDATE resource_emotion_arc
+        SET deleted = 1
+        WHERE arc_id = #{arcId}
+    </update>
+
+    <!-- 统计情感走向数量 -->
+    <select id="countEmotionArcs" resultType="int">
+        SELECT COUNT(*)
+        FROM resource_emotion_arc rea
+        LEFT JOIN resource r ON rea.resource_id = r.resource_id
+        WHERE rea.deleted = 0
+        <if test="resourceId != null and resourceId != ''">
+            AND rea.resource_id = #{resourceId}
+        </if>
+        <if test="generateStatus != null">
+            AND rea.generate_status = #{generateStatus}
+        </if>
+        <if test="keyword != null and keyword != ''">
+            AND r.title LIKE CONCAT('%', #{keyword}, '%')
+        </if>
+    </select>
+
+    <!-- 搜索情感走向列表 -->
+    <select id="searchEmotionArcs" resultMap="BaseResultMap">
+        SELECT rea.*
+        FROM resource_emotion_arc rea
+        LEFT JOIN resource r ON rea.resource_id = r.resource_id
+        WHERE rea.deleted = 0
+        <if test="resourceId != null and resourceId != ''">
+            AND rea.resource_id = #{resourceId}
+        </if>
+        <if test="generateStatus != null">
+            AND rea.generate_status = #{generateStatus}
+        </if>
+        <if test="keyword != null and keyword != ''">
+            AND r.title LIKE CONCAT('%', #{keyword}, '%')
+        </if>
+        ORDER BY rea.ctime DESC
+        <if test="offset != null and limit != null">
+            LIMIT #{offset}, #{limit}
+        </if>
+    </select>
+
+</mapper>

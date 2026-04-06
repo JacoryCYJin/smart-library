@@ -2,8 +2,8 @@
   <div class="space-y-6">
     <!-- 页面标题 -->
     <div>
-      <h2 class="text-2xl font-semibold text-ink">AI 图谱管理</h2>
-      <p class="mt-1 text-sm text-ink-light">管理人物关系图谱生成状态与数据</p>
+      <h2 class="text-2xl font-semibold text-ink">情感走向管理</h2>
+      <p class="mt-1 text-sm text-ink-light">管理书籍情感走向生成状态与数据</p>
     </div>
 
     <!-- 搜索栏 -->
@@ -12,7 +12,7 @@
         <input
           v-model="searchForm.keyword"
           type="text"
-          placeholder="搜索图谱名称或资源ID"
+          placeholder="搜索资源名称或资源ID"
           class="flex-1 px-4 py-2 bg-canvas border-0 rounded-lg focus:outline-none focus:ring-2 focus:ring-ink-light"
           @keyup.enter="handleSearch"
         />
@@ -43,11 +43,11 @@
       </div>
     </div>
 
-    <!-- 图谱列表 -->
+    <!-- 情感走向列表 -->
     <div class="bg-white rounded-xl overflow-hidden" style="box-shadow: 0 2px 8px rgba(16, 42, 67, 0.08)">
       <a-table
         :columns="columns"
-        :data="graphs"
+        :data="emotionArcs"
         :loading="loading"
         :pagination="false"
         :scroll="{ x: 1200 }"
@@ -58,9 +58,9 @@
           </a-tag>
         </template>
 
-        <template #relationship="{ record }">
+        <template #chapters="{ record }">
           <span class="text-ink-light">
-            {{ formatRelationship(record.nodeCount, record.edgeCount) }}
+            {{ formatChapters(record.chapterCount) }}
           </span>
         </template>
 
@@ -106,12 +106,12 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { Message, Modal } from '@arco-design/web-vue'
-import { getGraphList, deleteGraph, retryGraphGeneration } from '@/api/admin'
+import { getEmotionArcList, deleteEmotionArc, retryEmotionArcGeneration } from '@/api/admin'
 import AdminPagination from '@/components/admin/AdminPagination.vue'
 
 // 状态
 const loading = ref(false)
-const graphs = ref([])
+const emotionArcs = ref([])
 const total = ref(0)
 const pageNum = ref(1)
 const pageSize = ref(10)
@@ -126,7 +126,7 @@ const searchForm = ref({
 const columns = [
   {
     title: 'ID',
-    dataIndex: 'graphId',
+    dataIndex: 'arcId',
     width: 80,
   },
   {
@@ -147,9 +147,9 @@ const columns = [
     width: 100
   },
   {
-    title: '人物关系',
-    slotName: 'relationship',
-    width: 120
+    title: '章节数',
+    slotName: 'chapters',
+    width: 100
   },
   {
     title: '创建时间',
@@ -165,9 +165,9 @@ const columns = [
 ]
 
 /**
- * 加载图谱列表
+ * 加载情感走向列表
  */
-async function loadGraphs() {
+async function loadEmotionArcs() {
   loading.value = true
   try {
     const params = {
@@ -178,17 +178,17 @@ async function loadGraphs() {
     if (searchForm.value.status !== null) {
       params.status = searchForm.value.status
     }
-    const res = await getGraphList(params)
+    const res = await getEmotionArcList(params)
     
     if (res.code === 0) {
-      graphs.value = res.data.list || []
+      emotionArcs.value = res.data.list || []
       total.value = res.data.totalCount || 0
     } else {
-      Message.error(res.message || '加载图谱列表失败')
+      Message.error(res.message || '加载情感走向列表失败')
     }
   } catch (error) {
     console.error(error)
-    Message.error('加载图谱列表失败')
+    Message.error('加载情感走向列表失败')
   } finally {
     loading.value = false
   }
@@ -199,7 +199,7 @@ async function loadGraphs() {
  */
 function handleSearch() {
   pageNum.value = 1
-  loadGraphs()
+  loadEmotionArcs()
 }
 
 /**
@@ -233,10 +233,10 @@ function getStatusColor(status) {
  */
 async function handleRetry(record) {
   try {
-    const res = await retryGraphGeneration(record.graphId)
+    const res = await retryEmotionArcGeneration(record.arcId)
     if (res.code === 0) {
       Message.success('已触发重新生成')
-      loadGraphs()
+      loadEmotionArcs()
     } else {
       Message.error(res.message || '重试失败')
     }
@@ -247,18 +247,18 @@ async function handleRetry(record) {
 }
 
 /**
- * 删除图谱
+ * 删除情感走向
  */
 function handleDelete(record) {
   Modal.warning({
     title: '确认删除',
-    content: `确定要删除该图谱记录吗？此操作不可恢复。`,
+    content: `确定要删除该情感走向记录吗？此操作不可恢复。`,
     onOk: async () => {
       try {
-        const res = await deleteGraph(record.graphId)
+        const res = await deleteEmotionArc(record.arcId)
         if (res.code === 0) {
           Message.success('删除成功')
-          loadGraphs()
+          loadEmotionArcs()
         } else {
           Message.error(res.message || '删除失败')
         }
@@ -275,7 +275,7 @@ function handleDelete(record) {
  */
 function handlePageChange(page) {
   pageNum.value = page
-  loadGraphs()
+  loadEmotionArcs()
 }
 
 /**
@@ -284,22 +284,17 @@ function handlePageChange(page) {
 function handlePageSizeChange(size) {
   pageSize.value = size
   pageNum.value = 1
-  loadGraphs()
+  loadEmotionArcs()
 }
 
 /**
- * 格式化人物关系
+ * 格式化章节数
  */
-function formatRelationship(nodeCount, edgeCount) {
-  const nodes = nodeCount || 0
-  const edges = edgeCount || 0
-  
-  // 0节点0边显示为"无"
-  if (nodes === 0 && edges === 0) {
+function formatChapters(chapterCount) {
+  if (!chapterCount || chapterCount === 0) {
     return '无'
   }
-  
-  return `${nodes}人 / ${edges}关系`
+  return `${chapterCount} 章`
 }
 
 /**
@@ -318,6 +313,6 @@ function formatDateTime(dateStr) {
 }
 
 onMounted(() => {
-  loadGraphs()
+  loadEmotionArcs()
 })
 </script>

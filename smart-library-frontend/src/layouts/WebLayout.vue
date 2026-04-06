@@ -162,13 +162,13 @@ onUnmounted(() => {
               href="/"
               class="inline-flex items-center gap-2 font-serif text-2xl font-bold text-ink"
             >
-              <img :src="logoUrl" alt="Logo" class="h-8 w-8 flex-shrink-0" />
+              <img :src="logoUrl" alt="Logo" class="h-7 w-7 flex-shrink-0" />
               <span>{{ labels.siteName }}</span>
             </a>
           </div>
 
           <nav class="hidden md:flex items-center justify-center flex-1">
-            <div class="flex items-center gap-8">
+            <div class="flex items-center gap-15">
               <a
                 href="/"
                 class="px-3 py-2 rounded-md text-base text-ink font-medium hover:text-[#627D98] hover:bg-slate-50"

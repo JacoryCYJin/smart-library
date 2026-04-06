@@ -171,6 +171,16 @@ const router = createRouter({
       }
     },
     {
+      path: '/admin/emotion-arcs',
+      name: 'admin-emotion-arcs',
+      component: () => import('@/views/admin/EmotionArcManageView.vue'),
+      meta: { 
+        layout: 'admin',
+        requiresAuth: true,
+        requiresAdmin: true
+      }
+    },
+    {
       path: '/admin/ranking',
       name: 'admin-ranking',
       component: () => import('@/views/admin/RankingView.vue'),
