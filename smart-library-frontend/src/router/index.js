@@ -131,46 +131,6 @@ const router = createRouter({
       }
     },
     {
-      path: '/admin/categories',
-      name: 'admin-categories',
-      component: () => import('@/views/admin/CategoryManageView.vue'),
-      meta: { 
-        layout: 'admin',
-        requiresAuth: true,
-        requiresAdmin: true
-      }
-    },
-    {
-      path: '/admin/authors',
-      name: 'admin-authors',
-      component: () => import('@/views/admin/AuthorManageView.vue'),
-      meta: { 
-        layout: 'admin',
-        requiresAuth: true,
-        requiresAdmin: true
-      }
-    },
-    {
-      path: '/admin/links',
-      name: 'admin-links',
-      component: () => import('@/views/admin/LinkManageView.vue'),
-      meta: { 
-        layout: 'admin',
-        requiresAuth: true,
-        requiresAdmin: true
-      }
-    },
-    {
-      path: '/admin/graphs',
-      name: 'admin-graphs',
-      component: () => import('@/views/admin/GraphManageView.vue'),
-      meta: { 
-        layout: 'admin',
-        requiresAuth: true,
-        requiresAdmin: true
-      }
-    },
-    {
       path: '/admin/emotion-arcs',
       name: 'admin-emotion-arcs',
       component: () => import('@/views/admin/EmotionArcManageView.vue'),

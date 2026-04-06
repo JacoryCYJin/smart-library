@@ -137,6 +137,8 @@ const createBooks = (width) => {
     const minX = Math.max(w / 2, 1)
     const maxX = Math.max(minX + 1, width - w / 2)
 
+    const bookColor = pickBookColor()
+
     return Matter.Bodies.rectangle(
       randInt(Math.floor(minX), Math.floor(maxX)),
       -140 - i * 28,
@@ -148,10 +150,18 @@ const createBooks = (width) => {
         frictionAir: 0.02,
         chamfer: { radius: 6 },
         render: {
-          fillStyle: pickBookColor(),
+          fillStyle: bookColor,
           strokeStyle: 'rgba(16,42,67,0.18)',
           lineWidth: 1,
         },
+        // 自定义数据用于渲染
+        plugin: {
+          bookData: {
+            color: bookColor,
+            spineWidth: w * 0.15, // 书脊宽度
+            hasTitle: Math.random() > 0.3, // 70% 的书有标题
+          }
+        }
       },
     )
   })
@@ -215,6 +225,65 @@ onMounted(() => {
       background: 'transparent',
       pixelRatio: window.devicePixelRatio || 1,
     },
+  })
+
+  // 自定义渲染函数 - 让方块看起来像书籍
+  Matter.Events.on(render, 'afterRender', () => {
+    const context = render.context
+    const bodies = Matter.Composite.allBodies(engine.world)
+
+    bodies.forEach(body => {
+      // 只渲染书籍（非静态物体）
+      if (body.isStatic || !body.plugin?.bookData) return
+
+      const { bookData } = body.plugin
+      const { color, spineWidth, hasTitle } = bookData
+
+      context.save()
+      context.translate(body.position.x, body.position.y)
+      context.rotate(body.angle)
+
+      const w = body.bounds.max.x - body.bounds.min.x
+      const h = body.bounds.max.y - body.bounds.min.y
+
+      // 书籍主体
+      context.fillStyle = color
+      context.strokeStyle = 'rgba(16,42,67,0.2)'
+      context.lineWidth = 1
+      context.beginPath()
+      context.roundRect(-w/2, -h/2, w, h, 6)
+      context.fill()
+      context.stroke()
+
+      // 书脊（左侧深色条）
+      const darkerColor = color === popColor 
+        ? 'rgba(180, 50, 50, 0.8)' 
+        : 'rgba(16, 42, 67, 0.3)'
+      context.fillStyle = darkerColor
+      context.fillRect(-w/2, -h/2, spineWidth, h)
+
+      // 书页纹理（右侧白色边缘）
+      context.fillStyle = 'rgba(255, 255, 255, 0.4)'
+      context.fillRect(w/2 - 3, -h/2 + 4, 2, h - 8)
+
+      // 书籍标题（横线）
+      if (hasTitle) {
+        context.strokeStyle = 'rgba(255, 255, 255, 0.6)'
+        context.lineWidth = 2
+        context.beginPath()
+        context.moveTo(-w/2 + spineWidth + 8, -h/2 + h * 0.3)
+        context.lineTo(w/2 - 12, -h/2 + h * 0.3)
+        context.stroke()
+
+        context.lineWidth = 1
+        context.beginPath()
+        context.moveTo(-w/2 + spineWidth + 8, -h/2 + h * 0.4)
+        context.lineTo(w/2 - 20, -h/2 + h * 0.4)
+        context.stroke()
+      }
+
+      context.restore()
+    })
   })
 
   runner = Matter.Runner.create()
