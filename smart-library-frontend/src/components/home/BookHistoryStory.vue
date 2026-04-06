@@ -5,8 +5,31 @@
       <div class="max-w-7xl mx-auto w-full">
         <div class="grid md:grid-cols-2 gap-12 items-center">
           <div class="chapter-visual opacity-0 order-2 md:order-1">
-            <div class="w-full aspect-square rounded-3xl bg-gradient-to-br from-[#627D98] to-[#334E68] flex items-center justify-center shadow-2xl">
-              <div class="text-white/20 text-9xl">𒀭</div>
+            <div class="w-full aspect-square rounded-3xl bg-gradient-to-br from-[#627D98] to-[#334E68] flex items-center justify-center shadow-2xl relative overflow-hidden">
+              <!-- 泥板纹理背景 -->
+              <div class="absolute inset-0 opacity-20">
+                <div class="grid grid-cols-12 grid-rows-12 h-full w-full gap-1 p-4">
+                  <div v-for="i in 144" :key="i" class="bg-white/10 rounded-sm"></div>
+                </div>
+              </div>
+              <!-- 楔形文字组合 -->
+              <div class="relative z-10 flex flex-col items-center gap-8">
+                <div class="flex gap-6">
+                  <div class="text-white/80 text-6xl">𒀭</div>
+                  <div class="text-white/60 text-6xl">𒁹</div>
+                  <div class="text-white/80 text-6xl">𒌋</div>
+                </div>
+                <div class="flex gap-6">
+                  <div class="text-white/60 text-6xl">𒐕</div>
+                  <div class="text-white/90 text-7xl">𒀸</div>
+                  <div class="text-white/60 text-6xl">𒈗</div>
+                </div>
+                <div class="flex gap-6">
+                  <div class="text-white/80 text-6xl">𒁀</div>
+                  <div class="text-white/60 text-6xl">𒋗</div>
+                  <div class="text-white/80 text-6xl">𒆳</div>
+                </div>
+              </div>
             </div>
           </div>
           <div class="chapter-content opacity-0 order-1 md:order-2">
@@ -35,11 +58,43 @@
           </p>
         </div>
         <div class="chapter-visual opacity-0">
-          <div class="w-full h-80 rounded-3xl bg-gradient-to-br from-[#D9E2EC] to-[#627D98] flex items-center justify-center overflow-hidden shadow-2xl">
-            <div class="flex gap-6">
-              <div class="w-20 h-56 bg-[#102A43]/10 rounded-lg transform -rotate-3"></div>
-              <div class="w-20 h-56 bg-[#102A43]/20 rounded-lg"></div>
-              <div class="w-20 h-56 bg-[#102A43]/10 rounded-lg transform rotate-3"></div>
+          <div class="w-full h-80 rounded-3xl bg-gradient-to-br from-[#D9E2EC] to-[#627D98] flex items-center justify-center overflow-hidden shadow-2xl relative">
+            <!-- 纸莎草纹理 -->
+            <div class="absolute inset-0 opacity-10">
+              <div class="h-full w-full flex">
+                <div v-for="i in 20" :key="i" class="flex-1 border-r border-[#102A43]/20"></div>
+              </div>
+            </div>
+            <!-- 卷轴展开效果 -->
+            <div class="relative flex gap-4 items-center">
+              <!-- 左侧卷轴 -->
+              <div class="flex flex-col gap-2">
+                <div class="w-16 h-48 bg-gradient-to-r from-[#102A43]/30 to-[#102A43]/10 rounded-full shadow-lg"></div>
+              </div>
+              <!-- 展开的纸莎草 -->
+              <div class="w-64 h-56 bg-gradient-to-br from-[#F0F4F8]/90 to-[#D9E2EC]/80 rounded-lg shadow-xl p-4 relative">
+                <!-- 古埃及象形文字 -->
+                <div class="space-y-3">
+                  <div class="flex gap-2">
+                    <div class="w-6 h-6 border-2 border-[#102A43]/40 rounded"></div>
+                    <div class="w-6 h-6 border-2 border-[#102A43]/40 rounded-full"></div>
+                    <div class="w-6 h-6 border-2 border-[#102A43]/40"></div>
+                  </div>
+                  <div class="h-1 bg-[#102A43]/20 rounded"></div>
+                  <div class="h-1 bg-[#102A43]/20 rounded w-3/4"></div>
+                  <div class="h-1 bg-[#102A43]/20 rounded"></div>
+                  <div class="flex gap-2 mt-4">
+                    <div class="w-8 h-8 border-2 border-[#102A43]/40 rounded-full"></div>
+                    <div class="w-8 h-8 border-2 border-[#102A43]/40"></div>
+                  </div>
+                  <div class="h-1 bg-[#102A43]/20 rounded w-2/3"></div>
+                  <div class="h-1 bg-[#102A43]/20 rounded"></div>
+                </div>
+              </div>
+              <!-- 右侧卷轴 -->
+              <div class="flex flex-col gap-2">
+                <div class="w-16 h-48 bg-gradient-to-l from-[#102A43]/30 to-[#102A43]/10 rounded-full shadow-lg"></div>
+              </div>
             </div>
           </div>
         </div>
@@ -61,12 +116,54 @@
           </div>
           <div class="chapter-visual opacity-0">
             <div class="w-full aspect-square rounded-3xl bg-gradient-to-br from-white to-[#D9E2EC] flex items-center justify-center relative overflow-hidden shadow-2xl">
-              <div class="absolute inset-0 opacity-10">
-                <div class="grid grid-cols-8 gap-2 h-full p-4">
-                  <div v-for="i in 32" :key="i" class="bg-[#102A43] rounded"></div>
+              <!-- 纸张纤维纹理 -->
+              <div class="absolute inset-0 opacity-5">
+                <div class="h-full w-full">
+                  <div v-for="i in 50" :key="i" 
+                       :style="{
+                         position: 'absolute',
+                         left: Math.random() * 100 + '%',
+                         top: Math.random() * 100 + '%',
+                         width: Math.random() * 60 + 20 + 'px',
+                         height: '2px',
+                         transform: `rotate(${Math.random() * 360}deg)`,
+                         background: '#102A43'
+                       }"></div>
                 </div>
               </div>
-              <div class="text-[#102A43]/30 text-9xl font-serif">紙</div>
+              <!-- 造纸过程示意 -->
+              <div class="relative z-10 flex flex-col items-center gap-8">
+                <!-- 原材料 -->
+                <div class="flex gap-4">
+                  <div class="w-16 h-16 rounded-lg bg-[#627D98]/20 flex items-center justify-center">
+                    <div class="text-2xl">🌾</div>
+                  </div>
+                  <div class="w-16 h-16 rounded-lg bg-[#627D98]/20 flex items-center justify-center">
+                    <div class="text-2xl">🪵</div>
+                  </div>
+                  <div class="w-16 h-16 rounded-lg bg-[#627D98]/20 flex items-center justify-center">
+                    <div class="text-2xl">🧵</div>
+                  </div>
+                </div>
+                <!-- 箭头 -->
+                <div class="text-[#102A43]/40 text-4xl">↓</div>
+                <!-- 纸张成品 -->
+                <div class="relative">
+                  <div class="w-48 h-56 bg-white rounded-lg shadow-2xl border-2 border-[#D9E2EC] relative overflow-hidden">
+                    <!-- 纸张上的文字 -->
+                    <div class="absolute inset-0 p-6 flex flex-col justify-center items-center">
+                      <div class="text-[#102A43]/60 text-6xl font-serif mb-4">紙</div>
+                      <div class="space-y-2 w-full">
+                        <div class="h-1 bg-[#102A43]/10 rounded"></div>
+                        <div class="h-1 bg-[#102A43]/10 rounded w-3/4"></div>
+                        <div class="h-1 bg-[#102A43]/10 rounded w-5/6"></div>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- 纸张阴影效果 -->
+                  <div class="absolute -bottom-2 -right-2 w-48 h-56 bg-[#627D98]/10 rounded-lg -z-10"></div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -89,11 +186,34 @@
         
         <!-- 活字网格 - 直接溢出视口 -->
         <div class="chapter-visual opacity-0">
-          <div class="w-full rounded-3xl bg-gradient-to-br from-[#334E68] to-[#627D98] p-8 md:p-12 shadow-2xl">
-            <div class="grid grid-cols-6 md:grid-cols-8 gap-3">
-              <div v-for="i in 48" :key="i" 
-                   class="aspect-square bg-white/90 rounded flex items-center justify-center text-[#102A43] font-bold text-lg md:text-xl">
-                {{ String.fromCharCode(64 + (i % 26) + 1) }}
+          <div class="w-full rounded-3xl bg-gradient-to-br from-[#334E68] to-[#627D98] p-8 md:p-12 shadow-2xl relative overflow-hidden">
+            <!-- 印刷机齿轮背景 -->
+            <div class="absolute top-4 right-4 w-24 h-24 border-8 border-white/10 rounded-full"></div>
+            <div class="absolute bottom-4 left-4 w-32 h-32 border-8 border-white/10 rounded-full"></div>
+            
+            <!-- 活字排版盘 -->
+            <div class="relative">
+              <!-- 标题：印刷机 -->
+              <div class="text-center mb-6">
+                <div class="text-white/60 text-sm tracking-widest mb-2">GUTENBERG PRESS</div>
+                <div class="h-0.5 bg-white/20 w-32 mx-auto"></div>
+              </div>
+              
+              <!-- 活字网格 -->
+              <div class="grid grid-cols-6 md:grid-cols-8 gap-2 md:gap-3">
+                <div v-for="i in 48" :key="i" 
+                     class="aspect-square bg-white/95 rounded shadow-lg flex items-center justify-center text-[#102A43] font-bold text-base md:text-xl relative group hover:scale-110 transition-transform cursor-pointer">
+                  {{ String.fromCharCode(64 + (i % 26) + 1) }}
+                  <!-- 活字的金属质感 -->
+                  <div class="absolute inset-0 bg-gradient-to-br from-white/40 to-transparent rounded pointer-events-none"></div>
+                </div>
+              </div>
+              
+              <!-- 底部装饰 -->
+              <div class="mt-6 flex justify-center gap-2">
+                <div class="w-2 h-2 bg-white/40 rounded-full"></div>
+                <div class="w-2 h-2 bg-white/40 rounded-full"></div>
+                <div class="w-2 h-2 bg-white/40 rounded-full"></div>
               </div>
             </div>
           </div>
@@ -116,9 +236,39 @@
             </p>
           </div>
           <div class="md:col-span-2 chapter-visual opacity-0">
-            <div class="w-full max-w-sm mx-auto aspect-[3/4] rounded-3xl bg-gradient-to-br from-[#D64545] to-[#102A43] p-6 flex items-center justify-center shadow-2xl">
-              <div class="grid grid-cols-3 gap-2 w-full">
-                <div v-for="i in 12" :key="i" class="aspect-[3/4] bg-white/20 rounded-lg"></div>
+            <div class="w-full max-w-sm mx-auto aspect-[3/4] rounded-3xl bg-gradient-to-br from-[#D64545] to-[#102A43] p-6 flex flex-col items-center justify-center shadow-2xl relative overflow-hidden">
+              <!-- 蒸汽齿轮装饰 -->
+              <div class="absolute top-0 right-0 w-20 h-20 opacity-10">
+                <div class="w-full h-full border-4 border-white rounded-full relative">
+                  <div class="absolute inset-2 border-4 border-white rounded-full"></div>
+                </div>
+              </div>
+              
+              <!-- 印刷书籍堆叠 -->
+              <div class="relative w-full">
+                <!-- 书籍堆叠效果 -->
+                <div class="grid grid-cols-3 gap-3 w-full mb-6">
+                  <div v-for="i in 9" :key="i" 
+                       class="aspect-[3/4] bg-white/90 rounded-lg shadow-xl relative overflow-hidden group hover:scale-105 transition-transform">
+                    <!-- 书脊线条 -->
+                    <div class="absolute left-2 top-0 bottom-0 w-0.5 bg-[#102A43]/20"></div>
+                    <!-- 书页纹理 -->
+                    <div class="absolute inset-0 flex flex-col justify-center items-center p-2">
+                      <div class="w-full space-y-1">
+                        <div class="h-0.5 bg-[#102A43]/30 rounded"></div>
+                        <div class="h-0.5 bg-[#102A43]/20 rounded w-3/4"></div>
+                        <div class="h-0.5 bg-[#102A43]/30 rounded"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- 蒸汽效果 -->
+                <div class="flex justify-center gap-2">
+                  <div class="w-1 h-1 bg-white/40 rounded-full animate-pulse"></div>
+                  <div class="w-1 h-1 bg-white/40 rounded-full animate-pulse" style="animation-delay: 0.2s"></div>
+                  <div class="w-1 h-1 bg-white/40 rounded-full animate-pulse" style="animation-delay: 0.4s"></div>
+                </div>
               </div>
             </div>
           </div>
@@ -129,13 +279,40 @@
     <!-- 章节 6: 数字时代 - 全屏沉浸式 -->
     <div class="story-chapter sticky top-0 h-[calc(100vh-4rem)] flex items-center justify-center px-6 py-20 bg-gradient-to-b from-[#102A43] to-[#334E68] relative overflow-hidden">
       <div class="chapter-visual opacity-0 absolute inset-0">
-        <div class="w-full h-full relative">
-          <div class="absolute inset-0 grid grid-cols-16 grid-rows-12 gap-1 p-4 opacity-20">
-            <div v-for="i in 192" :key="i" 
-                 :class="[
-                   'rounded-sm transition-all duration-300',
-                   Math.random() > 0.5 ? 'bg-white' : 'bg-transparent'
-                 ]"></div>
+        <div class="w-full h-full relative overflow-hidden">
+          <!-- 数字雨效果 -->
+          <div class="absolute inset-0">
+            <div v-for="i in 20" :key="i" 
+                 class="absolute top-0 animate-fall"
+                 :style="{
+                   left: (i * 5) + '%',
+                   animationDelay: (Math.random() * 2) + 's',
+                   animationDuration: (3 + Math.random() * 2) + 's'
+                 }">
+              <div class="flex flex-col gap-4 text-white/20 text-xs font-mono">
+                <div>01001000</div>
+                <div>01100101</div>
+                <div>01101100</div>
+                <div>01101100</div>
+                <div>01101111</div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 电路板纹理 -->
+          <div class="absolute inset-0 opacity-10">
+            <svg class="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <pattern id="circuit" x="0" y="0" width="100" height="100" patternUnits="userSpaceOnUse">
+                  <circle cx="50" cy="50" r="2" fill="white"/>
+                  <line x1="50" y1="50" x2="100" y2="50" stroke="white" stroke-width="1"/>
+                  <line x1="50" y1="50" x2="50" y2="100" stroke="white" stroke-width="1"/>
+                  <circle cx="100" cy="50" r="2" fill="white"/>
+                  <circle cx="50" cy="100" r="2" fill="white"/>
+                </pattern>
+              </defs>
+              <rect width="100%" height="100%" fill="url(#circuit)"/>
+            </svg>
           </div>
         </div>
       </div>
@@ -302,5 +479,26 @@ onBeforeUnmount(() => {
 .story-chapter {
   position: sticky;
   top: 0;
+}
+
+@keyframes fall {
+  0% {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh);
+    opacity: 0;
+  }
+}
+
+.animate-fall {
+  animation: fall linear infinite;
 }
 </style>
