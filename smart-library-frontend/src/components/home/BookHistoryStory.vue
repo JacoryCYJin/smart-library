@@ -12,10 +12,10 @@
           <div class="chapter-content opacity-0 order-1 md:order-2">
             <div class="text-sm font-medium tracking-widest text-ink/60 mb-4">公元前 3200 年</div>
             <h2 class="font-serif text-5xl md:text-6xl text-ink mb-6 leading-tight">
-              刻在泥板上的文明
+              当文明<br/>第一次被镌刻
             </h2>
             <p class="text-lg md:text-xl text-ink/70 leading-relaxed">
-              美索不达米亚的苏美尔人在湿润的泥板上刻下楔形文字，记录着神话、法律与商业往来。这些泥板在阳光下晒干，成为人类最早的"书籍"。
+              两河流域的苏美尔人用芦苇杆在湿润的泥板上刻下楔形文字。那些关于众神、法典与商贸的记录，在烈日下凝固成永恒。人类终于找到了对抗遗忘的武器——这是知识传承的黎明。
             </p>
           </div>
         </div>
@@ -28,10 +28,10 @@
         <div class="chapter-content opacity-0 mb-16">
           <div class="text-sm font-medium tracking-widest text-ink/60 mb-4">公元前 3000 - 公元 100 年</div>
           <h2 class="font-serif text-5xl md:text-7xl text-ink mb-8 leading-tight">
-            纸莎草的轻盈革命
+            知识开始<br/>在风中流转
           </h2>
           <p class="text-lg md:text-xl text-ink/70 leading-relaxed max-w-3xl mx-auto">
-            古埃及人从尼罗河畔的纸莎草中提取纤维，制成轻便的书写材料。卷轴取代了沉重的泥板，知识开始流动。羊皮纸的出现让书籍更加耐久，抄写员们在修道院中日夜誊抄经文。
+            尼罗河畔的纸莎草被编织成卷轴，亚历山大图书馆的藏书第一次突破了重量的束缚。羊皮纸在欧洲诞生，修道院的烛光下，抄写员用一生誊写经文。知识不再是石头的囚徒，它开始在大陆间迁徙，在时光中穿行。
           </p>
         </div>
         <div class="chapter-visual opacity-0">
@@ -53,10 +53,10 @@
           <div class="chapter-content opacity-0">
             <div class="text-sm font-medium tracking-widest text-ink/60 mb-4">公元 105 年</div>
             <h2 class="font-serif text-5xl md:text-6xl text-ink mb-6 leading-tight">
-              蔡伦的纸张奇迹
+              东方的<br/>造纸术密码
             </h2>
             <p class="text-lg md:text-xl text-ink/70 leading-relaxed">
-              东汉宦官蔡伦改进造纸术，用树皮、麻头、破布和渔网制成轻薄而坚韧的纸张。这项发明沿着丝绸之路传向西方，彻底改变了人类记录信息的方式。
+              蔡伦在洛阳的作坊里，用树皮、麻头、破布和渔网调制出轻薄如蝉翼的纸张。这个秘密沿着丝绸之路向西传播了千年，最终在撒马尔罕被阿拉伯人破解。纸张让书籍的成本骤降百倍，知识的民主化从此拉开序幕。
             </p>
           </div>
           <div class="chapter-visual opacity-0">
@@ -80,10 +80,10 @@
         <div class="chapter-content opacity-0 text-center mb-12">
           <div class="text-sm font-medium tracking-widest text-white/60 mb-4">1440 年</div>
           <h2 class="font-serif text-5xl md:text-7xl text-white mb-6 leading-tight">
-            古腾堡的<br/>金属活字
+            当金属活字<br/>引爆文艺复兴
           </h2>
           <p class="text-base md:text-lg text-white/80 leading-relaxed max-w-2xl mx-auto">
-            德国金匠约翰内斯·古腾堡发明了活字印刷机，用金属铸造可重复使用的字模。一本《圣经》的印刷时间从数年缩短至数月，知识的复制成本骤降，文艺复兴与宗教改革由此点燃。
+            美因茨的金匠古腾堡在地下室里铸造出可重复使用的金属活字。1455年，第一本印刷版《圣经》诞生，印刷时间从三年骤降至三个月。知识的洪流冲破教会的垄断，马丁·路德的《九十五条论纲》在两周内传遍欧洲。这是人类历史的分水岭——印刷术点燃了文艺复兴，催生了宗教改革，启蒙了整个时代。
           </p>
         </div>
         
@@ -109,10 +109,10 @@
           <div class="md:col-span-3 chapter-content opacity-0">
             <div class="text-sm font-medium tracking-widest text-ink/60 mb-4">1800 - 1900 年</div>
             <h2 class="font-serif text-5xl md:text-7xl text-ink mb-6 leading-tight">
-              蒸汽机驱动的<br/>知识洪流
+              工业革命<br/>掀起知识海啸
             </h2>
             <p class="text-lg md:text-xl text-ink/70 leading-relaxed">
-              蒸汽印刷机的出现让书籍产量暴增，报纸、杂志、小说涌入千家万户。公共图书馆兴起，识字率攀升，阅读不再是贵族的特权，而成为每个人触手可及的权利。
+              蒸汽印刷机的轰鸣声响彻伦敦、巴黎和纽约。一台机器每小时可印刷一万页，书籍的价格暴跌至工人一天的工资。《泰晤士报》、《雾都孤儿》、《共产党宣言》涌入街头巷尾。公共图书馆如雨后春笋般涌现，识字率从5%飙升至80%。知识不再是贵族的专属，它属于每一个渴望改变命运的人。
             </p>
           </div>
           <div class="md:col-span-2 chapter-visual opacity-0">
@@ -143,10 +143,10 @@
         <div class="chapter-content opacity-0">
           <div class="text-sm font-medium tracking-widest text-white/60 mb-6">1971 年 - 至今</div>
           <h2 class="font-serif text-6xl md:text-8xl text-white mb-8 leading-tight">
-            比特与字节的<br/>新纪元
+            当书籍化为<br/>光与数据
           </h2>
           <p class="text-lg md:text-xl text-white/80 leading-relaxed max-w-2xl mx-auto mb-12">
-            古腾堡计划启动，第一本电子书诞生。互联网让全球图书馆互联互通，Kindle 重新定义阅读体验。今天，数十亿本书籍以光速在云端流转，而你正站在这场五千年演变的最前沿。
+            1971年，迈克尔·哈特在伊利诺伊大学的主机上敲下《独立宣言》，古腾堡计划诞生。互联网让全球图书馆的藏书瞬间互联，Google Books 扫描了四千万本书籍，Kindle 让一台设备装下整座图书馆。今天，知识以光速在全球流转，AI 开始阅读、理解并创造新的文本。从泥板到云端，五千年的演化在此刻汇聚——而你，正站在这场永恒革命的最前沿。
           </p>
           <div class="text-white text-8xl">∞</div>
         </div>
@@ -158,17 +158,17 @@
       <div class="max-w-4xl mx-auto text-center">
         <div class="chapter-content opacity-0">
           <h2 class="font-serif text-5xl md:text-7xl text-ink mb-8 leading-tight">
-            而故事，仍在继续
+            而这场革命<br/>永不落幕
           </h2>
           <p class="text-xl md:text-2xl text-ink/70 leading-relaxed max-w-2xl mx-auto mb-12">
-            从泥板到云端，书籍的形态不断演变，但人类对知识的渴望从未改变。
+            五千年来，载体在变，技术在变，但人类对知识的渴望从未改变。每一次革命都让知识更自由，让智慧更普及。下一个篇章，由你书写。
           </p>
           <button
             type="button"
             @click="goToLibrary"
             class="cursor-pointer font-serif inline-flex items-center justify-center rounded-full bg-[#D64545] px-9 py-4 text-lg font-medium text-white transition-all duration-300 hover:bg-[#D64545]/90 hover:shadow-xl hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-[#D64545]/20"
           >
-            探索图书馆
+            开启你的阅读之旅
           </button>
         </div>
       </div>
