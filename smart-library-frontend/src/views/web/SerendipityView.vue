@@ -22,12 +22,12 @@
 
       <!-- 书籍网格 -->
       <div v-else-if="books.length > 0" class="space-y-8">
-        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
+        <div ref="booksGridRef" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
           <div
             v-for="book in books"
             :key="book.resourceId"
             @click="goToDetail(book.resourceId)"
-            class="cursor-pointer group"
+            class="book-card cursor-pointer group"
           >
             <!-- 封面 -->
             <div class="relative aspect-[3/4] rounded-lg overflow-hidden bg-structure mb-3 shadow-sm group-hover:shadow-md transition-shadow">
@@ -86,33 +86,89 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { getRecommendations } from '@/api/serendipity'
 import { Message } from '@arco-design/web-vue'
+import gsap from 'gsap'
 
 const router = useRouter()
 
 const books = ref([])
 const loading = ref(false)
+const booksGridRef = ref(null)
 
 /**
- * 加载推荐书籍
+ * 加载推荐书籍（带优雅动画）
  */
 const loadRecommendations = async () => {
-  loading.value = true
+  // 如果已有书籍，先播放退场动画
+  if (books.value.length > 0 && booksGridRef.value) {
+    const bookCards = booksGridRef.value.querySelectorAll('.book-card')
+    
+    if (bookCards.length > 0) {
+      // 退场动画
+      await gsap.to(bookCards, {
+        opacity: 0,
+        scale: 0.6,
+        rotation: 10,
+        y: 60,
+        duration: 0.6,
+        stagger: {
+          each: 0.08,
+          from: 'random',
+        },
+        ease: 'power2.in'
+      })
+    }
+  }
+
+  // 加载新数据
   try {
     const res = await getRecommendations(6)
     if (res.code === 0) {
+      // 先不更新数据，等待一帧
+      await new Promise(resolve => requestAnimationFrame(resolve))
+      
+      // 更新数据
       books.value = res.data
+      
+      // 立即在下一帧设置初始状态，避免闪烁
+      await new Promise(resolve => requestAnimationFrame(resolve))
+      
+      if (booksGridRef.value) {
+        const bookCards = booksGridRef.value.querySelectorAll('.book-card')
+        
+        if (bookCards.length > 0) {
+          // 立即设置初始状态（在元素渲染的第一帧）
+          bookCards.forEach(card => {
+            card.style.opacity = '0'
+            card.style.transform = 'scale(0.7) rotate(-15deg) translateY(-80px)'
+          })
+          
+          // 等待一帧后开始动画
+          await new Promise(resolve => requestAnimationFrame(resolve))
+          
+          // 入场动画
+          bookCards.forEach((card, index) => {
+            gsap.to(card, {
+              opacity: 1,
+              scale: 1,
+              rotation: 0,
+              y: 0,
+              duration: 1.0,
+              delay: Math.random() * 0.9, // 随机延迟 0-0.9 秒
+              ease: 'elastic.out(1, 0.6)'
+            })
+          })
+        }
+      }
     } else {
       Message.error(res.message || '加载推荐失败')
     }
   } catch (error) {
     console.error('加载推荐失败:', error)
     Message.error('加载推荐失败')
-  } finally {
-    loading.value = false
   }
 }
 
