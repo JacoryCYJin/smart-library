@@ -9,6 +9,7 @@ import { useAuthStore } from '@/stores/auth'
 import { logout as logoutApi } from '@/api/user'
 import { Message } from '@arco-design/web-vue'
 import AppFooter from '@/components/layout/Footer.vue'
+import FloatingBookmark from '@/components/bookmark/FloatingBookmark.vue'
 import logoUrl from '@/assets/images/logo-light.png'
 
 // 注册 GSAP 插件
@@ -387,6 +388,9 @@ onUnmounted(() => {
     </main>
 
     <AppFooter />
+    
+    <!-- 漂流书签组件（全局） -->
+    <FloatingBookmark />
   </div>
 </template>
 

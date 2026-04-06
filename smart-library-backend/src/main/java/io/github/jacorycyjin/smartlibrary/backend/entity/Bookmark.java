@@ -1,70 +1,61 @@
 package io.github.jacorycyjin.smartlibrary.backend.entity;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Builder;
+
 import java.time.LocalDateTime;
 
 /**
- * 书签实体类（用于Matter.js物理引擎掉落）
+ * 书签实体
  * 
  * @author Jacory
- * @date 2025/01/19
+ * @date 2025/04/06
  */
-@AllArgsConstructor
 @Data
-@NoArgsConstructor
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Bookmark {
-
+    
     /**
-     * 主键ID，自增
+     * 主键ID
      */
     private Long id;
-
+    
     /**
-     * 书签业务ID
+     * 书签ID（UUID）
      */
     private String bookmarkId;
-
+    
     /**
-     * 点击跳转目标资源ID
+     * 资源ID
      */
     private String resourceId;
-
+    
     /**
-     * 金句内容
+     * 书签内容（金句）
      */
     private String content;
-
+    
     /**
-     * 作者/出处
+     * 作者备注（来源）
      */
     private String authorNote;
-
+    
     /**
-     * 引流次数
+     * 点击次数
      */
     private Integer clickCount;
-
-    /**
-     * 状态：1=上架，0=下架
-     */
-    private Integer status;
-
+    
     /**
      * 创建时间
      */
     private LocalDateTime ctime;
-
+    
     /**
      * 更新时间
      */
     private LocalDateTime mtime;
-
-    /**
-     * 是否删除：0=未删除，1=已删除
-     */
-    private Integer deleted;
 }
