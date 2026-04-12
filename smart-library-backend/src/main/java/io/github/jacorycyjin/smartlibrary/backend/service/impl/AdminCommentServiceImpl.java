@@ -28,7 +28,7 @@ public class AdminCommentServiceImpl implements AdminCommentService {
     private CommentMapper commentMapper;
 
     @Override
-    public PageDTO getCommentList(Map<String, Object> params) {
+    public PageDTO<Comment> getCommentList(Map<String, Object> params) {
         // 获取分页参数并转换类型
         Integer pageNum = 1;
         Integer pageSize = 10;

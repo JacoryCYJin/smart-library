@@ -1,6 +1,7 @@
 package io.github.jacorycyjin.smartlibrary.backend.service;
 
 import io.github.jacorycyjin.smartlibrary.backend.common.dto.PageDTO;
+import io.github.jacorycyjin.smartlibrary.backend.entity.Comment;
 
 import java.util.Map;
 
@@ -15,7 +16,7 @@ public interface AdminCommentService {
     /**
      * 获取评论列表
      */
-    PageDTO getCommentList(Map<String, Object> params);
+    PageDTO<Comment> getCommentList(Map<String, Object> params);
 
     /**
      * 审核评论

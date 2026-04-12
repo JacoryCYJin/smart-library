@@ -19,7 +19,7 @@ public interface AdminAuthorService {
      * @param params 查询参数
      * @return 分页数据
      */
-    PageDTO getAuthorList(Map<String, Object> params);
+    PageDTO<Map<String, Object>> getAuthorList(Map<String, Object> params);
     
     /**
      * 创建作者

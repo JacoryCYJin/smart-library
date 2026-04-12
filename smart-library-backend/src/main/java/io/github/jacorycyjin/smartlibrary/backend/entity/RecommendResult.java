@@ -4,14 +4,13 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.Builder;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
- * 推荐结果缓存实体类
+ * 推荐结果实体类
  * 
  * @author Jacory
- * @date 2025/01/19
+ * @date 2025/04/11
  */
 @AllArgsConstructor
 @Data
@@ -25,22 +24,22 @@ public class RecommendResult {
     private Long id;
 
     /**
-     * 目标用户
+     * 用户ID
      */
     private String userId;
 
     /**
-     * 推荐资源
+     * 推荐资源ID
      */
     private String resourceId;
 
     /**
-     * 推荐匹配度
+     * 推荐匹配度评分
      */
-    private BigDecimal score;
+    private Double score;
 
     /**
-     * 推荐理由（如：看了《三体》/ 内容相似）
+     * 推荐理由
      */
     private String reason;
 

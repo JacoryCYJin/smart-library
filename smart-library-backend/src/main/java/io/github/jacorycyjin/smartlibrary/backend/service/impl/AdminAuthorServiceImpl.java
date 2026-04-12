@@ -29,7 +29,7 @@ public class AdminAuthorServiceImpl implements AdminAuthorService {
     private AuthorMapper authorMapper;
 
     @Override
-    public PageDTO getAuthorList(Map<String, Object> params) {
+    public PageDTO<Map<String, Object>> getAuthorList(Map<String, Object> params) {
         int total = authorMapper.countAuthors(params);
         List<Author> authors = authorMapper.searchAuthors(params);
 

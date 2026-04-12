@@ -18,7 +18,7 @@ public interface AdminGraphService {
      * @param params 查询参数
      * @return 分页数据
      */
-    PageDTO getGraphList(Map<String, Object> params);
+    PageDTO<Map<String, Object>> getGraphList(Map<String, Object> params);
     
     /**
      * 手动触发图谱生成

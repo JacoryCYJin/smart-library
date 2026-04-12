@@ -192,4 +192,12 @@ public interface ResourceMapper {
      * @return 资源列表
      */
     List<Resource> randomRecommend(@Param("limit") Integer limit);
+
+    /**
+     * 根据资源ID列表批量查询资源
+     * 
+     * @param resourceIds 资源ID列表
+     * @return 资源列表
+     */
+    List<Resource> selectByResourceIds(@Param("resourceIds") List<String> resourceIds);
 }

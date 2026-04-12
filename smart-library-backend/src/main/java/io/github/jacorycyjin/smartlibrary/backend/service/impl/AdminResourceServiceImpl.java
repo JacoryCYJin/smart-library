@@ -42,7 +42,7 @@ public class AdminResourceServiceImpl implements AdminResourceService {
     private AuthorMapper authorMapper;
 
     @Override
-    public PageDTO getResourceList(Map<String, Object> params) {
+    public PageDTO<Resource> getResourceList(Map<String, Object> params) {
         // 获取分页参数并转换类型
         Integer pageNum = 1;
         Integer pageSize = 10;

@@ -2,6 +2,8 @@ package io.github.jacorycyjin.smartlibrary.backend.controller;
 
 import io.github.jacorycyjin.smartlibrary.backend.common.dto.PageDTO;
 import io.github.jacorycyjin.smartlibrary.backend.common.response.Result;
+import io.github.jacorycyjin.smartlibrary.backend.entity.Comment;
+import io.github.jacorycyjin.smartlibrary.backend.entity.User;
 import io.github.jacorycyjin.smartlibrary.backend.service.AdminStatsService;
 import io.github.jacorycyjin.smartlibrary.backend.service.AdminAuthorService;
 import io.github.jacorycyjin.smartlibrary.backend.service.AdminLinkService;
@@ -11,13 +13,13 @@ import io.github.jacorycyjin.smartlibrary.backend.service.AdminResourceService;
 import io.github.jacorycyjin.smartlibrary.backend.service.AdminCommentService;
 import io.github.jacorycyjin.smartlibrary.backend.service.AdminCategoryService;
 import io.github.jacorycyjin.smartlibrary.backend.vo.AdminStatsVO;
-import jakarta.annotation.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
 
 /**
  * 管理员控制器
@@ -31,31 +33,31 @@ public class AdminController {
 
     private static final Logger log = LoggerFactory.getLogger(AdminController.class);
 
-    @Resource
+    @jakarta.annotation.Resource
     private AdminStatsService adminStatsService;
 
-    @Resource
+    @jakarta.annotation.Resource
     private AdminAuthorService adminAuthorService;
 
-    @Resource
+    @jakarta.annotation.Resource
     private AdminLinkService adminLinkService;
 
-    @Resource
+    @jakarta.annotation.Resource
     private AdminGraphService adminGraphService;
 
-    @Resource
+    @jakarta.annotation.Resource
     private io.github.jacorycyjin.smartlibrary.backend.service.AdminEmotionArcService adminEmotionArcService;
 
-    @Resource
+    @jakarta.annotation.Resource
     private AdminUserService adminUserService;
 
-    @Resource
+    @jakarta.annotation.Resource
     private AdminResourceService adminResourceService;
 
-    @Resource
+    @jakarta.annotation.Resource
     private AdminCommentService adminCommentService;
 
-    @Resource
+    @jakarta.annotation.Resource
     private AdminCategoryService adminCategoryService;
 
     /**
@@ -70,7 +72,7 @@ public class AdminController {
      * 获取用户列表
      */
     @PostMapping("/users")
-    public Result<PageDTO> getUserList(@RequestBody Map<String, Object> params) {
+    public Result<PageDTO<User>> getUserList(@RequestBody Map<String, Object> params) {
         return Result.success(adminUserService.getUserList(params));
     }
 
@@ -109,7 +111,7 @@ public class AdminController {
      * 获取资源列表
      */
     @PostMapping("/resources")
-    public Result<PageDTO> getResourceList(@RequestBody Map<String, Object> params) {
+    public Result<PageDTO<io.github.jacorycyjin.smartlibrary.backend.entity.Resource>> getResourceList(@RequestBody Map<String, Object> params) {
         return Result.success(adminResourceService.getResourceList(params));
     }
 
@@ -164,7 +166,7 @@ public class AdminController {
      * 获取所有分类列表
      */
     @GetMapping("/categories")
-    public Result<java.util.List<Map<String, Object>>> getAllCategories() {
+    public Result<List<Map<String, Object>>> getAllCategories() {
         return Result.success(adminResourceService.getAllCategories());
     }
 
@@ -172,7 +174,7 @@ public class AdminController {
      * 获取所有标签列表
      */
     @GetMapping("/tags")
-    public Result<java.util.List<Map<String, Object>>> getAllTags() {
+    public Result<List<Map<String, Object>>> getAllTags() {
         return Result.success(adminResourceService.getAllTags());
     }
 
@@ -180,7 +182,7 @@ public class AdminController {
      * 搜索作者
      */
     @GetMapping("/authors/search")
-    public Result<java.util.List<Map<String, Object>>> searchAuthors(@RequestParam String keyword) {
+    public Result<List<Map<String, Object>>> searchAuthors(@RequestParam String keyword) {
         return Result.success(adminResourceService.searchAuthors(keyword));
     }
 
@@ -188,7 +190,7 @@ public class AdminController {
      * 获取评论列表
      */
     @PostMapping("/comments")
-    public Result<PageDTO> getCommentList(@RequestBody Map<String, Object> params) {
+    public Result<PageDTO<Comment>> getCommentList(@RequestBody Map<String, Object> params) {
         return Result.success(adminCommentService.getCommentList(params));
     }
 
@@ -226,7 +228,7 @@ public class AdminController {
      * 获取分类树（带统计）
      */
     @GetMapping("/categories/tree")
-    public Result<java.util.List<Map<String, Object>>> getCategoryTree() {
+    public Result<List<Map<String, Object>>> getCategoryTree() {
         return Result.success(adminCategoryService.getCategoryTree());
     }
 
@@ -266,7 +268,7 @@ public class AdminController {
      * 获取作者列表
      */
     @PostMapping("/authors/list")
-    public Result<PageDTO> getAuthorList(@RequestBody io.github.jacorycyjin.smartlibrary.backend.form.AdminSearchForm form) {
+    public Result<PageDTO<Map<String, Object>>> getAuthorList(@RequestBody io.github.jacorycyjin.smartlibrary.backend.form.AdminSearchForm form) {
         Map<String, Object> params = new HashMap<>();
         params.put("keyword", form.getKeyword());
         params.put("offset", (form.getPageNum() - 1) * form.getPageSize());
@@ -318,7 +320,7 @@ public class AdminController {
      * 获取资源链接列表
      */
     @PostMapping("/links/list")
-    public Result<PageDTO> getLinkList(@RequestBody io.github.jacorycyjin.smartlibrary.backend.form.AdminSearchForm form) {
+    public Result<PageDTO<Map<String, Object>>> getLinkList(@RequestBody io.github.jacorycyjin.smartlibrary.backend.form.AdminSearchForm form) {
         Map<String, Object> params = new HashMap<>();
         params.put("resourceId", form.getResourceId());
         params.put("offset", (form.getPageNum() - 1) * form.getPageSize());
@@ -370,7 +372,7 @@ public class AdminController {
      * 获取 AI 图谱列表
      */
     @PostMapping("/graphs/list")
-    public Result<PageDTO> getGraphList(@RequestBody io.github.jacorycyjin.smartlibrary.backend.form.AdminSearchForm form) {
+    public Result<PageDTO<Map<String, Object>>> getGraphList(@RequestBody io.github.jacorycyjin.smartlibrary.backend.form.AdminSearchForm form) {
         Map<String, Object> params = new HashMap<>();
         params.put("generateStatus", form.getGenerateStatus());
         params.put("offset", (form.getPageNum() - 1) * form.getPageSize());
@@ -422,7 +424,7 @@ public class AdminController {
      * 获取 AI 情感走向列表
      */
     @PostMapping("/emotion-arcs/list")
-    public Result<PageDTO> getEmotionArcList(@RequestBody io.github.jacorycyjin.smartlibrary.backend.form.AdminSearchForm form) {
+    public Result<PageDTO<Map<String, Object>>> getEmotionArcList(@RequestBody io.github.jacorycyjin.smartlibrary.backend.form.AdminSearchForm form) {
         Map<String, Object> params = new HashMap<>();
         params.put("generateStatus", form.getGenerateStatus());
         params.put("offset", (form.getPageNum() - 1) * form.getPageSize());
@@ -474,7 +476,7 @@ public class AdminController {
      * 获取浏览量排行榜
      */
     @GetMapping("/ranking/views")
-    public Result<java.util.List<Map<String, Object>>> getViewRanking(
+    public Result<List<Map<String, Object>>> getViewRanking(
             @RequestParam(defaultValue = "10") int limit) {
         return Result.success(adminStatsService.getViewRanking(limit));
     }
@@ -483,7 +485,7 @@ public class AdminController {
      * 获取收藏量排行榜
      */
     @GetMapping("/ranking/favorites")
-    public Result<java.util.List<Map<String, Object>>> getFavoriteRanking(
+    public Result<List<Map<String, Object>>> getFavoriteRanking(
             @RequestParam(defaultValue = "10") int limit) {
         return Result.success(adminStatsService.getFavoriteRanking(limit));
     }
@@ -492,7 +494,7 @@ public class AdminController {
      * 获取评论量排行榜
      */
     @GetMapping("/ranking/comments")
-    public Result<java.util.List<Map<String, Object>>> getCommentRanking(
+    public Result<List<Map<String, Object>>> getCommentRanking(
             @RequestParam(defaultValue = "10") int limit) {
         return Result.success(adminStatsService.getCommentRanking(limit));
     }
@@ -501,7 +503,7 @@ public class AdminController {
      * 获取评分排行榜
      */
     @GetMapping("/ranking/ratings")
-    public Result<java.util.List<Map<String, Object>>> getRatingRanking(
+    public Result<List<Map<String, Object>>> getRatingRanking(
             @RequestParam(defaultValue = "10") int limit) {
         return Result.success(adminStatsService.getRatingRanking(limit));
     }

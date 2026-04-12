@@ -36,7 +36,7 @@ public class AdminGraphServiceImpl implements AdminGraphService {
     private CharacterGraphService characterGraphService;
 
     @Override
-    public PageDTO getGraphList(Map<String, Object> params) {
+    public PageDTO<Map<String, Object>> getGraphList(Map<String, Object> params) {
         int total = graphMapper.countGraphs(params);
         List<ResourceCharacterGraph> graphs = graphMapper.searchGraphs(params);
 

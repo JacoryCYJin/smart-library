@@ -1,6 +1,7 @@
 package io.github.jacorycyjin.smartlibrary.backend.service;
 
 import io.github.jacorycyjin.smartlibrary.backend.common.dto.PageDTO;
+import io.github.jacorycyjin.smartlibrary.backend.entity.User;
 
 import java.util.Map;
 
@@ -15,7 +16,7 @@ public interface AdminUserService {
     /**
      * 获取用户列表
      */
-    PageDTO getUserList(Map<String, Object> params);
+    PageDTO<User> getUserList(Map<String, Object> params);
 
     /**
      * 更新用户状态

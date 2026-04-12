@@ -34,7 +34,7 @@ public class AdminLinkServiceImpl implements AdminLinkService {
     private ResourceMapper resourceMapper;
 
     @Override
-    public PageDTO getLinkList(Map<String, Object> params) {
+    public PageDTO<Map<String, Object>> getLinkList(Map<String, Object> params) {
         int total = resourceLinkMapper.countLinks(params);
         List<ResourceLink> links = resourceLinkMapper.searchLinks(params);
 

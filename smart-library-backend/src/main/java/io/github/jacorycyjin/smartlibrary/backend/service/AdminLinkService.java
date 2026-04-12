@@ -19,7 +19,7 @@ public interface AdminLinkService {
      * @param params 查询参数
      * @return 分页数据
      */
-    PageDTO getLinkList(Map<String, Object> params);
+    PageDTO<Map<String, Object>> getLinkList(Map<String, Object> params);
     
     /**
      * 创建资源链接

@@ -420,4 +420,16 @@
         ORDER BY RAND()
         LIMIT #{limit}
     </select>
+
+    <!-- 根据资源ID列表批量查询资源 -->
+    <select id="selectByResourceIds" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM resource
+        WHERE resource_id IN
+        <foreach collection="resourceIds" item="resourceId" open="(" separator="," close=")">
+            #{resourceId}
+        </foreach>
+        AND deleted = 0
+    </select>
 </mapper>

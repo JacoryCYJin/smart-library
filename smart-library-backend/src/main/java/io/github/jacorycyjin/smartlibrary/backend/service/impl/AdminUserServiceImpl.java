@@ -28,7 +28,7 @@ public class AdminUserServiceImpl implements AdminUserService {
     private UserMapper userMapper;
 
     @Override
-    public PageDTO getUserList(Map<String, Object> params) {
+    public PageDTO<User> getUserList(Map<String, Object> params) {
         // 获取分页参数并转换类型
         Integer pageNum = 1;
         Integer pageSize = 10;

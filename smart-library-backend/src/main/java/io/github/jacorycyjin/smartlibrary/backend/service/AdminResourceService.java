@@ -1,6 +1,7 @@
 package io.github.jacorycyjin.smartlibrary.backend.service;
 
 import io.github.jacorycyjin.smartlibrary.backend.common.dto.PageDTO;
+import io.github.jacorycyjin.smartlibrary.backend.entity.Resource;
 
 import java.util.List;
 import java.util.Map;
@@ -16,7 +17,7 @@ public interface AdminResourceService {
     /**
      * 获取资源列表
      */
-    PageDTO getResourceList(Map<String, Object> params);
+    PageDTO<Resource> getResourceList(Map<String, Object> params);
 
     /**
      * 删除资源
