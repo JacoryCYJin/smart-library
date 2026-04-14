@@ -9,10 +9,10 @@
               <path d="M12 2l1.6 4.8L18 8.4l-4.4 1.6L12 15l-1.6-5L6 8.4l4.4-1.6L12 2z" />
               <path d="M19 12l.8 2.4L22 15.2l-2.2.8L19 18l-.8-2.4L16 14.8l2.2-.8L19 12z" />
             </svg>
-            偶遇好书
+            为你推荐
           </span>
         </h1>
-        <p class="text-ink-light text-lg">随机发现你可能喜欢的书籍</p>
+        <p class="text-ink-light text-lg">基于你的阅读偏好，为你精选好书</p>
       </div>
 
       <!-- 加载状态 -->

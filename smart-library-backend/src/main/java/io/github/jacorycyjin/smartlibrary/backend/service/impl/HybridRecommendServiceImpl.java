@@ -1,8 +1,10 @@
 package io.github.jacorycyjin.smartlibrary.backend.service.impl;
 
 import io.github.jacorycyjin.smartlibrary.backend.dto.ResourceDTO;
+import io.github.jacorycyjin.smartlibrary.backend.entity.RecommendResult;
 import io.github.jacorycyjin.smartlibrary.backend.entity.Resource;
 import io.github.jacorycyjin.smartlibrary.backend.entity.UserBrowseHistory;
+import io.github.jacorycyjin.smartlibrary.backend.mapper.RecommendResultMapper;
 import io.github.jacorycyjin.smartlibrary.backend.mapper.ResourceCategoryRelMapper;
 import io.github.jacorycyjin.smartlibrary.backend.mapper.ResourceMapper;
 import io.github.jacorycyjin.smartlibrary.backend.mapper.UserBrowseHistoryMapper;
@@ -17,6 +19,7 @@ import java.util.stream.Collectors;
 
 /**
  * 混合推荐服务实现类
+ * 整合协同过滤、分类推荐、随机推荐等多种策略
  * 
  * @author Jacory
  * @date 2025/04/11
@@ -37,18 +40,45 @@ public class HybridRecommendServiceImpl implements HybridRecommendService {
     @Autowired
     private ResourceCategoryRelMapper categoryRelMapper;
 
+    @Autowired
+    private RecommendResultMapper recommendResultMapper;
+
     @Override
     public List<ResourceDTO> getHomeRecommendations(String userId, Integer limit) {
         log.info("获取首页推荐: userId={}, limit={}", userId, limit);
 
-        // 策略 1: 协同过滤推荐（已登录用户）
+        // 策略 1: 协同过滤推荐（已登录用户优先）
         if (userId != null && !userId.isEmpty()) {
             try {
-                List<ResourceDTO> cfRecommendations = recommendService.getRecommendations(userId, limit);
-                if (!cfRecommendations.isEmpty()) {
-                    log.info("使用协同过滤推荐: {} 条", cfRecommendations.size());
-                    return cfRecommendations;
+                // 查询用户的协同过滤推荐结果（查询 3 倍数量以支持随机刷新）
+                List<RecommendResult> cfResults = recommendResultMapper.selectByUserId(userId, limit * 3);
+                
+                if (cfResults != null && !cfResults.isEmpty()) {
+                    log.info("用户 {} 有 {} 条协同过滤推荐", userId, cfResults.size());
+                    
+                    // 随机打乱推荐结果（支持用户不断刷新）
+                    Collections.shuffle(cfResults);
+                    
+                    // 提取资源ID
+                    List<String> resourceIds = cfResults.stream()
+                            .limit(limit)
+                            .map(RecommendResult::getResourceId)
+                            .collect(Collectors.toList());
+                    
+                    // 批量查询资源
+                    if (!resourceIds.isEmpty()) {
+                        List<Resource> resources = resourceMapper.selectByResourceIds(resourceIds);
+                        
+                        if (!resources.isEmpty()) {
+                            log.info("协同过滤推荐成功: {} 条", resources.size());
+                            return resources.stream()
+                                    .map(ResourceDTO::fromEntity)
+                                    .collect(Collectors.toList());
+                        }
+                    }
                 }
+                
+                log.info("用户 {} 协同过滤推荐无结果，降级到其他策略", userId);
             } catch (Exception e) {
                 log.warn("协同过滤推荐失败，降级到其他策略: {}", e.getMessage());
             }
