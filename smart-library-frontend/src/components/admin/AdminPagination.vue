@@ -96,7 +96,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['update:current', 'update:pageSize', 'change', 'pageSizeChange'])
+const emit = defineEmits(['update:current', 'update:pageSize', 'change', 'page-size-change'])
 
 // 计算总页数
 const totalPages = computed(() => {
@@ -176,6 +176,6 @@ const handlePageSizeChange = (e) => {
   const newPageSize = Number(e.target.value)
   emit('update:pageSize', newPageSize)
   emit('update:current', 1)
-  emit('pageSizeChange', newPageSize)
+  emit('page-size-change', newPageSize)
 }
 </script>

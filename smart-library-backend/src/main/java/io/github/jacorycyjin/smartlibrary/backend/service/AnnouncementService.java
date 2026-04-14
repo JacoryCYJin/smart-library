@@ -1,6 +1,8 @@
 package io.github.jacorycyjin.smartlibrary.backend.service;
 
+import io.github.jacorycyjin.smartlibrary.backend.common.dto.PageDTO;
 import io.github.jacorycyjin.smartlibrary.backend.form.AnnouncementForm;
+import io.github.jacorycyjin.smartlibrary.backend.form.AnnouncementSearchForm;
 import io.github.jacorycyjin.smartlibrary.backend.vo.AnnouncementVO;
 
 import java.util.List;
@@ -22,6 +24,11 @@ public interface AnnouncementService {
      * 获取公告列表
      */
     List<AnnouncementVO> getAnnouncementList(Integer status, Integer type);
+    
+    /**
+     * 搜索公告（管理员）
+     */
+    PageDTO<AnnouncementVO> searchAnnouncements(AnnouncementSearchForm form);
     
     /**
      * 获取公告详情

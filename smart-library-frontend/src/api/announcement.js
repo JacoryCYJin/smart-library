@@ -52,3 +52,14 @@ export function deleteAnnouncement(announcementId) {
     method: 'delete'
   })
 }
+
+/**
+ * 搜索公告（管理员）
+ */
+export function searchAnnouncements(data) {
+  return request({
+    url: '/announcement/search',
+    method: 'post',
+    data
+  })
+}

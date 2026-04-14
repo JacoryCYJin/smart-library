@@ -1,5 +1,6 @@
 package io.github.jacorycyjin.smartlibrary.backend.service.impl;
 
+import io.github.jacorycyjin.smartlibrary.backend.common.dto.PageDTO;
 import io.github.jacorycyjin.smartlibrary.backend.common.enums.ApiCode;
 import io.github.jacorycyjin.smartlibrary.backend.common.exception.BusinessException;
 import io.github.jacorycyjin.smartlibrary.backend.common.util.UUIDUtil;
@@ -7,6 +8,7 @@ import io.github.jacorycyjin.smartlibrary.backend.entity.Announcement;
 import io.github.jacorycyjin.smartlibrary.backend.entity.User;
 import io.github.jacorycyjin.smartlibrary.backend.entity.UserNotification;
 import io.github.jacorycyjin.smartlibrary.backend.form.AnnouncementForm;
+import io.github.jacorycyjin.smartlibrary.backend.form.AnnouncementSearchForm;
 import io.github.jacorycyjin.smartlibrary.backend.mapper.AnnouncementMapper;
 import io.github.jacorycyjin.smartlibrary.backend.mapper.UserMapper;
 import io.github.jacorycyjin.smartlibrary.backend.mapper.UserNotificationMapper;
@@ -78,6 +80,29 @@ public class AnnouncementServiceImpl implements AnnouncementService {
         return announcements.stream()
                 .map(this::toVO)
                 .collect(Collectors.toList());
+    }
+    
+    @Override
+    public PageDTO<AnnouncementVO> searchAnnouncements(AnnouncementSearchForm form) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("keyword", form.getKeyword());
+        params.put("type", form.getType());
+        params.put("priority", form.getPriority());
+        params.put("status", form.getStatus());
+        params.put("pageNum", form.getPageNum());
+        params.put("pageSize", form.getPageSize());
+        params.put("offset", (form.getPageNum() - 1) * form.getPageSize());
+        
+        // 查询列表
+        List<Announcement> announcements = announcementMapper.search(params);
+        List<AnnouncementVO> voList = announcements.stream()
+                .map(this::toVO)
+                .collect(Collectors.toList());
+        
+        // 查询总数
+        int total = announcementMapper.count(params);
+        
+        return new PageDTO<>(form.getPageNum(), total, form.getPageSize(), voList);
     }
     
     @Override
@@ -167,6 +192,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
                 .content(entity.getContent())
                 .type(entity.getType())
                 .priority(entity.getPriority())
+                .status(entity.getStatus())
                 .publisherName(entity.getPublisherName())
                 .publishTime(entity.getPublishTime())
                 .viewCount(entity.getViewCount())

@@ -35,13 +35,39 @@
     <select id="search" resultMap="BaseResultMap">
         SELECT * FROM announcement
         WHERE deleted = 0
+        <if test="keyword != null and keyword != ''">
+            AND (title LIKE CONCAT('%', #{keyword}, '%') OR content LIKE CONCAT('%', #{keyword}, '%'))
+        </if>
         <if test="status != null">
             AND status = #{status}
         </if>
         <if test="type != null">
             AND type = #{type}
         </if>
+        <if test="priority != null">
+            AND priority = #{priority}
+        </if>
         ORDER BY priority DESC, publish_time DESC
+        <if test="pageNum != null and pageSize != null">
+            LIMIT #{offset}, #{pageSize}
+        </if>
+    </select>
+
+    <select id="count" resultType="int">
+        SELECT COUNT(*) FROM announcement
+        WHERE deleted = 0
+        <if test="keyword != null and keyword != ''">
+            AND (title LIKE CONCAT('%', #{keyword}, '%') OR content LIKE CONCAT('%', #{keyword}, '%'))
+        </if>
+        <if test="status != null">
+            AND status = #{status}
+        </if>
+        <if test="type != null">
+            AND type = #{type}
+        </if>
+        <if test="priority != null">
+            AND priority = #{priority}
+        </if>
     </select>
 
     <update id="update">

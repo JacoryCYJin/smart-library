@@ -23,6 +23,7 @@ public class AnnouncementVO {
     private String content;
     private Integer type;
     private Integer priority;
+    private Integer status;
     private String publisherName;
     private LocalDateTime publishTime;
     private Integer viewCount;

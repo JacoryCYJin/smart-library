@@ -32,6 +32,11 @@ public interface AnnouncementMapper {
     List<Announcement> search(Map<String, Object> params);
     
     /**
+     * 统计公告数量
+     */
+    int count(Map<String, Object> params);
+    
+    /**
      * 更新公告
      */
     int update(Announcement announcement);

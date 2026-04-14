@@ -1,9 +1,11 @@
 package io.github.jacorycyjin.smartlibrary.backend.controller;
 
+import io.github.jacorycyjin.smartlibrary.backend.common.dto.PageDTO;
 import io.github.jacorycyjin.smartlibrary.backend.common.enums.ApiCode;
 import io.github.jacorycyjin.smartlibrary.backend.common.response.Result;
 import io.github.jacorycyjin.smartlibrary.backend.common.util.UserContext;
 import io.github.jacorycyjin.smartlibrary.backend.form.AnnouncementForm;
+import io.github.jacorycyjin.smartlibrary.backend.form.AnnouncementSearchForm;
 import io.github.jacorycyjin.smartlibrary.backend.service.AnnouncementService;
 import io.github.jacorycyjin.smartlibrary.backend.vo.AnnouncementVO;
 import jakarta.annotation.Resource;
@@ -35,6 +37,20 @@ public class AnnouncementController {
             @RequestParam(required = false) Integer type) {
         List<AnnouncementVO> announcements = announcementService.getAnnouncementList(1, type);
         return Result.success(announcements);
+    }
+    
+    /**
+     * 搜索公告（管理员）
+     */
+    @PostMapping("/search")
+    public Result<PageDTO<AnnouncementVO>> searchAnnouncements(@RequestBody AnnouncementSearchForm form) {
+        String userId = UserContext.getCurrentUserId();
+        if (userId == null) {
+            return Result.fail(ApiCode.UNAUTHORIZED.getCode(), "未登录");
+        }
+        
+        PageDTO<AnnouncementVO> result = announcementService.searchAnnouncements(form);
+        return Result.success(result);
     }
     
     /**
