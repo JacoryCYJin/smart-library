@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { Message } from '@arco-design/web-vue'
+import { Message, Modal } from '@arco-design/web-vue'
 import { searchAnnouncements, createAnnouncement, updateAnnouncement, deleteAnnouncement } from '@/api/announcement'
 import { MdEditor } from 'md-editor-v3'
 import AdminPagination from '@/components/admin/AdminPagination.vue'
@@ -16,8 +16,7 @@ const form = ref({
   title: '',
   content: '',
   type: 1,
-  priority: 0,
-  status: 1
+  priority: 0
 })
 
 const searchForm = ref({
@@ -123,8 +122,7 @@ function openCreateModal() {
     title: '',
     content: '',
     type: 1,
-    priority: 0,
-    status: 1
+    priority: 0
   }
   editingId.value = null
   showCreateModal.value = true
@@ -155,15 +153,20 @@ async function handleCreate() {
   }
   
   try {
-    const res = await createAnnouncement(form.value)
+    // 创建时默认保存为草稿
+    const createData = {
+      ...form.value,
+      status: 0  // 强制设置为草稿状态
+    }
+    const res = await createAnnouncement(createData)
     if (res.code === 0) {
-      Message.success('发布成功')
+      Message.success('保存成功，公告已保存为草稿')
       showCreateModal.value = false
       loadAnnouncements()
     }
   } catch (error) {
     console.error('创建公告失败:', error)
-    Message.error('发布失败')
+    Message.error('保存失败')
   }
 }
 
@@ -187,6 +190,34 @@ async function handleUpdate() {
     console.error('更新公告失败:', error)
     Message.error('更新失败')
   }
+}
+
+/**
+ * 发布公告（从草稿变为已发布）
+ */
+async function handlePublish(announcement) {
+  // 二次确认
+  Modal.confirm({
+    title: '确认发布',
+    content: `确定要发布公告《${announcement.title}》吗？发布后将通知所有用户。`,
+    okText: '确认发布',
+    cancelText: '取消',
+    onOk: async () => {
+      try {
+        const res = await updateAnnouncement(announcement.announcementId, {
+          ...announcement,
+          status: 1  // 设置为已发布
+        })
+        if (res.code === 0) {
+          Message.success('发布成功，已通知所有用户')
+          loadAnnouncements()
+        }
+      } catch (error) {
+        console.error('发布公告失败:', error)
+        Message.error('发布失败')
+      }
+    }
+  })
 }
 
 /**
@@ -220,7 +251,7 @@ onMounted(() => {
           @click="openCreateModal"
           class="px-6 py-2 bg-ink text-white rounded-full hover:opacity-90 transition-opacity"
         >
-          发布公告
+          创建公告
         </button>
       </div>
 
@@ -340,6 +371,15 @@ onMounted(() => {
             </div>
 
             <div class="ml-4 flex gap-2">
+              <!-- 草稿状态显示发布按钮 -->
+              <button
+                v-if="announcement.status === 0"
+                @click="handlePublish(announcement)"
+                class="px-4 py-2 text-sm text-white bg-ink hover:opacity-90 rounded-lg transition-opacity"
+              >
+                发布
+              </button>
+              
               <button
                 @click="openEditModal(announcement)"
                 class="px-4 py-2 text-sm text-ink hover:bg-gray-50 rounded-lg transition-colors"
@@ -371,10 +411,12 @@ onMounted(() => {
     <!-- 创建公告弹窗 -->
     <a-modal
       v-model:visible="showCreateModal"
-      title="发布公告"
+      title="创建公告"
       @ok="handleCreate"
       @cancel="showCreateModal = false"
       width="900px"
+      ok-text="保存为草稿"
+      cancel-text="取消"
       :body-style="{ maxHeight: '70vh', overflowY: 'auto' }"
     >
       <div class="space-y-4">
@@ -388,7 +430,7 @@ onMounted(() => {
           />
         </div>
 
-        <div class="grid grid-cols-3 gap-4">
+        <div class="grid grid-cols-2 gap-4">
           <div>
             <label class="block text-sm font-medium text-ink mb-2">类型</label>
             <select
@@ -408,18 +450,6 @@ onMounted(() => {
               class="w-full px-4 py-2 border border-structure rounded-lg focus:outline-none focus:ring-2 focus:ring-ink"
             >
               <option v-for="option in priorityOptions" :key="option.value" :value="option.value">
-                {{ option.label }}
-              </option>
-            </select>
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium text-ink mb-2">状态</label>
-            <select
-              v-model="form.status"
-              class="w-full px-4 py-2 border border-structure rounded-lg focus:outline-none focus:ring-2 focus:ring-ink"
-            >
-              <option v-for="option in statusOptions" :key="option.value" :value="option.value">
                 {{ option.label }}
               </option>
             </select>
@@ -486,7 +516,7 @@ onMounted(() => {
           />
         </div>
 
-        <div class="grid grid-cols-3 gap-4">
+        <div class="grid grid-cols-2 gap-4">
           <div>
             <label class="block text-sm font-medium text-ink mb-2">类型</label>
             <select
@@ -506,18 +536,6 @@ onMounted(() => {
               class="w-full px-4 py-2 border border-structure rounded-lg focus:outline-none focus:ring-2 focus:ring-ink"
             >
               <option v-for="option in priorityOptions" :key="option.value" :value="option.value">
-                {{ option.label }}
-              </option>
-            </select>
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium text-ink mb-2">状态</label>
-            <select
-              v-model="form.status"
-              class="w-full px-4 py-2 border border-structure rounded-lg focus:outline-none focus:ring-2 focus:ring-ink"
-            >
-              <option v-for="option in statusOptions" :key="option.value" :value="option.value">
                 {{ option.label }}
               </option>
             </select>
