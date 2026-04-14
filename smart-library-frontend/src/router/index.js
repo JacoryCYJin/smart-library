@@ -83,6 +83,12 @@ const router = createRouter({
       meta: { layout: 'web' }
     },
     {
+      path: '/announcement/:announcementId',
+      name: 'announcement-detail',
+      component: () => import('@/views/web/AnnouncementDetailView.vue'),
+      meta: { layout: 'web' }
+    },
+    {
       path: '/bookmark-test',
       name: 'bookmark-test',
       component: () => import('@/views/web/BookmarkTestView.vue'),
@@ -131,8 +137,48 @@ const router = createRouter({
       }
     },
     {
-      path: '/admin/emotion-arcs',
-      name: 'admin-emotion-arcs',
+      path: '/admin/categories',
+      name: 'admin-categories',
+      component: () => import('@/views/admin/CategoryManageView.vue'),
+      meta: { 
+        layout: 'admin',
+        requiresAuth: true,
+        requiresAdmin: true
+      }
+    },
+    {
+      path: '/admin/authors',
+      name: 'admin-authors',
+      component: () => import('@/views/admin/AuthorManageView.vue'),
+      meta: { 
+        layout: 'admin',
+        requiresAuth: true,
+        requiresAdmin: true
+      }
+    },
+    {
+      path: '/admin/links',
+      name: 'admin-links',
+      component: () => import('@/views/admin/LinkManageView.vue'),
+      meta: { 
+        layout: 'admin',
+        requiresAuth: true,
+        requiresAdmin: true
+      }
+    },
+    {
+      path: '/admin/graphs',
+      name: 'admin-graphs',
+      component: () => import('@/views/admin/GraphManageView.vue'),
+      meta: { 
+        layout: 'admin',
+        requiresAuth: true,
+        requiresAdmin: true
+      }
+    },
+    {
+      path: '/admin/emotions',
+      name: 'admin-emotions',
       component: () => import('@/views/admin/EmotionArcManageView.vue'),
       meta: { 
         layout: 'admin',
@@ -144,6 +190,16 @@ const router = createRouter({
       path: '/admin/ranking',
       name: 'admin-ranking',
       component: () => import('@/views/admin/RankingView.vue'),
+      meta: { 
+        layout: 'admin',
+        requiresAuth: true,
+        requiresAdmin: true
+      }
+    },
+    {
+      path: '/admin/announcements',
+      name: 'admin-announcements',
+      component: () => import('@/views/admin/AnnouncementManage.vue'),
       meta: { 
         layout: 'admin',
         requiresAuth: true,

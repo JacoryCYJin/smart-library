@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.github.jacorycyjin.smartlibrary.backend.mapper.UserNotificationMapper">
+
+    <resultMap id="BaseResultMap" type="io.github.jacorycyjin.smartlibrary.backend.entity.UserNotification">
+        <id column="id" property="id"/>
+        <result column="notification_id" property="notificationId"/>
+        <result column="user_id" property="userId"/>
+        <result column="type" property="type"/>
+        <result column="title" property="title"/>
+        <result column="content" property="content"/>
+        <result column="link_url" property="linkUrl"/>
+        <result column="related_id" property="relatedId"/>
+        <result column="is_read" property="isRead"/>
+        <result column="read_time" property="readTime"/>
+        <result column="ctime" property="ctime"/>
+        <result column="deleted" property="deleted"/>
+    </resultMap>
+
+    <insert id="batchInsert">
+        INSERT INTO user_notification (notification_id, user_id, type, title, content, link_url, related_id)
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{item.notificationId}, #{item.userId}, #{item.type}, #{item.title}, 
+             #{item.content}, #{item.linkUrl}, #{item.relatedId})
+        </foreach>
+    </insert>
+
+    <select id="selectByUserId" resultMap="BaseResultMap">
+        SELECT * FROM user_notification
+        WHERE user_id = #{userId} AND deleted = 0
+        ORDER BY ctime DESC
+        <if test="limit != null">
+            LIMIT #{limit}
+        </if>
+    </select>
+
+    <select id="countUnread" resultType="int">
+        SELECT COUNT(*) FROM user_notification
+        WHERE user_id = #{userId} AND is_read = 0 AND deleted = 0
+    </select>
+
+    <update id="markAsRead">
+        UPDATE user_notification
+        SET is_read = 1, read_time = NOW()
+        WHERE notification_id = #{notificationId} AND user_id = #{userId}
+    </update>
+
+    <update id="markAllAsRead">
+        UPDATE user_notification
+        SET is_read = 1, read_time = NOW()
+        WHERE user_id = #{userId} AND is_read = 0
+    </update>
+
+    <update id="deleteById">
+        UPDATE user_notification
+        SET deleted = 1
+        WHERE notification_id = #{notificationId} AND user_id = #{userId}
+    </update>
+
+</mapper>

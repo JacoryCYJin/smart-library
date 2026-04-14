@@ -7,6 +7,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useLocaleStore } from '@/stores/locale'
 import { useAuthStore } from '@/stores/auth'
 import { logout as logoutApi } from '@/api/user'
+import { getUnreadCount, getNotifications, markAsRead, markAllAsRead } from '@/api/notification'
 import { Message } from '@arco-design/web-vue'
 import AppFooter from '@/components/layout/Footer.vue'
 import FloatingBookmark from '@/components/bookmark/FloatingBookmark.vue'
@@ -59,6 +60,9 @@ const labels = computed(() => {
 const notificationCount = ref(0)
 const hasNotifications = computed(() => notificationCount.value > 0)
 const showUserMenu = ref(false)
+const showNotificationMenu = ref(false)
+const notifications = ref([])
+const loadingNotifications = ref(false)
 
 /**
  * 退出登录
@@ -91,12 +95,119 @@ function toggleUserMenu() {
 }
 
 /**
+ * 加载未读通知数量
+ */
+async function loadUnreadCount() {
+  if (!isLoggedIn.value) return
+  
+  try {
+    const res = await getUnreadCount()
+    if (res.code === 0) {
+      notificationCount.value = res.data.count
+    }
+  } catch (error) {
+    console.error('加载未读通知数量失败:', error)
+  }
+}
+
+/**
+ * 加载通知列表
+ */
+async function loadNotifications() {
+  if (loadingNotifications.value) return
+  
+  loadingNotifications.value = true
+  try {
+    const res = await getNotifications(10)
+    if (res.code === 0) {
+      notifications.value = res.data
+    }
+  } catch (error) {
+    console.error('加载通知列表失败:', error)
+  } finally {
+    loadingNotifications.value = false
+  }
+}
+
+/**
+ * 切换通知菜单
+ */
+async function toggleNotificationMenu() {
+  showNotificationMenu.value = !showNotificationMenu.value
+  
+  if (showNotificationMenu.value && notifications.value.length === 0) {
+    await loadNotifications()
+  }
+}
+
+/**
+ * 标记通知为已读
+ */
+async function handleMarkAsRead(notificationId) {
+  try {
+    await markAsRead(notificationId)
+    
+    // 更新本地状态
+    const notification = notifications.value.find(n => n.notificationId === notificationId)
+    if (notification) {
+      notification.isRead = 1
+    }
+    
+    // 更新未读数量
+    await loadUnreadCount()
+  } catch (error) {
+    console.error('标记已读失败:', error)
+  }
+}
+
+/**
+ * 标记全部为已读
+ */
+async function handleMarkAllAsRead() {
+  try {
+    await markAllAsRead()
+    
+    // 更新本地状态
+    notifications.value.forEach(n => {
+      n.isRead = 1
+    })
+    
+    notificationCount.value = 0
+    Message.success('已全部标记为已读')
+  } catch (error) {
+    console.error('标记全部已读失败:', error)
+  }
+}
+
+/**
+ * 点击通知
+ */
+function handleNotificationClick(notification) {
+  // 标记为已读
+  if (notification.isRead === 0) {
+    handleMarkAsRead(notification.notificationId)
+  }
+  
+  // 跳转到链接
+  if (notification.linkUrl) {
+    router.push(notification.linkUrl)
+    showNotificationMenu.value = false
+  }
+}
+
+/**
  * 点击外部关闭菜单
  */
 function handleClickOutside(event) {
   const userMenu = document.querySelector('.user-menu-container')
+  const notificationMenu = document.querySelector('.notification-menu-container')
+  
   if (userMenu && !userMenu.contains(event.target)) {
     showUserMenu.value = false
+  }
+  
+  if (notificationMenu && !notificationMenu.contains(event.target)) {
+    showNotificationMenu.value = false
   }
 }
 
@@ -122,6 +233,17 @@ onMounted(() => {
   
   // 5. 添加点击外部关闭菜单的监听
   document.addEventListener('click', handleClickOutside)
+  
+  // 6. 加载未读通知数量
+  loadUnreadCount()
+  
+  // 7. 定时刷新未读通知数量（每30秒）
+  const intervalId = setInterval(loadUnreadCount, 30000)
+  
+  // 清理定时器
+  onUnmounted(() => {
+    clearInterval(intervalId)
+  })
 })
 
 // 监听路由变化，滚动到顶部
@@ -264,29 +386,100 @@ onUnmounted(() => {
               </template>
 
               <template v-else>
-                <button
-                  type="button"
-                  class="relative p-2 rounded-full hover:bg-slate-50 text-ink transition-colors"
-                  aria-label="Notifications"
-                >
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    class="h-6 w-6"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    aria-hidden="true"
+                <!-- 通知菜单 -->
+                <div class="relative notification-menu-container">
+                  <button
+                    type="button"
+                    @click.stop="toggleNotificationMenu"
+                    class="relative p-2 rounded-full hover:bg-slate-50 text-ink transition-colors"
+                    aria-label="Notifications"
                   >
-                    <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 7h18s-3 0-3-7" />
-                    <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-                  </svg>
-                  <span
-                    v-if="hasNotifications"
-                    class="absolute top-1 right-1 h-2.5 w-2.5 rounded-full bg-pop"
-                  />
-                </button>
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      class="h-6 w-6"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 7h18s-3 0-3-7" />
+                      <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                    </svg>
+                    <span
+                      v-if="hasNotifications"
+                      class="absolute top-1 right-1 h-2.5 w-2.5 rounded-full bg-pop"
+                    />
+                  </button>
+
+                  <!-- 通知下拉菜单 -->
+                  <transition
+                    enter-active-class="transition ease-out duration-200"
+                    enter-from-class="opacity-0 translate-y-1"
+                    enter-to-class="opacity-100 translate-y-0"
+                    leave-active-class="transition ease-in duration-150"
+                    leave-from-class="opacity-100 translate-y-0"
+                    leave-to-class="opacity-0 translate-y-1"
+                  >
+                    <div
+                      v-if="showNotificationMenu"
+                      class="absolute right-0 mt-2 w-96 rounded-xl bg-white shadow-lg ring-1 ring-black ring-opacity-5 overflow-hidden"
+                      style="box-shadow: var(--shadow-gallery)"
+                    >
+                      <!-- 标题栏 -->
+                      <div class="px-4 py-3 border-b border-structure flex items-center justify-between">
+                        <h3 class="text-sm font-semibold text-ink">通知</h3>
+                        <button
+                          v-if="hasNotifications"
+                          @click="handleMarkAllAsRead"
+                          class="text-xs text-ink-light hover:text-ink transition-colors"
+                        >
+                          全部已读
+                        </button>
+                      </div>
+
+                      <!-- 通知列表 -->
+                      <div class="max-h-96 overflow-y-auto">
+                        <div v-if="loadingNotifications" class="py-8 text-center text-ink-light">
+                          加载中...
+                        </div>
+                        
+                        <div v-else-if="notifications.length === 0" class="py-8 text-center text-ink-light">
+                          暂无通知
+                        </div>
+                        
+                        <div v-else>
+                          <button
+                            v-for="notification in notifications"
+                            :key="notification.notificationId"
+                            @click="handleNotificationClick(notification)"
+                            class="w-full px-4 py-3 text-left hover:bg-canvas transition-colors border-b border-structure last:border-b-0"
+                            :class="{ 'bg-blue-50': notification.isRead === 0 }"
+                          >
+                            <div class="flex items-start gap-3">
+                              <div
+                                v-if="notification.isRead === 0"
+                                class="mt-1.5 h-2 w-2 rounded-full bg-pop flex-shrink-0"
+                              />
+                              <div v-else class="mt-1.5 h-2 w-2 flex-shrink-0" />
+                              
+                              <div class="flex-1 min-w-0">
+                                <p class="text-sm font-medium text-ink">{{ notification.title }}</p>
+                                <p class="mt-1 text-xs text-ink-light line-clamp-2">
+                                  {{ notification.content }}
+                                </p>
+                                <p class="mt-1 text-xs text-ink-light">
+                                  {{ new Date(notification.ctime).toLocaleString('zh-CN') }}
+                                </p>
+                              </div>
+                            </div>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </transition>
+                </div>
 
                 <!-- 用户菜单 -->
                 <div class="relative user-menu-container">

@@ -22,6 +22,8 @@ SET FOREIGN_KEY_CHECKS = 0;
 
 DROP TABLE IF EXISTS recommend_result; -- 推荐算法缓存
 DROP TABLE IF EXISTS daily_stat; -- 每日流量统计(周热门)
+DROP TABLE IF EXISTS user_notification; -- 用户通知
+DROP TABLE IF EXISTS announcement; -- 系统公告
 DROP TABLE IF EXISTS bookmark; -- 物理引擎书签
 DROP TABLE IF EXISTS comment; -- 评论
 DROP TABLE IF EXISTS user_favorite; -- 收藏
@@ -391,7 +393,63 @@ CREATE TABLE recommend_result
   COLLATE = utf8mb4_unicode_ci COMMENT ='推荐结果缓存表(Java/Python计算结果存此处)';
 
 -- ==========================================
--- 7. 前端特效支持 (Frontend Support)
+-- 7. 系统公告与通知 (Announcement & Notification)
+-- ==========================================
+CREATE TABLE announcement
+(
+    id              BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '主键ID',
+    announcement_id VARCHAR(50)  NOT NULL UNIQUE COMMENT '公告业务标识(UUID)',
+    title           VARCHAR(255) NOT NULL COMMENT '公告标题',
+    content         TEXT         NOT NULL COMMENT '公告内容(支持Markdown)',
+    type            TINYINT      DEFAULT 1 COMMENT '公告类型: 1-系统更新 / 2-功能上线 / 3-维护通知 / 4-活动公告',
+    priority        TINYINT      DEFAULT 0 COMMENT '优先级: 0-普通 / 1-重要 / 2-紧急',
+    
+    publisher_id    VARCHAR(50)  NOT NULL COMMENT '发布者用户ID',
+    publisher_name  VARCHAR(50)  NOT NULL COMMENT '发布者用户名快照',
+    
+    status          TINYINT      DEFAULT 1 COMMENT '状态: 0-草稿 / 1-已发布 / 2-已撤回',
+    publish_time    DATETIME COMMENT '发布时间',
+    
+    view_count      INT          DEFAULT 0 COMMENT '查看次数',
+    
+    ctime           DATETIME     DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    mtime           DATETIME     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    deleted         TINYINT      DEFAULT 0 COMMENT '逻辑删除: 0-未删 / 1-已删',
+    
+    INDEX idx_status (status),
+    INDEX idx_publish_time (publish_time DESC),
+    INDEX idx_type (type)
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci COMMENT ='系统公告表';
+
+CREATE TABLE user_notification
+(
+    id              BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '主键ID',
+    notification_id VARCHAR(50) NOT NULL UNIQUE COMMENT '通知业务标识(UUID)',
+    user_id         VARCHAR(50) NOT NULL COMMENT '接收用户ID',
+    
+    type            TINYINT     NOT NULL COMMENT '通知类型: 1-系统公告 / 2-评论回复 / 3-收藏提醒 / 4-系统消息',
+    title           VARCHAR(255) NOT NULL COMMENT '通知标题',
+    content         VARCHAR(500) COMMENT '通知内容',
+    link_url        VARCHAR(500) COMMENT '跳转链接',
+    
+    related_id      VARCHAR(50) COMMENT '关联业务ID(如公告ID、评论ID等)',
+    
+    is_read         TINYINT     DEFAULT 0 COMMENT '是否已读: 0-未读 / 1-已读',
+    read_time       DATETIME COMMENT '阅读时间',
+    
+    ctime           DATETIME    DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    deleted         TINYINT     DEFAULT 0 COMMENT '逻辑删除: 0-未删 / 1-已删',
+    
+    INDEX idx_user_read (user_id, is_read),
+    INDEX idx_ctime (ctime DESC)
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci COMMENT ='用户通知表';
+
+-- ==========================================
+-- 8. 前端特效支持 (Frontend Support)
 -- ==========================================
 CREATE TABLE bookmark
 (

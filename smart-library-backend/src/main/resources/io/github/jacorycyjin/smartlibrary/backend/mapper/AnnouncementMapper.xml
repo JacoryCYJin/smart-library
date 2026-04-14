@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.github.jacorycyjin.smartlibrary.backend.mapper.AnnouncementMapper">
+
+    <resultMap id="BaseResultMap" type="io.github.jacorycyjin.smartlibrary.backend.entity.Announcement">
+        <id column="id" property="id"/>
+        <result column="announcement_id" property="announcementId"/>
+        <result column="title" property="title"/>
+        <result column="content" property="content"/>
+        <result column="type" property="type"/>
+        <result column="priority" property="priority"/>
+        <result column="publisher_id" property="publisherId"/>
+        <result column="publisher_name" property="publisherName"/>
+        <result column="status" property="status"/>
+        <result column="publish_time" property="publishTime"/>
+        <result column="view_count" property="viewCount"/>
+        <result column="ctime" property="ctime"/>
+        <result column="mtime" property="mtime"/>
+        <result column="deleted" property="deleted"/>
+    </resultMap>
+
+    <insert id="insert">
+        INSERT INTO announcement (announcement_id, title, content, type, priority, 
+                                 publisher_id, publisher_name, status, publish_time)
+        VALUES (#{announcementId}, #{title}, #{content}, #{type}, #{priority},
+                #{publisherId}, #{publisherName}, #{status}, #{publishTime})
+    </insert>
+
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT * FROM announcement
+        WHERE announcement_id = #{announcementId} AND deleted = 0
+    </select>
+
+    <select id="search" resultMap="BaseResultMap">
+        SELECT * FROM announcement
+        WHERE deleted = 0
+        <if test="status != null">
+            AND status = #{status}
+        </if>
+        <if test="type != null">
+            AND type = #{type}
+        </if>
+        ORDER BY priority DESC, publish_time DESC
+    </select>
+
+    <update id="update">
+        UPDATE announcement
+        <set>
+            <if test="title != null">title = #{title},</if>
+            <if test="content != null">content = #{content},</if>
+            <if test="type != null">type = #{type},</if>
+            <if test="priority != null">priority = #{priority},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="publishTime != null">publish_time = #{publishTime},</if>
+        </set>
+        WHERE announcement_id = #{announcementId}
+    </update>
+
+    <update id="deleteById">
+        UPDATE announcement
+        SET deleted = 1
+        WHERE announcement_id = #{announcementId}
+    </update>
+
+    <update id="incrementViewCount">
+        UPDATE announcement
+        SET view_count = view_count + 1
+        WHERE announcement_id = #{announcementId}
+    </update>
+
+</mapper>

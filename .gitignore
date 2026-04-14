@@ -20,6 +20,9 @@
 # Trae Rules
 .trae/
 
+# Cursor Rules
+.cursor/
+
 # macOS
 .DS_Store
 .AppleDouble
