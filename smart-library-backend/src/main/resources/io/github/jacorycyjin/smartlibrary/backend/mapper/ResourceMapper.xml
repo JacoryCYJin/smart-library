@@ -387,11 +387,18 @@
         SELECT COUNT(*) as count
         FROM resource
         <where>
-            <if test="deleted != null">
-                AND deleted = #{deleted}
-            </if>
+            deleted = 0
             <if test="type != null">
                 AND type = #{type}
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND (
+                    title LIKE CONCAT('%', #{keyword}, '%')
+                    OR author_name LIKE CONCAT('%', #{keyword}, '%')
+                    OR summary LIKE CONCAT('%', #{keyword}, '%')
+                    OR publisher LIKE CONCAT('%', #{keyword}, '%')
+                    OR isbn LIKE CONCAT('%', #{keyword}, '%')
+                )
             </if>
         </where>
     </select>
@@ -431,5 +438,33 @@
             #{resourceId}
         </foreach>
         AND deleted = 0
+    </select>
+
+    <!-- 根据关键词搜索资源（支持分页） -->
+    <select id="searchResourcesByKeyword" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM resource
+        WHERE deleted = 0
+        <if test="type != null">
+            AND type = #{type}
+        </if>
+        AND (
+            title LIKE CONCAT('%', #{keyword}, '%')
+            OR author_name LIKE CONCAT('%', #{keyword}, '%')
+            OR summary LIKE CONCAT('%', #{keyword}, '%')
+            OR publisher LIKE CONCAT('%', #{keyword}, '%')
+            OR isbn LIKE CONCAT('%', #{keyword}, '%')
+        )
+        ORDER BY
+            CASE
+                WHEN title = #{keyword} THEN 1
+                WHEN isbn = #{keyword} THEN 1
+                WHEN title LIKE CONCAT(#{keyword}, '%') THEN 2
+                ELSE 3
+            END,
+            view_count DESC,
+            ctime DESC
+        LIMIT #{offset}, #{limit}
     </select>
 </mapper>

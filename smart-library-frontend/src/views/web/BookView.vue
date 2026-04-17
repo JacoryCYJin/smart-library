@@ -3,7 +3,15 @@
     <!-- 页面标题和筛选 -->
     <div class="border-b border-structure">
       <div class="max-w-[1600px] mx-auto px-8 py-8">
-        <h1 class="text-3xl font-bold mb-8 text-center text-ink">藏书</h1>
+        <h1 class="text-3xl font-bold mb-2 text-center text-ink">
+          {{ keyword ? `搜索: ${keyword}` : '藏书' }}
+        </h1>
+        <p v-if="keyword && !loading" class="text-sm text-center text-ink-light mb-8">
+          找到 {{ total }} 个结果
+        </p>
+        <p v-else-if="!keyword" class="text-sm text-center text-ink-light mb-8">
+          共 {{ total }} 本图书
+        </p>
         
         <!-- 筛选区 -->
         <div class="max-w-4xl mx-auto space-y-6">
@@ -98,8 +106,8 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, onActivated } from 'vue'
-import { useRouter, onBeforeRouteLeave } from 'vue-router'
+import { ref, onMounted, computed, onActivated, watch } from 'vue'
+import { useRouter, useRoute, onBeforeRouteLeave } from 'vue-router'
 import { useInfiniteScroll } from '@vueuse/core'
 import { searchBooks, getCategories } from '@/api/book'
 import BookMasonry from '@/components/book/BookMasonry.vue'
@@ -110,11 +118,13 @@ defineOptions({
 })
 
 const router = useRouter()
+const route = useRoute()
 
 // 筛选条件
 const categories = ref([])
 const selectedCategory = ref('') // 改为单选
 const sortBy = ref('')
+const keyword = ref('') // 搜索关键词
 
 // 排序选项
 const sortOptions = [
@@ -161,6 +171,11 @@ const loadBooks = async (append = false) => {
     const params = {
       pageNum: currentPage.value,
       pageSize: pageSize.value
+    }
+
+    // 关键词搜索
+    if (keyword.value) {
+      params.keyword = keyword.value
     }
 
     // 单选分类筛选
@@ -224,6 +239,15 @@ const handleBookClick = (bookId) => {
   router.push(`/book/${bookId}`)
 }
 
+// 监听路由参数变化
+watch(() => route.query.keyword, (newKeyword) => {
+  if (newKeyword !== keyword.value) {
+    keyword.value = newKeyword || ''
+    currentPage.value = 1
+    loadBooks()
+  }
+}, { immediate: true })
+
 // 路由离开前保存滚动位置（最准确的时机）
 onBeforeRouteLeave((to) => {
   // 只在进入详情页时保存位置
@@ -248,6 +272,8 @@ useInfiniteScroll(
 
 onMounted(() => {
   loadCategories()
+  // 从 URL 参数读取关键词
+  keyword.value = route.query.keyword || ''
   loadBooks()
 })
 

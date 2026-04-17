@@ -8,6 +8,7 @@ import { useLocaleStore } from '@/stores/locale'
 import { useAuthStore } from '@/stores/auth'
 import { logout as logoutApi } from '@/api/user'
 import { getUnreadCount, getNotifications, markAsRead, markAllAsRead } from '@/api/notification'
+import { globalSearch } from '@/api/search'
 import { Message } from '@arco-design/web-vue'
 import AppFooter from '@/components/layout/Footer.vue'
 import FloatingBookmark from '@/components/bookmark/FloatingBookmark.vue'
@@ -61,8 +62,104 @@ const notificationCount = ref(0)
 const hasNotifications = computed(() => notificationCount.value > 0)
 const showUserMenu = ref(false)
 const showNotificationMenu = ref(false)
+const showSearchExpanded = ref(false)
+const searchKeyword = ref('')
+const searchResults = ref(null)
+const searchLoading = ref(false)
 const notifications = ref([])
 const loadingNotifications = ref(false)
+
+
+
+/**
+ * 执行搜索（防抖优化）
+ */
+let searchTimeout = null
+async function performSearch() {
+  if (!searchKeyword.value || searchKeyword.value.trim().length === 0) {
+    searchResults.value = null
+    return
+  }
+
+  // 清除之前的定时器
+  if (searchTimeout) {
+    clearTimeout(searchTimeout)
+  }
+
+  // 防抖：300ms 后执行搜索
+  searchTimeout = setTimeout(async () => {
+    searchLoading.value = true
+    try {
+      const res = await globalSearch({
+        keyword: searchKeyword.value.trim(),
+        limit: 5
+      })
+      
+      if (res.code === 0) {
+        searchResults.value = res.data
+      }
+    } catch (error) {
+      console.error('搜索失败:', error)
+    } finally {
+      searchLoading.value = false
+    }
+  }, 300)
+}
+
+/**
+ * 按 Enter 键跳转到搜索结果页
+ */
+function handleSearchEnter() {
+  if (searchKeyword.value && searchKeyword.value.trim().length > 0) {
+    router.push({
+      path: '/search',
+      query: { keyword: searchKeyword.value.trim() }
+    })
+    showSearchExpanded.value = false
+    searchKeyword.value = ''
+    searchResults.value = null
+  }
+}
+
+/**
+ * 监听搜索关键词变化
+ */
+watch(searchKeyword, () => {
+  performSearch()
+})
+
+/**
+ * 跳转到图书详情
+ */
+function goToBook(bookId) {
+  router.push(`/book/${bookId}`)
+  showSearchExpanded.value = false
+  searchKeyword.value = ''
+  searchResults.value = null
+}
+
+/**
+ * 跳转到作者详情
+ */
+function goToAuthor(authorId) {
+  router.push(`/author/${authorId}`)
+  showSearchExpanded.value = false
+  searchKeyword.value = ''
+  searchResults.value = null
+}
+
+/**
+ * 查看更多图书
+ */
+function viewMoreBooks() {
+  router.push({
+    path: '/search',
+    query: { keyword: searchKeyword.value }
+  })
+  showSearchExpanded.value = false
+  searchKeyword.value = ''
+  searchResults.value = null
+}
 
 /**
  * 退出登录
@@ -196,11 +293,12 @@ function handleNotificationClick(notification) {
 }
 
 /**
- * 点击外部关闭菜单
+ * 点击外部关闭菜单和搜索框
  */
 function handleClickOutside(event) {
   const userMenu = document.querySelector('.user-menu-container')
   const notificationMenu = document.querySelector('.notification-menu-container')
+  const searchContainer = document.querySelector('.search-container')
   
   if (userMenu && !userMenu.contains(event.target)) {
     showUserMenu.value = false
@@ -208,6 +306,13 @@ function handleClickOutside(event) {
   
   if (notificationMenu && !notificationMenu.contains(event.target)) {
     showNotificationMenu.value = false
+  }
+  
+  // 点击搜索框外部时收起搜索
+  if (searchContainer && !searchContainer.contains(event.target) && showSearchExpanded.value) {
+    showSearchExpanded.value = false
+    searchKeyword.value = ''
+    searchResults.value = null
   }
 }
 
@@ -279,7 +384,8 @@ onUnmounted(() => {
     <header class="fixed top-0 z-50 w-full h-16 bg-white shadow-sm">
       <div class="mx-auto h-full max-w-7xl px-2 sm:px-3 lg:px-4">
         <div class="h-full flex items-center justify-between gap-4">
-          <div class="flex items-center min-w-[140px]">
+          <!-- 左侧：Logo -->
+          <div class="flex items-center min-w-[140px] flex-shrink-0">
             <a
               href="/"
               class="inline-flex items-center gap-2 font-serif text-2xl font-bold text-ink"
@@ -289,30 +395,25 @@ onUnmounted(() => {
             </a>
           </div>
 
-          <nav class="hidden md:flex items-center justify-center flex-1">
-            <div class="flex items-center gap-15">
+          <!-- 中间：导航 + 搜索框（同一行） -->
+          <div class="hidden md:flex items-center justify-center flex-1 gap-6">
+            <!-- 导航链接 -->
+            <nav class="flex items-center gap-6 flex-shrink-0">
               <a
                 href="/"
-                class="px-3 py-2 rounded-md text-base text-ink font-medium hover:text-[#627D98] hover:bg-slate-50"
+                class="px-3 py-2 rounded-md text-base text-ink font-medium hover:text-[#627D98] hover:bg-slate-50 whitespace-nowrap"
               >
                 {{ labels.home }}
               </a>
               <a
                 href="/book"
-                class="px-3 py-2 rounded-md text-base text-ink font-medium hover:text-[#627D98] hover:bg-slate-50"
+                class="px-3 py-2 rounded-md text-base text-ink font-medium hover:text-[#627D98] hover:bg-slate-50 whitespace-nowrap"
               >
                 {{ labels.explore }}
               </a>
-              <!-- 文献功能暂时不用 -->
-              <!-- <a
-                href="#"
-                class="px-3 py-2 rounded-md text-base text-ink font-medium hover:text-[#627D98] hover:bg-slate-50"
-              >
-                {{ labels.research }}
-              </a> -->
               <a
                 href="/serendipity"
-                class="px-3 py-2 rounded-md text-base text-ink font-medium hover:text-[#627D98] hover:bg-slate-50"
+                class="px-3 py-2 rounded-md text-base text-ink font-medium hover:text-[#627D98] hover:bg-slate-50 whitespace-nowrap"
               >
                 <span class="inline-flex items-center gap-1">
                   <svg
@@ -331,33 +432,174 @@ onUnmounted(() => {
                   <span>{{ labels.serendipity }}</span>
                 </span>
               </a>
-            </div>
-          </nav>
+            </nav>
 
-          <div class="flex items-center justify-end gap-4 min-w-0">
-            <div
-              class="hidden sm:flex flex-1 min-w-0 max-w-[220px] items-center gap-2 bg-slate-100 rounded-full px-4 py-2"
-            >
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                class="h-5 w-5 text-[#627D98]"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                aria-hidden="true"
+            <!-- 搜索框 -->
+            <div class="relative flex-1 max-w-[400px] ml-auto search-container">
+              <div 
+                class="flex items-center ml-auto"
+                style="transition: all 0.7s cubic-bezier(0.4, 0, 0.2, 1);"
+                :style="{ width: showSearchExpanded ? '100%' : '220px' }"
               >
-                <circle cx="11" cy="11" r="8" />
-                <path d="m21 21-4.3-4.3" />
-              </svg>
-              <input
-                class="w-full min-w-0 bg-transparent outline-none text-base text-ink placeholder:text-slate-400"
-                type="text"
-                :placeholder="labels.search"
-              />
-            </div>
+                <div class="relative w-full">
+                  <!-- 搜索输入框 -->
+                  <div class="flex items-center gap-2 bg-slate-100 rounded-full px-4 py-2">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      class="h-5 w-5 text-[#627D98] flex-shrink-0"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <circle cx="11" cy="11" r="8" />
+                      <path d="m21 21-4.3-4.3" />
+                    </svg>
+                    <input
+                      v-model="searchKeyword"
+                      @focus="showSearchExpanded = true"
+                      @keyup.enter="handleSearchEnter"
+                      class="search-input w-full bg-transparent outline-none text-base text-ink placeholder:text-slate-400"
+                      type="text"
+                      :placeholder="labels.search"
+                    />
+                    <button
+                      v-if="searchKeyword"
+                      @click="searchKeyword = ''; searchResults = null"
+                      class="p-1 rounded-full hover:bg-slate-200 transition-colors flex-shrink-0"
+                    >
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        class="h-4 w-4 text-ink-light"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <line x1="18" y1="6" x2="6" y2="18" />
+                        <line x1="6" y1="6" x2="18" y2="18" />
+                      </svg>
+                    </button>
+                  </div>
 
+                  <!-- 搜索结果下拉框 -->
+                  <transition
+                    enter-active-class="transition ease-out duration-200"
+                    enter-from-class="opacity-0 translate-y-1"
+                    enter-to-class="opacity-100 translate-y-0"
+                    leave-active-class="transition ease-in duration-150"
+                    leave-from-class="opacity-100 translate-y-0"
+                    leave-to-class="opacity-0 translate-y-1"
+                  >
+                    <div
+                      v-if="showSearchExpanded && (searchLoading || searchResults)"
+                      class="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-lg ring-1 ring-black ring-opacity-5 overflow-hidden z-50"
+                      style="box-shadow: var(--shadow-gallery)"
+                    >
+                      <!-- 加载中 -->
+                      <div v-if="searchLoading" class="py-8 text-center text-ink-light text-sm">
+                        {{ currentLang === 'en' ? 'Searching...' : '搜索中...' }}
+                      </div>
+
+                      <!-- 无结果 -->
+                      <div
+                        v-else-if="searchResults && searchResults.books.length === 0 && searchResults.authors.length === 0"
+                        class="py-8 text-center text-ink-light text-sm"
+                      >
+                        {{ currentLang === 'en' ? 'No results found' : '未找到相关结果' }}
+                      </div>
+
+                      <!-- 有结果 -->
+                      <div v-else-if="searchResults" class="max-h-[60vh] overflow-y-auto">
+                        <!-- 图书结果 -->
+                        <div v-if="searchResults.books.length > 0" class="py-2">
+                          <div class="px-4 py-2 flex items-center justify-between">
+                            <h3 class="text-xs font-semibold text-ink-light">
+                              {{ currentLang === 'en' ? 'Books' : '图书' }} ({{ searchResults.bookTotal }})
+                            </h3>
+                            <button
+                              v-if="searchResults.bookTotal > searchResults.books.length"
+                              @click="viewMoreBooks"
+                              class="text-xs text-pop hover:underline"
+                            >
+                              {{ currentLang === 'en' ? 'View More' : '查看更多' }}
+                            </button>
+                          </div>
+                          <div class="space-y-1">
+                            <button
+                              v-for="book in searchResults.books"
+                              :key="book.resourceId"
+                              @click="goToBook(book.resourceId)"
+                              class="w-full px-4 py-2 flex items-center gap-3 hover:bg-canvas transition-colors text-left"
+                            >
+                              <img
+                                v-if="book.coverUrl"
+                                :src="book.coverUrl"
+                                :alt="book.title"
+                                class="w-10 h-14 object-cover rounded flex-shrink-0"
+                              />
+                              <div class="flex-1 min-w-0">
+                                <p class="text-sm font-medium text-ink truncate">{{ book.title }}</p>
+                                <p v-if="book.authorName" class="text-xs text-ink-light truncate mt-0.5">
+                                  {{ book.authorName }}
+                                </p>
+                              </div>
+                            </button>
+                          </div>
+                        </div>
+
+                        <!-- 作者结果 -->
+                        <div v-if="searchResults.authors.length > 0" class="py-2 border-t border-structure">
+                          <div class="px-4 py-2">
+                            <h3 class="text-xs font-semibold text-ink-light">
+                              {{ currentLang === 'en' ? 'Authors' : '作者' }} ({{ searchResults.authorTotal }})
+                            </h3>
+                          </div>
+                          <div class="space-y-1">
+                            <button
+                              v-for="author in searchResults.authors"
+                              :key="author.authorId"
+                              @click="goToAuthor(author.authorId)"
+                              class="w-full px-4 py-2 flex items-center gap-3 hover:bg-canvas transition-colors text-left"
+                            >
+                              <div
+                                v-if="author.photoUrl"
+                                class="w-10 h-10 rounded-full overflow-hidden flex-shrink-0"
+                              >
+                                <img
+                                  :src="author.photoUrl"
+                                  :alt="author.name"
+                                  class="w-full h-full object-cover"
+                                />
+                              </div>
+                              <div
+                                v-else
+                                class="w-10 h-10 rounded-full bg-ink text-white flex items-center justify-center text-sm font-semibold flex-shrink-0"
+                              >
+                                {{ author.name.charAt(0) }}
+                              </div>
+                              <div class="flex-1 min-w-0">
+                                <p class="text-sm font-medium text-ink truncate">{{ author.name }}</p>
+                                <p v-if="author.country" class="text-xs text-ink-light truncate mt-0.5">
+                                  {{ author.country }}
+                                </p>
+                              </div>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </transition>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 右侧：语言切换 + 用户菜单 -->
+          <div class="flex items-center justify-end gap-4 flex-shrink-0">
             <button
               type="button"
               class="w-10 h-10 flex items-center justify-center flex-shrink-0 rounded-full border border-slate-200 text-base font-medium hover:bg-slate-50"

@@ -200,4 +200,18 @@ public interface ResourceMapper {
      * @return 资源列表
      */
     List<Resource> selectByResourceIds(@Param("resourceIds") List<String> resourceIds);
+
+    /**
+     * 根据关键词搜索资源（支持分页）
+     * 
+     * @param keyword 搜索关键词
+     * @param type 资源类型（1=图书，2=文献，null=全部）
+     * @param offset 偏移量
+     * @param limit 返回数量限制
+     * @return 资源列表
+     */
+    List<Resource> searchResourcesByKeyword(@Param("keyword") String keyword, 
+                                            @Param("type") Integer type,
+                                            @Param("offset") Integer offset,
+                                            @Param("limit") Integer limit);
 }

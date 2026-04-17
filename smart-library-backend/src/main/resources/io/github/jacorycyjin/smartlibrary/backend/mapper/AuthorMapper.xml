@@ -166,4 +166,34 @@
           AND r.deleted = 0
     </select>
 
+    <!-- 根据关键词搜索作者（支持分页） -->
+    <select id="searchAuthorsByKeyword" resultType="io.github.jacorycyjin.smartlibrary.backend.entity.Author">
+        SELECT 
+            id,
+            author_id AS authorId,
+            name,
+            original_name AS originalName,
+            country,
+            photo_url AS photoUrl,
+            description,
+            source_origin AS sourceOrigin,
+            source_url AS sourceUrl,
+            ctime,
+            mtime,
+            deleted
+        FROM author
+        WHERE deleted = 0
+          AND (name LIKE CONCAT('%', #{keyword}, '%') 
+               OR original_name LIKE CONCAT('%', #{keyword}, '%')
+               OR country LIKE CONCAT('%', #{keyword}, '%'))
+        ORDER BY 
+            CASE 
+                WHEN name = #{keyword} THEN 1
+                WHEN name LIKE CONCAT(#{keyword}, '%') THEN 2
+                ELSE 3
+            END,
+            ctime DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
 </mapper>

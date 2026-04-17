@@ -32,6 +32,12 @@ const router = createRouter({
       },
     },
     {
+      path: '/search',
+      name: 'search',
+      component: () => import('@/views/web/SearchResultView.vue'),
+      meta: { layout: 'web' },
+    },
+    {
       path: '/book/:bookId',
       name: 'book-detail',
       component: () => import('@/views/web/BookDetailView.vue'),

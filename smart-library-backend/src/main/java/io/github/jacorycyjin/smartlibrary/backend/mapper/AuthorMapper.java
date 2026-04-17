@@ -57,6 +57,18 @@ public interface AuthorMapper {
     int countAuthors(Map<String, Object> params);
 
     /**
+     * 根据关键词搜索作者（支持分页）
+     * 
+     * @param keyword 搜索关键词
+     * @param offset 偏移量
+     * @param limit 返回数量限制
+     * @return 作者列表
+     */
+    List<Author> searchAuthorsByKeyword(@Param("keyword") String keyword, 
+                                        @Param("offset") Integer offset,
+                                        @Param("limit") Integer limit);
+
+    /**
      * 插入作者
      * 
      * @param author 作者信息
