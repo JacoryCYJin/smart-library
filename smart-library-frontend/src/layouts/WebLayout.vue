@@ -395,10 +395,10 @@ onUnmounted(() => {
             </a>
           </div>
 
-          <!-- 中间：导航 + 搜索框（同一行） -->
-          <div class="hidden md:flex items-center justify-center flex-1 gap-6">
+          <!-- 中间：导航 -->
+          <div class="hidden md:flex items-center justify-center flex-1">
             <!-- 导航链接 -->
-            <nav class="flex items-center gap-6 flex-shrink-0">
+            <nav class="flex items-center gap-13 flex-shrink-0">
               <a
                 href="/"
                 class="px-3 py-2 rounded-md text-base text-ink font-medium hover:text-[#627D98] hover:bg-slate-50 whitespace-nowrap"
@@ -433,13 +433,17 @@ onUnmounted(() => {
                 </span>
               </a>
             </nav>
+          </div>
 
-            <!-- 搜索框 -->
-            <div class="relative flex-1 max-w-[400px] ml-auto search-container">
+          <!-- 右侧：搜索框 + 语言切换 + 用户菜单 -->
+          <div class="flex items-center justify-end gap-4 flex-shrink-0">
+            <!-- 搜索框占位容器（固定宽度，不影响布局） -->
+            <div class="relative w-[220px] search-container">
+              <!-- 搜索框（绝对定位，向左扩展） -->
               <div 
-                class="flex items-center ml-auto"
+                class="absolute right-0 top-1/2 -translate-y-1/2 flex items-center"
                 style="transition: all 0.7s cubic-bezier(0.4, 0, 0.2, 1);"
-                :style="{ width: showSearchExpanded ? '100%' : '220px' }"
+                :style="{ width: showSearchExpanded ? '400px' : '220px' }"
               >
                 <div class="relative w-full">
                   <!-- 搜索输入框 -->
@@ -596,10 +600,8 @@ onUnmounted(() => {
                 </div>
               </div>
             </div>
-          </div>
 
-          <!-- 右侧：语言切换 + 用户菜单 -->
-          <div class="flex items-center justify-end gap-4 flex-shrink-0">
+            <!-- 语言切换 -->
             <button
               type="button"
               class="w-10 h-10 flex items-center justify-center flex-shrink-0 rounded-full border border-slate-200 text-base font-medium hover:bg-slate-50"
@@ -609,6 +611,7 @@ onUnmounted(() => {
               {{ localeStore.currentLang === 'zh' ? 'CN' : 'EN' }}
             </button>
 
+            <!-- 用户菜单区域 -->
             <div class="flex items-center gap-4 flex-shrink-0 whitespace-nowrap">
               <template v-if="!isLoggedIn">
                 <RouterLink
