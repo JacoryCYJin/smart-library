@@ -14,7 +14,14 @@ import java.util.Map;
 public interface AdminStatsService {
     
     /**
-     * 获取统计数据
+     * 获取完整的数据看板统计数据
+     * 
+     * @return 统计数据
+     */
+    AdminStatsVO getDashboardStats();
+    
+    /**
+     * 获取基础统计数据（兼容旧接口）
      * 
      * @return 统计数据
      */
@@ -51,4 +58,12 @@ public interface AdminStatsService {
      * @return 排行榜数据
      */
     List<Map<String, Object>> getRatingRanking(int limit);
+    
+    /**
+     * 获取趋势数据（用户和资源增长）
+     * 
+     * @param days 天数
+     * @return 趋势数据
+     */
+    Map<String, Object> getTrends(int days);
 }

@@ -24,7 +24,7 @@ const searchForm = ref({
   type: null,
   priority: null,
   status: null,
-  pageNum: 1,
+  page: 1,
   pageSize: 10
 })
 

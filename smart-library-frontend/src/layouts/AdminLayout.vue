@@ -5,7 +5,7 @@
       <div class="h-full px-6 flex items-center justify-between">
         <!-- Logo -->
         <div class="flex items-center gap-3">
-          <img :src="logoUrl" alt="阅墨 Logo" class="h-8 w-8" />
+          <img :src="logoDark" alt="阅墨 Logo" class="h-8 w-8" />
           <span class="font-serif text-xl font-bold text-ink">阅墨 · 管理后台</span>
         </div>
 
@@ -56,40 +56,34 @@
       <!-- Sidebar -->
       <aside 
         :class="[
-          'fixed left-0 top-16 bottom-0 bg-white flex-shrink-0 transition-all duration-300 flex flex-col',
+          'fixed left-0 top-16 bottom-0 bg-white flex-shrink-0 transition-all duration-300 flex flex-col z-40',
           isCollapsed ? 'w-20' : 'w-64'
         ]" 
         style="box-shadow: 2px 0 8px rgba(16, 42, 67, 0.06)"
       >
         <!-- 导航菜单 -->
         <nav class="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
-          <router-link
+          <div
             v-for="item in menuItems"
             :key="item.path"
-            :to="item.path"
-            custom
-            v-slot="{ navigate, isActive }"
+            @click="$router.push(item.path)"
+            @mouseenter="hoveredPath = item.path"
+            @mouseleave="hoveredPath = null"
+            :class="[
+              'flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer transition-all duration-200',
+              isCollapsed ? 'justify-center' : ''
+            ]"
+            :style="getMenuItemStyle(item.path)"
+            :title="isCollapsed ? item.label : ''"
           >
-            <div
-              @click="navigate"
-              :class="[
-                'flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer transition-all duration-200',
-                isActive
-                  ? 'bg-ink text-white shadow-sm'
-                  : 'text-ink-light hover:text-ink hover:bg-canvas',
-                isCollapsed ? 'justify-center' : ''
-              ]"
-              :title="isCollapsed ? item.label : ''"
+            <component :is="item.icon" class="w-5 h-5 flex-shrink-0" />
+            <span 
+              v-show="!isCollapsed" 
+              class="text-sm font-medium transition-opacity duration-300"
             >
-              <component :is="item.icon" class="w-5 h-5 flex-shrink-0" />
-              <span 
-                v-show="!isCollapsed" 
-                class="text-sm font-medium transition-opacity duration-300"
-              >
-                {{ item.label }}
-              </span>
-            </div>
-          </router-link>
+              {{ item.label }}
+            </span>
+          </div>
         </nav>
 
         <!-- 折叠按钮（固定在底部） -->
@@ -147,19 +141,15 @@ import logoDark from '@/assets/images/logo-light.png'
 
 const router = useRouter()
 const authStore = useAuthStore()
-
-// Sidebar 折叠状态
 const isCollapsed = ref(false)
-
-// Logo URL
-const logoUrl = logoDark
+const hoveredPath = ref(null)
 
 // 切换侧边栏
 const toggleSidebar = () => {
   isCollapsed.value = !isCollapsed.value
 }
 
-// 菜单项
+// 菜单项配置
 const menuItems = [
   {
     path: '/admin',
@@ -232,6 +222,30 @@ const menuItems = [
     ])
   }
 ]
+
+// 判断菜单是否激活
+const isMenuActive = (path) => {
+  const currentPath = router.currentRoute.value.path
+  return path === '/admin' ? currentPath === '/admin' : currentPath.startsWith(path)
+}
+
+// 获取菜单项样式
+const getMenuItemStyle = (path) => {
+  if (isMenuActive(path)) {
+    return {
+      backgroundColor: '#102a43',
+      color: '#ffffff',
+      boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)'
+    }
+  }
+  if (hoveredPath.value === path) {
+    return {
+      backgroundColor: '#f0f4f8',
+      color: '#102a43'
+    }
+  }
+  return { color: '#627d98' }
+}
 
 // 退出登录
 const handleLogout = async () => {

@@ -129,7 +129,7 @@ const loadAuthors = async () => {
   try {
     const res = await getAuthorList({
       keyword: searchKeyword.value,
-      pageNum: currentPage.value,
+      page: currentPage.value,
       pageSize: pageSize.value
     })
     

@@ -5,6 +5,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+import java.util.Map;
+
 /**
  * 管理员统计数据 VO
  * 
@@ -36,4 +39,39 @@ public class AdminStatsVO {
      * 收藏总数
      */
     private Long favoriteCount;
+    
+    /**
+     * 今日新增资源数
+     */
+    private Long todayResourceCount;
+    
+    /**
+     * 今日新增用户数
+     */
+    private Long todayUserCount;
+    
+    /**
+     * 今日新增评论数
+     */
+    private Long todayCommentCount;
+    
+    /**
+     * 今日新增收藏数
+     */
+    private Long todayFavoriteCount;
+    
+    /**
+     * 分类分布（Top 10）
+     */
+    private List<Map<String, Object>> categoryDistribution;
+    
+    /**
+     * AI 图谱统计
+     */
+    private Map<String, Object> graphStats;
+    
+    /**
+     * 爬虫任务统计
+     */
+    private Map<String, Object> crawlerStats;
 }

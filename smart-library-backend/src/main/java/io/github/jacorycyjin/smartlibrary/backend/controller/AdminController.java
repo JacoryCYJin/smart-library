@@ -67,6 +67,23 @@ public class AdminController {
     public Result<AdminStatsVO> getStats() {
         return Result.success(adminStatsService.getStats());
     }
+    
+    /**
+     * 获取数据看板统计数据
+     */
+    @GetMapping("/dashboard")
+    public Result<AdminStatsVO> getDashboardStats() {
+        return Result.success(adminStatsService.getDashboardStats());
+    }
+    
+    /**
+     * 获取趋势数据
+     */
+    @GetMapping("/trends")
+    public Result<Map<String, Object>> getTrends(
+            @RequestParam(defaultValue = "30") int days) {
+        return Result.success(adminStatsService.getTrends(days));
+    }
 
     /**
      * 获取用户列表

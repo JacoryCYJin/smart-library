@@ -156,7 +156,7 @@ async function loadUsers() {
   try {
     const res = await getUserList({
       keyword: searchForm.value.keyword,
-      pageNum: pageNum.value,
+      page: pageNum.value,
       pageSize: pageSize.value
     })
     

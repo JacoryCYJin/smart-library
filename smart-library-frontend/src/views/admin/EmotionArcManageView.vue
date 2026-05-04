@@ -172,7 +172,7 @@ async function loadEmotionArcs() {
   try {
     const params = {
       keyword: searchForm.value.keyword,
-      pageNum: pageNum.value,
+      page: pageNum.value,
       pageSize: pageSize.value
     }
     if (searchForm.value.status !== null) {

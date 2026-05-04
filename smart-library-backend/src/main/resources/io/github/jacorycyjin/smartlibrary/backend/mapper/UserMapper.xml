@@ -137,6 +137,12 @@
             <if test="role != null">
                 AND role = #{role}
             </if>
+            <if test="startTime != null">
+                AND ctime >= #{startTime}
+            </if>
+            <if test="endTime != null">
+                AND ctime &lt;= #{endTime}
+            </if>
         </where>
     </select>
 

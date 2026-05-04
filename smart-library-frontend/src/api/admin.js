@@ -1,14 +1,71 @@
 import request from '@/utils/request'
 
 /**
- * 获取统计数据
+ * 获取数据看板统计数据
  */
-export function getStats() {
+export function getDashboardStats() {
   return request({
-    url: '/admin/stats',
+    url: '/admin/dashboard',
     method: 'get'
   })
 }
+
+/**
+ * 获取趋势数据
+ */
+export function getTrends(days = 30) {
+  return request({
+    url: '/admin/trends',
+    method: 'get',
+    params: { days }
+  })
+}
+
+/**
+ * 获取浏览量排行榜
+ */
+export function getViewRanking(limit = 10) {
+  return request({
+    url: '/admin/ranking/views',
+    method: 'get',
+    params: { limit }
+  })
+}
+
+/**
+ * 获取收藏量排行榜
+ */
+export function getFavoriteRanking(limit = 10) {
+  return request({
+    url: '/admin/ranking/favorites',
+    method: 'get',
+    params: { limit }
+  })
+}
+
+/**
+ * 获取评论量排行榜
+ */
+export function getCommentRanking(limit = 10) {
+  return request({
+    url: '/admin/ranking/comments',
+    method: 'get',
+    params: { limit }
+  })
+}
+
+/**
+ * 获取评分排行榜
+ */
+export function getRatingRanking(limit = 10) {
+  return request({
+    url: '/admin/ranking/ratings',
+    method: 'get',
+    params: { limit }
+  })
+}
+
+// ==================== 用户管理 ====================
 
 /**
  * 获取用户列表
@@ -53,6 +110,8 @@ export function deleteUser(userId) {
   })
 }
 
+// ==================== 资源管理 ====================
+
 /**
  * 获取资源列表
  */
@@ -61,6 +120,28 @@ export function getResourceList(params) {
     url: '/admin/resources',
     method: 'post',
     data: params
+  })
+}
+
+/**
+ * 创建资源
+ */
+export function createResource(data) {
+  return request({
+    url: '/admin/resources/create',
+    method: 'post',
+    data
+  })
+}
+
+/**
+ * 更新资源
+ */
+export function updateResource(resourceId, data) {
+  return request({
+    url: `/admin/resources/${resourceId}`,
+    method: 'put',
+    data
   })
 }
 
@@ -85,6 +166,18 @@ export function restoreResource(resourceId) {
 }
 
 /**
+ * 获取资源详情
+ */
+export function getResourceDetail(resourceId) {
+  return request({
+    url: `/admin/resources/${resourceId}`,
+    method: 'get'
+  })
+}
+
+// ==================== 评论管理 ====================
+
+/**
  * 获取评论列表
  */
 export function getCommentList(params) {
@@ -92,17 +185,6 @@ export function getCommentList(params) {
     url: '/admin/comments',
     method: 'post',
     data: params
-  })
-}
-
-/**
- * 审核评论
- */
-export function auditComment(commentId, auditStatus, rejectionReason) {
-  return request({
-    url: `/admin/comments/${commentId}/audit`,
-    method: 'put',
-    params: { auditStatus, rejectionReason }
   })
 }
 
@@ -126,68 +208,7 @@ export function restoreComment(commentId) {
   })
 }
 
-/**
- * 添加资源
- */
-export function createResource(data) {
-  return request({
-    url: '/admin/resources/create',
-    method: 'post',
-    data
-  })
-}
-
-/**
- * 更新资源
- */
-export function updateResource(resourceId, data) {
-  return request({
-    url: `/admin/resources/${resourceId}`,
-    method: 'put',
-    data
-  })
-}
-
-/**
- * 获取资源详情（用于编辑）
- */
-export function getResourceDetail(resourceId) {
-  return request({
-    url: `/admin/resources/${resourceId}`,
-    method: 'get'
-  })
-}
-
-/**
- * 获取所有分类列表
- */
-export function getAllCategories() {
-  return request({
-    url: '/admin/categories',
-    method: 'get'
-  })
-}
-
-/**
- * 获取所有标签列表
- */
-export function getAllTags() {
-  return request({
-    url: '/admin/tags',
-    method: 'get'
-  })
-}
-
-/**
- * 搜索作者
- */
-export function searchAuthors(keyword) {
-  return request({
-    url: '/admin/authors/search',
-    method: 'get',
-    params: { keyword }
-  })
-}
+// ==================== 分类管理 ====================
 
 /**
  * 获取分类树
@@ -204,7 +225,7 @@ export function getCategoryTree() {
  */
 export function createCategory(data) {
   return request({
-    url: '/admin/categories',
+    url: '/admin/categories/create',
     method: 'post',
     data
   })
@@ -286,10 +307,10 @@ export function getAuthorDetail(authorId) {
   })
 }
 
-// ==================== 资源链接管理 ====================
+// ==================== 链接管理 ====================
 
 /**
- * 获取资源链接列表
+ * 获取链接列表
  */
 export function getLinkList(params) {
   return request({
@@ -300,7 +321,7 @@ export function getLinkList(params) {
 }
 
 /**
- * 创建资源链接
+ * 创建链接
  */
 export function createLink(data) {
   return request({
@@ -311,7 +332,7 @@ export function createLink(data) {
 }
 
 /**
- * 更新资源链接
+ * 更新链接
  */
 export function updateLink(linkId, data) {
   return request({
@@ -322,7 +343,7 @@ export function updateLink(linkId, data) {
 }
 
 /**
- * 删除资源链接
+ * 删除链接
  */
 export function deleteLink(linkId) {
   return request({
@@ -332,7 +353,7 @@ export function deleteLink(linkId) {
 }
 
 /**
- * 获取资源链接详情
+ * 获取链接详情
  */
 export function getLinkDetail(linkId) {
   return request({
@@ -341,10 +362,10 @@ export function getLinkDetail(linkId) {
   })
 }
 
-// ==================== AI 图谱管理 ====================
+// ==================== 人物图谱管理 ====================
 
 /**
- * 获取 AI 图谱列表
+ * 获取人物图谱列表
  */
 export function getGraphList(params) {
   return request({
@@ -355,34 +376,33 @@ export function getGraphList(params) {
 }
 
 /**
- * 手动触发图谱生成
- * @param {string} resourceId - 资源ID
- * @param {boolean} forceGenerate - 是否强制生成（跳过AI判断）
- */
-export function triggerGraphGeneration(resourceId, forceGenerate = false) {
-  return request({
-    url: `/admin/graphs/trigger/${resourceId}?forceGenerate=${forceGenerate}`,
-    method: 'post'
-  })
-}
-
-/**
- * 重试失败的图谱生成
- */
-export function retryGraphGeneration(graphId) {
-  return request({
-    url: `/admin/graphs/retry/${graphId}`,
-    method: 'post'
-  })
-}
-
-/**
- * 删除图谱
+ * 删除人物图谱
  */
 export function deleteGraph(graphId) {
   return request({
     url: `/admin/graphs/${graphId}`,
     method: 'delete'
+  })
+}
+
+/**
+ * 触发图谱生成
+ */
+export function triggerGraphGeneration(resourceId, forceGenerate = false) {
+  return request({
+    url: `/admin/graphs/trigger/${resourceId}`,
+    method: 'post',
+    params: { forceGenerate }
+  })
+}
+
+/**
+ * 重试图谱生成
+ */
+export function retryGraphGeneration(graphId) {
+  return request({
+    url: `/admin/graphs/retry/${graphId}`,
+    method: 'post'
   })
 }
 
@@ -396,10 +416,10 @@ export function getGraphDetail(graphId) {
   })
 }
 
-// ==================== AI 情感走向管理 ====================
+// ==================== 情感曲线管理 ====================
 
 /**
- * 获取 AI 情感走向列表
+ * 获取情感曲线列表
  */
 export function getEmotionArcList(params) {
   return request({
@@ -410,29 +430,7 @@ export function getEmotionArcList(params) {
 }
 
 /**
- * 手动触发情感走向生成
- * @param {string} resourceId - 资源ID
- * @param {boolean} forceGenerate - 是否强制生成（跳过AI判断）
- */
-export function triggerEmotionArcGeneration(resourceId, forceGenerate = false) {
-  return request({
-    url: `/admin/emotion-arcs/trigger/${resourceId}?forceGenerate=${forceGenerate}`,
-    method: 'post'
-  })
-}
-
-/**
- * 重试失败的情感走向生成
- */
-export function retryEmotionArcGeneration(arcId) {
-  return request({
-    url: `/admin/emotion-arcs/retry/${arcId}`,
-    method: 'post'
-  })
-}
-
-/**
- * 删除情感走向
+ * 删除情感曲线
  */
 export function deleteEmotionArc(arcId) {
   return request({
@@ -442,7 +440,28 @@ export function deleteEmotionArc(arcId) {
 }
 
 /**
- * 获取情感走向详情
+ * 触发情感曲线生成
+ */
+export function triggerEmotionArcGeneration(resourceId, forceGenerate = false) {
+  return request({
+    url: `/admin/emotion-arcs/trigger/${resourceId}`,
+    method: 'post',
+    params: { forceGenerate }
+  })
+}
+
+/**
+ * 重试情感曲线生成
+ */
+export function retryEmotionArcGeneration(arcId) {
+  return request({
+    url: `/admin/emotion-arcs/retry/${arcId}`,
+    method: 'post'
+  })
+}
+
+/**
+ * 获取情感曲线详情
  */
 export function getEmotionArcDetail(arcId) {
   return request({
@@ -451,48 +470,47 @@ export function getEmotionArcDetail(arcId) {
   })
 }
 
-// ==================== 排行榜统计 ====================
+// ==================== 公告管理 ====================
 
 /**
- * 获取浏览量排行榜
+ * 获取公告列表
  */
-export function getViewRanking(limit = 10) {
+export function getAnnouncementList(params) {
   return request({
-    url: '/admin/ranking/views',
-    method: 'get',
-    params: { limit }
+    url: '/admin/announcements',
+    method: 'post',
+    data: params
   })
 }
 
 /**
- * 获取收藏量排行榜
+ * 创建公告
  */
-export function getFavoriteRanking(limit = 10) {
+export function createAnnouncement(data) {
   return request({
-    url: '/admin/ranking/favorites',
-    method: 'get',
-    params: { limit }
+    url: '/admin/announcements',
+    method: 'post',
+    data
   })
 }
 
 /**
- * 获取评论量排行榜
+ * 更新公告
  */
-export function getCommentRanking(limit = 10) {
+export function updateAnnouncement(announcementId, data) {
   return request({
-    url: '/admin/ranking/comments',
-    method: 'get',
-    params: { limit }
+    url: `/admin/announcements/${announcementId}`,
+    method: 'put',
+    data
   })
 }
 
 /**
- * 获取评分排行榜
+ * 删除公告
  */
-export function getRatingRanking(limit = 10) {
+export function deleteAnnouncement(announcementId) {
   return request({
-    url: '/admin/ranking/ratings',
-    method: 'get',
-    params: { limit }
+    url: `/admin/announcements/${announcementId}`,
+    method: 'delete'
   })
 }

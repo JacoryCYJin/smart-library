@@ -400,6 +400,17 @@
                     OR isbn LIKE CONCAT('%', #{keyword}, '%')
                 )
             </if>
+            <if test="startTime != null">
+                AND ctime >= #{startTime}
+            </if>
+            <if test="endTime != null">
+                AND ctime &lt;= #{endTime}
+            </if>
+            <if test="categoryId != null and categoryId != ''">
+                AND resource_id IN (
+                    SELECT resource_id FROM resource_category_rel WHERE category_id = #{categoryId}
+                )
+            </if>
         </where>
     </select>
 

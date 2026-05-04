@@ -165,7 +165,7 @@ const loadLinks = async () => {
   try {
     const res = await getLinkList({
       resourceId: resourceId.value || undefined,
-      pageNum: currentPage.value,
+      page: currentPage.value,
       pageSize: pageSize.value
     })
     
