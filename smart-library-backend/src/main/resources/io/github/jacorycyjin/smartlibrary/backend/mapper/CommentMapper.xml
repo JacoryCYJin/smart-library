@@ -21,17 +21,22 @@
     <!-- 管理员评论结果映射（包含用户名和资源标题） -->
     <resultMap id="AdminCommentResultMap" type="io.github.jacorycyjin.smartlibrary.backend.entity.Comment" extends="CommentResultMap">
         <result column="username" property="username"/>
+        <result column="avatar_url" property="avatarUrl"/>
         <result column="resource_title" property="resourceTitle"/>
     </resultMap>
 
     <!-- 根据资源ID查询已通过审核的评论列表（支持分页） -->
-    <select id="selectByResourceId" resultMap="CommentResultMap">
-        SELECT *
-        FROM comment
-        WHERE resource_id = #{resourceId}
-          AND audit_status = 1
-          AND deleted = 0
-        ORDER BY ctime DESC
+    <select id="selectByResourceId" resultMap="AdminCommentResultMap">
+        SELECT 
+            c.*,
+            u.username,
+            u.avatar_url
+        FROM comment c
+        LEFT JOIN user u ON c.user_id = u.user_id
+        WHERE c.resource_id = #{resourceId}
+          AND c.audit_status = 1
+          AND c.deleted = 0
+        ORDER BY c.ctime DESC
     </select>
 
     <!-- 统计资源的评论总数 -->

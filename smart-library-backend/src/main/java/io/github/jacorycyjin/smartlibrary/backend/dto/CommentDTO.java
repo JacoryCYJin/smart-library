@@ -91,6 +91,8 @@ public class CommentDTO {
         return CommentDTO.builder()
                 .commentId(comment.getCommentId())
                 .userId(comment.getUserId())
+                .username(comment.getUsername())
+                .avatarUrl(comment.getAvatarUrl())
                 .resourceId(comment.getResourceId())
                 .content(comment.getContent())
                 .score(comment.getScore())

@@ -414,56 +414,110 @@
             <h2 class="text-2xl font-bold text-ink mb-6">{{ i18n.comments }}</h2>
 
             <!-- 发表评论表单 -->
-            <div class="max-w-3xl mb-12 pb-8 border-b border-structure">
-              <h3 class="text-lg font-semibold text-ink mb-4">{{ i18n.postComment }}</h3>
-              <form @submit.prevent="submitComment" class="flex flex-col gap-4">
-                <!-- 评分 -->
-                <div class="flex flex-col gap-2">
-                  <label class="text-sm font-medium text-ink-light">{{ i18n.rating }} (0-10分)</label>
-                  <div class="flex gap-2 items-center">
+            <div class="mb-12 pb-8 border-b border-structure">
+              <h3 class="text-lg font-semibold text-ink mb-6">{{ i18n.postComment }}</h3>
+              <form @submit.prevent="submitComment" class="flex flex-col gap-6">
+                <!-- 左右布局：左侧评分 + 右侧评论内容 -->
+                <div class="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-8">
+                  <!-- 左侧：评分 -->
+                  <div class="flex flex-col gap-3">
+                    <label class="text-sm font-medium text-ink-light">{{ i18n.rating }}</label>
+                    <div class="flex items-center gap-4">
+                      <!-- 5 颗星，每颗星可以点击左半边或右半边 -->
+                      <div class="flex gap-1">
+                        <button
+                          v-for="star in 5"
+                          :key="star"
+                          type="button"
+                          class="relative w-8 h-8 outline-none group"
+                          @click.prevent
+                        >
+                          <!-- 左半边：点击设置为 (star * 2 - 1) 分 -->
+                          <div
+                            class="absolute left-0 top-0 w-1/2 h-full z-10 cursor-pointer"
+                            @click="commentForm.score = star * 2 - 1"
+                          ></div>
+                          <!-- 右半边：点击设置为 (star * 2) 分 -->
+                          <div
+                            class="absolute right-0 top-0 w-1/2 h-full z-10 cursor-pointer"
+                            @click="commentForm.score = star * 2"
+                          ></div>
+                          
+                          <!-- 星星背景（灰色） -->
+                          <svg
+                            class="absolute inset-0 w-8 h-8 text-structure transition-colors"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path
+                              d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+                            />
+                          </svg>
+                          
+                          <!-- 星星前景（黄色，根据评分显示） -->
+                          <svg
+                            v-if="commentForm.score >= star * 2"
+                            class="absolute inset-0 w-8 h-8 text-yellow-500 transition-all duration-200 group-hover:scale-110"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path
+                              d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+                            />
+                          </svg>
+                          <!-- 半星（左半边黄色） -->
+                          <svg
+                            v-else-if="commentForm.score === star * 2 - 1"
+                            class="absolute inset-0 w-8 h-8 text-yellow-500 transition-all duration-200 group-hover:scale-110"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <defs>
+                              <linearGradient :id="`half-${star}`">
+                                <stop offset="50%" stop-color="currentColor" />
+                                <stop offset="50%" stop-color="transparent" />
+                              </linearGradient>
+                            </defs>
+                            <path
+                              :fill="`url(#half-${star})`"
+                              d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+                            />
+                          </svg>
+                        </button>
+                      </div>
+                      
+                      <!-- 分数显示 -->
+                      <div class="flex items-baseline gap-1">
+                        <span class="text-2xl font-bold text-ink">{{ commentForm.score }}</span>
+                        <span class="text-sm text-ink-light">/ 10</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- 右侧：评论内容 + 提交按钮 -->
+                  <div class="flex flex-col gap-4">
+                    <div class="flex flex-col gap-2">
+                      <label class="text-sm font-medium text-ink-light">{{
+                        i18n.commentContent
+                      }}</label>
+                      <textarea
+                        v-model="commentForm.content"
+                        rows="5"
+                        :placeholder="i18n.commentPlaceholder"
+                        class="w-full px-4 py-3 border border-structure rounded-lg text-sm text-ink bg-white transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-ink resize-none"
+                      ></textarea>
+                    </div>
+
+                    <!-- 提交按钮 -->
                     <button
-                      v-for="star in 10"
-                      :key="star"
-                      type="button"
-                      @click="commentForm.score = star"
-                      class="outline-none transition-transform duration-200 hover:scale-110"
+                      type="submit"
+                      :disabled="submitting || !commentForm.content.trim()"
+                      class="px-6 py-2 bg-ink text-white rounded-full text-sm font-medium transition-all duration-300 self-end hover:bg-pop disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      <svg
-                        class="w-6 h-6 transition-colors"
-                        :class="star <= commentForm.score ? 'text-yellow-500' : 'text-structure'"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path
-                          d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
-                        />
-                      </svg>
+                      {{ submitting ? i18n.submitting : i18n.submit }}
                     </button>
-                    <span class="ml-2 text-lg font-semibold text-ink">{{ commentForm.score }}</span>
                   </div>
                 </div>
-
-                <!-- 评论内容 -->
-                <div class="flex flex-col gap-2">
-                  <label class="text-sm font-medium text-ink-light">{{
-                    i18n.commentContent
-                  }}</label>
-                  <textarea
-                    v-model="commentForm.content"
-                    rows="3"
-                    :placeholder="i18n.commentPlaceholder"
-                    class="w-full px-4 py-3 border border-structure rounded-lg text-sm text-ink bg-white transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-ink"
-                  ></textarea>
-                </div>
-
-                <!-- 提交按钮 -->
-                <button
-                  type="submit"
-                  :disabled="submitting || !commentForm.content.trim()"
-                  class="px-6 py-2 bg-ink text-white rounded-full text-sm font-medium transition-all duration-300 self-start hover:bg-pop disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {{ submitting ? i18n.submitting : i18n.submit }}
-                </button>
               </form>
             </div>
 
@@ -833,9 +887,9 @@ const submitComment = async () => {
         query: { redirect: route.fullPath },
       })
     } else {
-      Message.error(
-        localeStore.currentLang === 'zh' ? '发表失败，请稍后重试' : 'Failed to post comment',
-      )
+      // 显示后端返回的具体错误信息
+      const errorMessage = error.message || (localeStore.currentLang === 'zh' ? '发表失败，请稍后重试' : 'Failed to post comment')
+      Message.error(errorMessage)
     }
   } finally {
     submitting.value = false

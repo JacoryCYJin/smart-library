@@ -87,6 +87,11 @@ public class Comment {
     private String username;
 
     /**
+     * 用户头像URL（查询时关联）
+     */
+    private String avatarUrl;
+
+    /**
      * 资源标题（管理员查询时关联）
      */
     private String resourceTitle;

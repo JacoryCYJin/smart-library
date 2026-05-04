@@ -113,7 +113,7 @@ public class CommentServiceImpl implements CommentService {
         // 检查用户是否已经评论过该资源
         Comment existingComment = commentMapper.selectByUserAndResource(userId, form.getResourceId());
         if (existingComment != null) {
-            throw new BusinessException(ApiCode.FORBIDDEN.getCode(), "您已经评论过该资源，不能重复评论");
+            throw new BusinessException(ApiCode.PARAM_INVALID.getCode(), "您已经评论过这本书了");
         }
 
         // 创建评论
