@@ -75,176 +75,462 @@
       </div>
     </div>
 
-    <!-- 账号安全弹窗 -->
+    <!-- 账号安全弹窗 - 简约现代风格 -->
     <a-modal
       v-model:visible="isViewingSecurity"
-      title="账号安全"
       :footer="false"
-      width="500px"
+      width="540px"
+      :body-style="{ padding: 0 }"
+      :modal-style="{ borderRadius: '16px', overflow: 'hidden' }"
+      :closable="false"
     >
-      <div class="space-y-4">
-        <!-- 登录密码 -->
-        <div class="flex items-center justify-between py-3 border-b border-structure">
-          <div class="flex-1">
-            <div class="text-sm font-medium text-ink mb-1">登录密码</div>
-            <div class="text-xs text-ink-light">定期更换密码可以提高账号安全性</div>
+      <div class="bg-white">
+        <!-- 标题栏 -->
+        <div class="px-8 py-6 border-b border-structure/30 flex items-start justify-between">
+          <div>
+            <h2 class="text-xl font-serif font-semibold text-ink">账号安全</h2>
+            <p class="text-xs text-ink-light mt-1">管理你的登录信息和安全设置</p>
           </div>
           <button
-            @click="isChangingPassword = true; isViewingSecurity = false"
-            class="px-4 py-2 text-sm text-pop hover:bg-structure rounded-lg transition-colors"
+            @click="isViewingSecurity = false"
+            class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg text-ink-light hover:text-ink hover:bg-canvas transition-colors"
           >
-            修改
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
           </button>
         </div>
 
-        <!-- 手机号 -->
-        <div class="flex items-center justify-between py-3 border-b border-structure">
-          <div class="flex-1">
-            <div class="text-sm font-medium text-ink mb-1">手机号</div>
-            <div class="text-xs text-ink-light">{{ maskPhone(user.phone) }}</div>
+        <!-- 安全项列表 -->
+        <div class="p-6">
+          <div class="space-y-3">
+            <!-- 登录密码 -->
+            <div class="flex items-center justify-between p-4 rounded-xl bg-canvas/50 hover:bg-canvas transition-colors group">
+              <div class="flex items-center gap-4 flex-1">
+                <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center flex-shrink-0">
+                  <svg class="w-5 h-5 text-ink" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="text-sm font-medium text-ink">登录密码</div>
+                  <div class="text-xs text-ink-light mt-0.5">定期更换密码可以提高账号安全性</div>
+                </div>
+              </div>
+              <button
+                @click="isChangingPassword = true; isViewingSecurity = false"
+                class="px-4 py-2 text-sm font-medium text-pop hover:bg-white rounded-lg transition-colors"
+              >
+                修改
+              </button>
+            </div>
+
+            <!-- 手机号 -->
+            <div class="flex items-center justify-between p-4 rounded-xl bg-canvas/50 hover:bg-canvas transition-colors group">
+              <div class="flex items-center gap-4 flex-1">
+                <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center flex-shrink-0">
+                  <svg class="w-5 h-5 text-ink" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="text-sm font-medium text-ink">手机号</div>
+                  <div class="text-xs text-ink-light mt-0.5">{{ maskPhone(user.phone) }}</div>
+                </div>
+              </div>
+              <button
+                @click="isChangingPhone = true; isViewingSecurity = false"
+                class="px-4 py-2 text-sm font-medium text-pop hover:bg-white rounded-lg transition-colors"
+              >
+                修改
+              </button>
+            </div>
+
+            <!-- 邮箱 -->
+            <div class="flex items-center justify-between p-4 rounded-xl bg-canvas/50 hover:bg-canvas transition-colors group">
+              <div class="flex items-center gap-4 flex-1">
+                <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center flex-shrink-0">
+                  <svg class="w-5 h-5 text-ink" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="text-sm font-medium text-ink">邮箱地址</div>
+                  <div class="text-xs text-ink-light mt-0.5">{{ maskEmail(user.email) }}</div>
+                </div>
+              </div>
+              <button
+                @click="isChangingEmail = true; isViewingSecurity = false"
+                class="px-4 py-2 text-sm font-medium text-pop hover:bg-white rounded-lg transition-colors"
+              >
+                修改
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </a-modal>
+
+    <!-- 编辑资料弹窗 - 简约现代风格 -->
+    <a-modal
+      v-model:visible="isEditing"
+      :footer="false"
+      width="540px"
+      :body-style="{ padding: 0 }"
+      :modal-style="{ borderRadius: '16px', overflow: 'hidden' }"
+      :closable="false"
+    >
+      <div class="bg-white">
+        <!-- 标题栏 -->
+        <div class="px-8 py-6 border-b border-structure/30 flex items-start justify-between">
+          <div>
+            <h2 class="text-xl font-serif font-semibold text-ink">编辑资料</h2>
+            <p class="text-xs text-ink-light mt-1">更新你的个人信息</p>
           </div>
           <button
-            @click="isChangingPhone = true; isViewingSecurity = false"
-            class="px-4 py-2 text-sm text-pop hover:bg-structure rounded-lg transition-colors"
+            @click="handleCancel"
+            class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg text-ink-light hover:text-ink hover:bg-canvas transition-colors"
           >
-            修改
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
           </button>
         </div>
 
-        <!-- 邮箱 -->
-        <div class="flex items-center justify-between py-3">
-          <div class="flex-1">
-            <div class="text-sm font-medium text-ink mb-1">邮箱地址</div>
-            <div class="text-xs text-ink-light">{{ maskEmail(user.email) }}</div>
+        <!-- 表单内容 -->
+        <div class="px-8 py-6 space-y-6">
+          <!-- 头像上传 -->
+          <div>
+            <label class="block text-sm font-medium text-ink mb-3">头像</label>
+            <div class="flex items-center gap-6">
+              <!-- 头像预览 -->
+              <div class="relative group">
+                <div v-if="editForm.avatarUrl" class="w-24 h-24 rounded-full overflow-hidden ring-2 ring-structure/50">
+                  <img :src="editForm.avatarUrl" alt="头像预览" class="w-full h-full object-cover" />
+                </div>
+                <div v-else class="w-24 h-24 rounded-full bg-canvas flex items-center justify-center text-3xl text-ink-light ring-2 ring-structure/50">
+                  {{ editForm.username?.charAt(0) || '用' }}
+                </div>
+                <!-- 上传遮罩 -->
+                <div v-if="uploadingAvatar" class="absolute inset-0 bg-ink/50 rounded-full flex items-center justify-center">
+                  <svg class="animate-spin h-6 w-6 text-white" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                </div>
+              </div>
+
+              <!-- 上传按钮 -->
+              <div class="flex-1">
+                <a-upload
+                  :custom-request="handleAvatarUpload"
+                  :show-file-list="false"
+                  accept="image/*"
+                  :disabled="uploadingAvatar"
+                >
+                  <button
+                    type="button"
+                    :disabled="uploadingAvatar"
+                    class="px-5 py-2.5 bg-ink text-white text-sm font-medium rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  >
+                    <svg v-if="uploadingAvatar" class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <span>{{ uploadingAvatar ? '上传中...' : '选择头像' }}</span>
+                  </button>
+                </a-upload>
+                <p class="text-xs text-ink-light mt-2">支持 JPG、PNG 格式，不超过 2MB</p>
+              </div>
+            </div>
           </div>
+
+          <!-- 用户名 -->
+          <div>
+            <label class="block text-sm font-medium text-ink mb-2">用户名</label>
+            <input
+              v-model="editForm.username"
+              type="text"
+              placeholder="请输入用户名"
+              class="w-full px-4 py-3 bg-canvas border-0 rounded-lg text-ink placeholder:text-ink-light/50 focus:outline-none focus:ring-2 focus:ring-ink/20 transition-all"
+            />
+          </div>
+
+          <!-- 个人简介 -->
+          <div>
+            <label class="block text-sm font-medium text-ink mb-2">个人简介</label>
+            <textarea
+              v-model="editForm.bio"
+              placeholder="介绍一下自己吧..."
+              rows="4"
+              maxlength="200"
+              class="w-full px-4 py-3 bg-canvas border-0 rounded-lg text-ink placeholder:text-ink-light/50 focus:outline-none focus:ring-2 focus:ring-ink/20 transition-all resize-none"
+            ></textarea>
+            <div class="flex justify-end mt-1">
+              <span class="text-xs text-ink-light">{{ editForm.bio?.length || 0 }} / 200</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 底部按钮 -->
+        <div class="px-8 py-5 bg-canvas/30 border-t border-structure/30 flex items-center justify-end gap-3">
           <button
-            @click="isChangingEmail = true; isViewingSecurity = false"
-            class="px-4 py-2 text-sm text-pop hover:bg-structure rounded-lg transition-colors"
+            type="button"
+            @click="handleSave"
+            :disabled="saving"
+            class="px-6 py-2.5 bg-ink text-white text-sm font-medium rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
-            修改
+            <svg v-if="saving" class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span>{{ saving ? '保存中...' : '保存' }}</span>
           </button>
         </div>
       </div>
     </a-modal>
 
-    <!-- 编辑资料弹窗 -->
-    <a-modal
-      v-model:visible="isEditing"
-      title="编辑资料"
-      @ok="handleSave"
-      @cancel="handleCancel"
-      :ok-loading="saving"
-      width="500px"
-    >
-      <a-form :model="editForm" layout="vertical">
-        <a-form-item label="头像">
-          <div class="flex items-center gap-4">
-            <div v-if="editForm.avatarUrl" class="w-20 h-20 rounded-full overflow-hidden border-2 border-structure">
-              <img :src="editForm.avatarUrl" alt="头像预览" class="w-full h-full object-cover" />
-            </div>
-            <div v-else class="w-20 h-20 rounded-full bg-structure flex items-center justify-center text-2xl text-ink-light border-2 border-structure">
-              {{ editForm.username?.charAt(0) || '用' }}
-            </div>
-            <a-upload
-              :custom-request="handleAvatarUpload"
-              :show-file-list="false"
-              accept="image/*"
-              :loading="uploadingAvatar"
-            >
-              <a-button type="outline" :loading="uploadingAvatar">
-                {{ uploadingAvatar ? '上传中...' : '选择头像' }}
-              </a-button>
-            </a-upload>
-          </div>
-          <div class="text-xs text-ink-light mt-2">支持 JPG、PNG 格式，文件大小不超过 2MB</div>
-        </a-form-item>
-
-        <a-form-item label="用户名">
-          <a-input v-model="editForm.username" placeholder="请输入用户名" />
-        </a-form-item>
-        
-        <a-form-item label="个人简介">
-          <a-textarea
-            v-model="editForm.bio"
-            placeholder="介绍一下自己吧"
-            :max-length="200"
-            show-word-limit
-            :auto-size="{ minRows: 3, maxRows: 5 }"
-          />
-        </a-form-item>
-      </a-form>
-    </a-modal>
-
-    <!-- 修改密码弹窗 -->
+    <!-- 修改密码弹窗 - 简约现代风格 -->
     <a-modal
       v-model:visible="isChangingPassword"
-      title="修改密码"
-      @ok="handleChangePassword"
-      @cancel="handleCancelPassword"
-      :ok-loading="changingPassword"
-      width="450px"
+      :footer="false"
+      width="540px"
+      :body-style="{ padding: 0 }"
+      :modal-style="{ borderRadius: '16px', overflow: 'hidden' }"
+      :closable="false"
     >
-      <a-form :model="passwordForm" layout="vertical">
-        <a-form-item label="旧密码">
-          <a-input-password v-model="passwordForm.oldPassword" placeholder="请输入旧密码" />
-        </a-form-item>
-        
-        <a-form-item label="新密码">
-          <a-input-password v-model="passwordForm.newPassword" placeholder="请输入新密码（6-20位）" />
-        </a-form-item>
-        
-        <a-form-item label="确认新密码">
-          <a-input-password v-model="passwordForm.confirmPassword" placeholder="请再次输入新密码" />
-        </a-form-item>
-      </a-form>
+      <div class="bg-white">
+        <!-- 标题栏 -->
+        <div class="px-8 py-6 border-b border-structure/30 flex items-start justify-between">
+          <div>
+            <h2 class="text-xl font-serif font-semibold text-ink">修改密码</h2>
+            <p class="text-xs text-ink-light mt-1">定期更换密码可以提高账号安全性</p>
+          </div>
+          <button
+            @click="handleCancelPassword"
+            class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg text-ink-light hover:text-ink hover:bg-canvas transition-colors"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- 表单内容 -->
+        <div class="px-8 py-6 space-y-5">
+          <!-- 旧密码 -->
+          <div>
+            <label class="block text-sm font-medium text-ink mb-2">旧密码</label>
+            <input
+              v-model="passwordForm.oldPassword"
+              type="password"
+              placeholder="请输入旧密码"
+              class="w-full px-4 py-3 bg-canvas border-0 rounded-lg text-ink placeholder:text-ink-light/50 focus:outline-none focus:ring-2 focus:ring-ink/20 transition-all"
+            />
+          </div>
+
+          <!-- 新密码 -->
+          <div>
+            <label class="block text-sm font-medium text-ink mb-2">新密码</label>
+            <input
+              v-model="passwordForm.newPassword"
+              type="password"
+              placeholder="请输入新密码（6-20位）"
+              class="w-full px-4 py-3 bg-canvas border-0 rounded-lg text-ink placeholder:text-ink-light/50 focus:outline-none focus:ring-2 focus:ring-ink/20 transition-all"
+            />
+          </div>
+
+          <!-- 确认新密码 -->
+          <div>
+            <label class="block text-sm font-medium text-ink mb-2">确认新密码</label>
+            <input
+              v-model="passwordForm.confirmPassword"
+              type="password"
+              placeholder="请再次输入新密码"
+              class="w-full px-4 py-3 bg-canvas border-0 rounded-lg text-ink placeholder:text-ink-light/50 focus:outline-none focus:ring-2 focus:ring-ink/20 transition-all"
+            />
+          </div>
+        </div>
+
+        <!-- 底部按钮 -->
+        <div class="px-8 py-5 bg-canvas/30 border-t border-structure/30 flex items-center justify-end gap-3">
+          <button
+            type="button"
+            @click="handleChangePassword"
+            :disabled="changingPassword"
+            class="px-6 py-2.5 bg-pop text-white text-sm font-medium rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          >
+            <svg v-if="changingPassword" class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span>{{ changingPassword ? '修改中...' : '确认修改' }}</span>
+          </button>
+        </div>
+      </div>
     </a-modal>
 
-    <!-- 修改手机号弹窗 -->
+    <!-- 修改手机号弹窗 - 简约现代风格 -->
     <a-modal
       v-model:visible="isChangingPhone"
-      title="修改手机号"
-      @ok="handleChangePhone"
-      @cancel="handleCancelPhone"
-      :ok-loading="changingPhone"
-      width="450px"
+      :footer="false"
+      width="540px"
+      :body-style="{ padding: 0 }"
+      :modal-style="{ borderRadius: '16px', overflow: 'hidden' }"
+      :closable="false"
     >
-      <a-form :model="phoneForm" layout="vertical">
-        <a-form-item label="当前手机号">
-          <a-input v-model="phoneForm.oldPhone" placeholder="请输入当前手机号" />
-        </a-form-item>
-        
-        <a-form-item label="新手机号">
-          <a-input v-model="phoneForm.newPhone" placeholder="请输入新手机号" />
-        </a-form-item>
-        
-        <a-form-item label="密码确认">
-          <a-input-password v-model="phoneForm.password" placeholder="请输入密码以确认修改" />
-        </a-form-item>
-      </a-form>
+      <div class="bg-white">
+        <!-- 标题栏 -->
+        <div class="px-8 py-6 border-b border-structure/30 flex items-start justify-between">
+          <div>
+            <h2 class="text-xl font-serif font-semibold text-ink">修改手机号</h2>
+            <p class="text-xs text-ink-light mt-1">更换绑定的手机号码</p>
+          </div>
+          <button
+            @click="handleCancelPhone"
+            class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg text-ink-light hover:text-ink hover:bg-canvas transition-colors"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- 表单内容 -->
+        <div class="px-8 py-6 space-y-5">
+          <!-- 当前手机号 -->
+          <div>
+            <label class="block text-sm font-medium text-ink mb-2">当前手机号</label>
+            <input
+              v-model="phoneForm.oldPhone"
+              type="tel"
+              placeholder="请输入当前手机号"
+              class="w-full px-4 py-3 bg-canvas border-0 rounded-lg text-ink placeholder:text-ink-light/50 focus:outline-none focus:ring-2 focus:ring-ink/20 transition-all"
+            />
+          </div>
+
+          <!-- 新手机号 -->
+          <div>
+            <label class="block text-sm font-medium text-ink mb-2">新手机号</label>
+            <input
+              v-model="phoneForm.newPhone"
+              type="tel"
+              placeholder="请输入新手机号"
+              class="w-full px-4 py-3 bg-canvas border-0 rounded-lg text-ink placeholder:text-ink-light/50 focus:outline-none focus:ring-2 focus:ring-ink/20 transition-all"
+            />
+          </div>
+
+          <!-- 密码确认 -->
+          <div>
+            <label class="block text-sm font-medium text-ink mb-2">密码确认</label>
+            <input
+              v-model="phoneForm.password"
+              type="password"
+              placeholder="请输入密码以确认修改"
+              class="w-full px-4 py-3 bg-canvas border-0 rounded-lg text-ink placeholder:text-ink-light/50 focus:outline-none focus:ring-2 focus:ring-ink/20 transition-all"
+            />
+          </div>
+        </div>
+
+        <!-- 底部按钮 -->
+        <div class="px-8 py-5 bg-canvas/30 border-t border-structure/30 flex items-center justify-end gap-3">
+          <button
+            type="button"
+            @click="handleChangePhone"
+            :disabled="changingPhone"
+            class="px-6 py-2.5 bg-pop text-white text-sm font-medium rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          >
+            <svg v-if="changingPhone" class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span>{{ changingPhone ? '修改中...' : '确认修改' }}</span>
+          </button>
+        </div>
+      </div>
     </a-modal>
 
-    <!-- 修改邮箱弹窗 -->
+    <!-- 修改邮箱弹窗 - 简约现代风格 -->
     <a-modal
       v-model:visible="isChangingEmail"
-      title="修改邮箱"
-      @ok="handleChangeEmail"
-      @cancel="handleCancelEmail"
-      :ok-loading="changingEmail"
-      width="450px"
+      :footer="false"
+      width="540px"
+      :body-style="{ padding: 0 }"
+      :modal-style="{ borderRadius: '16px', overflow: 'hidden' }"
+      :closable="false"
     >
-      <a-form :model="emailForm" layout="vertical">
-        <a-form-item label="当前邮箱">
-          <a-input v-model="emailForm.oldEmail" placeholder="请输入当前邮箱" />
-        </a-form-item>
-        
-        <a-form-item label="新邮箱">
-          <a-input v-model="emailForm.newEmail" placeholder="请输入新邮箱" />
-        </a-form-item>
-        
-        <a-form-item label="密码确认">
-          <a-input-password v-model="emailForm.password" placeholder="请输入密码以确认修改" />
-        </a-form-item>
-      </a-form>
+      <div class="bg-white">
+        <!-- 标题栏 -->
+        <div class="px-8 py-6 border-b border-structure/30 flex items-start justify-between">
+          <div>
+            <h2 class="text-xl font-serif font-semibold text-ink">修改邮箱</h2>
+            <p class="text-xs text-ink-light mt-1">更换绑定的邮箱地址</p>
+          </div>
+          <button
+            @click="handleCancelEmail"
+            class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg text-ink-light hover:text-ink hover:bg-canvas transition-colors"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- 表单内容 -->
+        <div class="px-8 py-6 space-y-5">
+          <!-- 当前邮箱 -->
+          <div>
+            <label class="block text-sm font-medium text-ink mb-2">当前邮箱</label>
+            <input
+              v-model="emailForm.oldEmail"
+              type="email"
+              placeholder="请输入当前邮箱"
+              class="w-full px-4 py-3 bg-canvas border-0 rounded-lg text-ink placeholder:text-ink-light/50 focus:outline-none focus:ring-2 focus:ring-ink/20 transition-all"
+            />
+          </div>
+
+          <!-- 新邮箱 -->
+          <div>
+            <label class="block text-sm font-medium text-ink mb-2">新邮箱</label>
+            <input
+              v-model="emailForm.newEmail"
+              type="email"
+              placeholder="请输入新邮箱"
+              class="w-full px-4 py-3 bg-canvas border-0 rounded-lg text-ink placeholder:text-ink-light/50 focus:outline-none focus:ring-2 focus:ring-ink/20 transition-all"
+            />
+          </div>
+
+          <!-- 密码确认 -->
+          <div>
+            <label class="block text-sm font-medium text-ink mb-2">密码确认</label>
+            <input
+              v-model="emailForm.password"
+              type="password"
+              placeholder="请输入密码以确认修改"
+              class="w-full px-4 py-3 bg-canvas border-0 rounded-lg text-ink placeholder:text-ink-light/50 focus:outline-none focus:ring-2 focus:ring-ink/20 transition-all"
+            />
+          </div>
+        </div>
+
+        <!-- 底部按钮 -->
+        <div class="px-8 py-5 bg-canvas/30 border-t border-structure/30 flex items-center justify-end gap-3">
+          <button
+            type="button"
+            @click="handleChangeEmail"
+            :disabled="changingEmail"
+            class="px-6 py-2.5 bg-pop text-white text-sm font-medium rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          >
+            <svg v-if="changingEmail" class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span>{{ changingEmail ? '修改中...' : '确认修改' }}</span>
+          </button>
+        </div>
+      </div>
     </a-modal>
   </div>
 </template>
@@ -698,3 +984,31 @@ onMounted(() => {
   loadStats()
 })
 </script>
+
+<style scoped>
+/* 强制覆盖 Arco Design Upload 组件的默认按钮样式 */
+:deep(.arco-upload) {
+  display: inline-block;
+}
+
+:deep(.arco-upload-trigger) {
+  display: inline-block;
+}
+
+/* 强制覆盖按钮的背景色和文字色 */
+:deep(.arco-upload button) {
+  background-color: #102a43 !important;
+  color: white !important;
+  border: none !important;
+}
+
+:deep(.arco-upload button:hover:not(:disabled)) {
+  background-color: #102a43 !important;
+  opacity: 0.9 !important;
+}
+
+:deep(.arco-upload button:disabled) {
+  background-color: #102a43 !important;
+  opacity: 0.5 !important;
+}
+</style>
