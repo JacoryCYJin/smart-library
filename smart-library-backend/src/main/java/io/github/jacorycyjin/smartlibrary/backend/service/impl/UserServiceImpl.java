@@ -492,4 +492,62 @@ public class UserServiceImpl implements UserService {
         
         return result > 0;
     }
+
+    /**
+     * 重置密码（忘记密码）
+     * 
+     * @param phoneOrEmail 手机号或邮箱
+     * @param newPassword 新密码
+     * @param confirmPassword 确认密码
+     * @return 是否重置成功
+     */
+    @Override
+    public Boolean resetPassword(String phoneOrEmail, String newPassword, String confirmPassword) {
+        ValidationUtil.validateNotEmpty(phoneOrEmail, "手机号 / 邮箱");
+        ValidationUtil.validateNotEmpty(newPassword, "新密码");
+        ValidationUtil.validateNotEmpty(confirmPassword, "确认密码");
+        ValidationUtil.validatePasswordFormat(newPassword);
+        
+        // 验证两次密码是否一致
+        if (!newPassword.equals(confirmPassword)) {
+            throw new BusinessException(ApiCode.PARAM_INVALID.getCode(), "两次输入的密码不一致");
+        }
+        
+        // 查询用户是否存在
+        UserSearchForm searchForm = new UserSearchForm();
+        searchForm.setPhoneOrEmail(phoneOrEmail);
+        searchForm.setDeleted(0);
+        searchForm.setLimit(1);
+        
+        List<UserDTO> users = searchUser(searchForm);
+        if (users == null || users.isEmpty()) {
+            throw new BusinessException(ApiCode.PARAM_INVALID.getCode(), "该账号不存在");
+        }
+        
+        UserDTO user = users.get(0);
+        
+        // 禁止重置管理员密码
+        if (user.getRole() != null && user.getRole() == 1) {
+            throw new BusinessException(ApiCode.FORBIDDEN.getCode(), "管理员账号不支持通过此方式重置密码");
+        }
+        
+        // 加密新密码
+        String encodedPassword = PasswordUtil.encode(newPassword);
+        
+        // 更新密码
+        Map<String, Object> params = new HashMap<>();
+        params.put("userId", user.getUserId());
+        params.put("password", encodedPassword);
+        params.put("mtime", LocalDateTime.now());
+        
+        int result = userMapper.updateUser(params);
+        
+        // 清除 Redis 缓存
+        if (result > 0) {
+            String cacheKey = USER_CACHE_PREFIX + user.getUserId();
+            redisTemplate.delete(cacheKey);
+        }
+        
+        return result > 0;
+    }
 }

@@ -103,4 +103,14 @@ public interface UserService {
      * @return 是否修改成功
      */
     Boolean changeEmail(String userId, String oldEmail, String newEmail, String password);
+
+    /**
+     * 重置密码（忘记密码）
+     * 
+     * @param phoneOrEmail 手机号或邮箱
+     * @param newPassword 新密码
+     * @param confirmPassword 确认密码
+     * @return 是否重置成功
+     */
+    Boolean resetPassword(String phoneOrEmail, String newPassword, String confirmPassword);
 }

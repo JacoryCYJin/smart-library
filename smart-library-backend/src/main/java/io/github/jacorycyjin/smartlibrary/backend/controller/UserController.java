@@ -229,4 +229,23 @@ public class UserController {
         }
         return Result.success(true);
     }
+
+    /**
+     * 重置密码（忘记密码）
+     * 
+     * @param resetForm 重置密码表单
+     * @return 是否重置成功
+     */
+    @PostMapping("/reset-password")
+    public Result<Boolean> resetPassword(@RequestBody io.github.jacorycyjin.smartlibrary.backend.form.ResetPasswordForm resetForm) {
+        Boolean success = userService.resetPassword(
+            resetForm.getPhoneOrEmail(),
+            resetForm.getNewPassword(),
+            resetForm.getConfirmPassword()
+        );
+        if (!success) {
+            return Result.fail(ApiCode.PARAM_INVALID.getCode(), "重置密码失败");
+        }
+        return Result.success(true);
+    }
 }

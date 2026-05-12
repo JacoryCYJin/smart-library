@@ -136,3 +136,19 @@ export function changeEmail(data) {
     data
   })
 }
+
+/**
+ * 重置密码（忘记密码）
+ * @param {Object} data - 重置密码数据
+ * @param {string} data.phoneOrEmail - 手机号或邮箱
+ * @param {string} data.newPassword - 新密码
+ * @param {string} data.confirmPassword - 确认密码
+ * @returns {Promise}
+ */
+export function resetPassword(data) {
+  return request({
+    url: '/user/reset-password',
+    method: 'post',
+    data
+  })
+}
